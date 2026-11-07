@@ -656,7 +656,7 @@ const FLAG_TEXT = {
   karan_sarsildi: "Karan, Ece'yi bildiğini öğrendi", zehir_red: "Şölende kadehi reddettin", karan_ifsa: "Karan'ın zehri açığa çıktı",
   karan_dost: "Karan seninle", karan_zindan: "Karan zindanda", karan_izle: "Karan izleniyor", karan_tuzak: "Karan tuzak kuracak",
   oyala: "Tolun oyalandı", savas: "Tolun'a meydan okudun", ece_kurtarma: "Ece için birlik gönderildi", ece_kurtuldu: "Ece kurtuldu",
-  ece_kayip: "Ece kurtarılamadı", hizir_dost: "Hızır dostun", lal_soyledi: "Lâl'e sırrını açtın", lal_sevgili: "Lâl seninle",
+  ece_kayip: "Ece kurtarılamadı", hizir_dost: "Hızır dostun", hizir_soyledi: "Hızır kelimesini sana söyledi", lal_soyledi: "Lâl'e sırrını açtın", lal_sevgili: "Lâl seninle",
   lal_uzak: "Lâl senden uzak", tahliye: "Halk tahliye ediliyor", hazir: "Askerler gerçeği biliyor", dongu_bilgi: "Nûr'un sırrını biliyorsun"
 };
 
@@ -710,12 +710,22 @@ card("hizir_test", { who: "hizir", type: "say",
   t: "‘Kanıtla öyleyse. Gerçek bir yolcu benim gizli kelimemi bilir. Onu kimseye söylemedim. Henüz.’",
   say: {
     ok: { l: "Kelimeyi söyledin", next: "hizir_dost_k", set: ["hizir_dost"], sand: 1, res: "Hızır'ın ağzı açık kaldı. ‘Aa… Gerçekten yolcusun!’" },
-    fail: { l: "Bilemedin", next: "hizir_kelime", res: "‘Hı-hı. Tahmin ettiğim gibi.’" } } });
+    fail: { l: "Bilemedin", next: "hizir_kelime", res: "‘Hı-hı. Tahmin ettiğim gibi.’" } },
+  // A word he told you in this same timeline proves nothing: only knowledge carried in from another one counts.
+  dyn: s => has(s, "hizir_soyledi") ? { say: {
+    ok: { l: "Kelimeyi söyledin", res: "Hızır kaşlarını çattı. ‘Onu sana ben söyledim, daha birkaç gün önce! Bu kanıt değil. Gerçek bir yolcu kelimemi benden duymadan bilir.’" },
+    fail: { l: "Bilemedin", res: "‘Kendi söylediğim kelimeyi bile hatırlamıyorsun. Yolcuymuş!’" } } } : {} });
 
 card("hizir_kelime", { who: "hizir",
   t: () => `‘Ama bak ne yapacağım. Kelimem “${META.sec.kelime}”. Bir sonraki bana bunu söyle. O ben seni hatırlamayacak, ama kelimeyi tanıyacak.’`,
-  l: { l: "Aklımda tutarım", mem: ["hizir_duydu"] },
-  r: { l: "Unutmam", mem: ["hizir_duydu"] } });
+  l: { l: "Aklımda tutarım", mem: ["hizir_duydu"], set: ["hizir_soyledi"] },
+  r: { l: "Unutmam", mem: ["hizir_duydu"], set: ["hizir_soyledi"] } });
+
+card("hizir_ikinci", { who: "hizir", c: s => has(s, "hizir_soyledi"),
+  t: "Hızır seni görünce gülümsüyor. ‘Yine sen. Kelimemi sana söylemiştim, hatırladın mı? Ama bunu bana söylemen bir şey kanıtlamaz. Ben zaten biliyorum.’",
+  bf: () => "Kelimesini bu zaman çizgisinde duyduğun için",
+  l: { l: "Nasıl kanıtlarım?", res: "‘Benim onu sana henüz söylemediğim bir güne git. Orada söyle.’ Hızır göz kırptı." },
+  r: { l: "Belki de yolcu değilim", res: "‘Belki. Ya da kum saatini henüz doğru kullanmadın.’" } });
 
 card("hizir_dost_k", { who: "hizir",
   t: "‘Madem yolcusun, iki öğüt. Bir: Muhafızlar yırttığın zamanın kokusunu alır. Geri sardığında ayrıldığın yerde bir yırtık kalır, önce oraya giderler. İki: Kızıl Gece'de kapılara değil, sulara bak.’",
@@ -924,7 +934,7 @@ const SLOTS = [
   ["lal_cicek"], ["tolun"], ["karan_itiraf", "karan_fisilti"],
   ["nur_yasli"], ["aybike_kurtar", "aybike_tatbikat"], ["lal_balkon"],
   ["lal_dusunce", "kule_gece"], ["lal_mektup", "tolun_casus"], ["lal_itiraf", "kule_gece"],
-  ["ece_sonuc", "tolun_son"], ["hizir_saat", "hizir_meet"], ["nur_son"],
+  ["ece_sonuc", "tolun_son"], ["hizir_saat", "hizir_ikinci", "hizir_meet"], ["nur_son"],
   ["aybike_son"], ["karan_son"], ["kizilgece"]
 ];
 
