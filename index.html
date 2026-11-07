@@ -174,8 +174,13 @@ body::after {
 .portrait .hand { position: absolute; left: 50%; bottom: 50%; width: 2px; height: 34%; background: rgba(43,38,32,.55); transform-origin: bottom center; border-radius: 2px; }
 
 .card.pick, .card.say { cursor: default; justify-content: flex-start; padding-top: 30px; }
-.card.pick .portrait, .card.say .portrait { width: 30%; margin-top: 0; }
-.card.pick .portrait span, .card.say .portrait span { font-size: clamp(26px, 8vw, 36px); }
+.art { position: absolute; inset: 16px 30px; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+.art svg { width: 100%; height: 100%; display: block; }
+.card.pick .art, .card.say .art { position: relative; inset: auto; width: 72%; height: auto; aspect-ratio: 200 / 140; flex-shrink: 0; }
+.card .corner { display: flex; flex-direction: column; align-items: center; gap: 3px; font: 900 19px/1 var(--f-display); letter-spacing: 0; }
+.card .corner svg { width: 14px; height: 14px; fill: currentColor; }
+.card .corner.tl { top: 16px; left: 12px; }
+.card .corner.br { bottom: 16px; right: 12px; }
 .opts { display: none; width: calc(100% - 44px); flex-direction: column; gap: 6px; margin-top: 14px; }
 .card.pick .opts, .card.say .opts { display: flex; }
 .opt {
@@ -463,7 +468,7 @@ body::after {
     <div class="card" id="card" tabindex="0" aria-label="Sahne kartı. Sola veya sağa kaydır.">
       <div class="corner tl" id="cornerTL"></div>
       <div class="corner br" id="cornerBR"></div>
-      <div class="portrait" id="portrait"><i class="hand" id="hand"></i><span id="mono">N</span></div>
+      <div class="art" id="art"></div>
       <div class="opts" id="opts"></div>
       <div class="memchip" id="memchip" hidden>↑ Bir şey hatırlıyorsun</div>
       <div class="choice" id="choice"></div>
@@ -591,15 +596,15 @@ const ICON = {
 
 /* ================= CHARACTERS ================= */
 const WHO = {
-  nur:     { n: "Saatçi Nûr",       r: "Kum saatinin ustası",       c: "#b88a35", m: "N" },
-  karan:   { n: "Vezir Karan",      r: "Baş vezir",                 c: "#7d3346", m: "K" },
-  aybike:  { n: "Komutan Aybike",   r: "Ordunun başı",              c: "#7a4a2b", m: "A" },
-  lal:     { n: "Lâl",              r: "Saray ozanı",               c: "#a3436b", m: "L" },
-  hizir:   { n: "Bekçi Hızır",      r: "Saat kulesinin bekçisi",    c: "#4f6b3a", m: "H" },
-  tolun:   { n: "Elçi Tolun",       r: "Doğu Hanlığı",              c: "#5b4a86", m: "T" },
-  eflatun: { n: "Ajan Eflatun",     r: "Zaman Muhafızları",         c: "#23899c", m: "E" },
-  sen:     { n: "Sen",              r: "Yalnız, gecenin içinde",    c: "#3f4656", m: "·" },
-  kehanet: { n: "Kızıl Gece",       r: "Kehanet gerçekleşiyor",     c: "#9e2c27", m: "VII" }
+  nur:     { n: "Saatçi Nûr",       r: "Kum saatinin ustası",       c: "#b88a35", m: "N", rank: "U", suit: "glass" },
+  karan:   { n: "Vezir Karan",      r: "Baş vezir",                 c: "#7d3346", m: "K", rank: "V", suit: "kadeh" },
+  aybike:  { n: "Komutan Aybike",   r: "Ordunun başı",              c: "#7a4a2b", m: "A", rank: "K", suit: "kilic" },
+  lal:     { n: "Lâl",              r: "Saray ozanı",               c: "#a3436b", m: "L", rank: "O", suit: "gul" },
+  hizir:   { n: "Bekçi Hızır",      r: "Saat kulesinin bekçisi",    c: "#4f6b3a", m: "H", rank: "B", suit: "fener" },
+  tolun:   { n: "Elçi Tolun",       r: "Doğu Hanlığı",              c: "#5b4a86", m: "T", rank: "Ç", suit: "ok" },
+  eflatun: { n: "Ajan Eflatun",     r: "Zaman Muhafızları",         c: "#23899c", m: "E", rank: "M", suit: "goz" },
+  sen:     { n: "Sen",              r: "Yalnız, gecenin içinde",    c: "#3f4656", m: "·", rank: "N", suit: "glass" },
+  kehanet: { n: "Kızıl Gece",       r: "Kehanet gerçekleşiyor",     c: "#9e2c27", m: "VII", rank: "VII", suit: "alev" }
 };
 
 /* ================= ENDINGS ================= */
@@ -923,6 +928,117 @@ const SLOTS = [
   ["aybike_son"], ["karan_son"], ["kizilgece"]
 ];
 
+
+/* ================= CARD ART =================
+   Court-card portraits: each character is drawn once as a half figure, then mirrored
+   upside-down below a centre band, like a playing card's face. */
+const INK = "#2b2620";
+const P = (d, f, x = "") => `<path d="${d}" fill="${f}" stroke="${INK}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" ${x}/>`;
+const O = (cx, cy, r, f, x = "") => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${f}" stroke="${INK}" stroke-width="2" ${x}/>`;
+const L = (d, w = 2, c = INK) => `<path d="${d}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
+const SUIT = {
+  glass: { d: "M6 2h12v2.2c0 3.3-2.3 5.7-4.5 7.8 2.2 2.1 4.5 4.5 4.5 7.8V22H6v-2.2c0-3.3 2.3-5.7 4.5-7.8C8.3 9.9 6 7.5 6 4.2z" },
+  kadeh: { d: "M5 2h14c0 6-3 9.5-6 10V18h4v4H7v-4h4v-6C8 11.5 5 8 5 2z", red: 1 },
+  kilic: { d: "M12 0l2.4 3.5V15H9.6V3.5zM5 15h14v3h-5.2v4.5h-3.6V18H5z" },
+  gul:   { d: "M12 3c3 0 5.5 2.2 5.5 5 0 1.6-.8 3-2 4 2.1.6 3.5 2.4 3.5 4.5 0 3-3 5.5-7 5.5s-7-2.5-7-5.5c0-2.1 1.4-3.9 3.5-4.5-1.2-1-2-2.4-2-4 0-2.8 2.5-5 5.5-5z", red: 1 },
+  fener: { d: "M9 1h6v2h2.5v2.5h-11V3H9zM6.5 7h11l-1.2 11H7.7zM7 19.5h10V23H7z" },
+  ok:    { d: "M2 20.6L15.6 7l-2-2L22 2l-3 8.4-2-2L3.4 22z" },
+  goz:   { d: "M12 5C6.5 5 2.7 9.2 1.5 12c1.2 2.8 5 7 10.5 7s9.3-4.2 10.5-7C21.3 9.2 17.5 5 12 5zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z" },
+  alev:  { d: "M12 1c1.2 4.5 7 6.8 7 13.5a7 7 0 0 1-14 0c0-3.5 2.2-5.7 3.5-6.8 0 2.3 1.2 3.5 2.3 3.5 0-3.5-1.2-7 1.2-10.2z", red: 1 }
+};
+const suitSVG = k => `<svg viewBox="0 0 24 24"><path d="${SUIT[k].d}"/></svg>`;
+const suitAt = (k, x, y, s, f) => `<g transform="translate(${x - 12 * s} ${y - 12 * s}) scale(${s})"><path d="${SUIT[k].d}" fill="${f}" stroke="${INK}" stroke-width="${1.6 / s}"/></g>`;
+
+function body(robe, trim, skin) {
+  const dots = [[58, 128], [70, 117], [130, 117], [142, 128], [52, 137], [148, 137], [76, 131], [124, 131]]
+    .map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.6" fill="${trim}" stroke="${INK}" stroke-width="1"/>`).join("");
+  return P("M93 70h14v26H93z", skin) +
+    P("M36 140C40 110 62 95 100 93C138 95 160 110 164 140Z", robe) +
+    P("M91 94L109 94L114 140L86 140Z", trim) + dots + L("M78 98Q100 114 122 98");
+}
+const eyes = (y = 58, c = INK) => `<circle cx="94" cy="${y}" r="1.9" fill="${c}"/><circle cx="106" cy="${y}" r="1.9" fill="${c}"/>`;
+const head = (skin, y = 60) => O(100, y, 16, skin);
+
+const HALF = {
+  nur: () => { const sk = "#ecd0b0"; return P("M70 98C66 54 80 26 100 26C120 26 134 54 130 98Z", "#6b4a26") +
+    body("#b88a35", "#5a3b1c", sk) + head(sk, 58) + L("M80 72C78 46 88 36 100 36C112 36 122 46 120 72", 2) +
+    L("M91 56h6M103 56h6") + P("M85 62C87 86 95 98 100 100C105 98 113 86 115 62C108 71 92 71 85 62Z", "#f2eee4") +
+    P("M91 66Q100 61 109 66Q100 70 91 66Z", "#f2eee4") +
+    P("M134 90h18M134 128h18", "none") + P("M136 92h14c0 8-5 11-7 15 2 4 7 7 7 15h-14c0-8 5-11 7-15-2-4-7-7-7-15z", "#f6e9c0") +
+    P("M139 124h8l-4-7z", "#d4a853", 'stroke-width="1"') + O(131, 113, 6, sk); },
+  karan: () => { const sk = "#d9a77f"; return body("#7d3346", "#d9a441", sk) + head(sk, 60) +
+    P("M77 52C73 26 89 14 100 14C111 14 127 26 123 52Z", "#f3ead7") + L("M84 30Q100 38 116 30M80 42Q100 50 120 42", 1.5) +
+    P("M77 52C86 58 114 58 123 52L123 45C114 51 86 51 77 45Z", "#d9a441") + O(100, 38, 4.5, "#b8312f") +
+    P("M100 34C96 20 104 8 113 4C108 14 106 24 102 34Z", "#2c4f8a") +
+    L("M90 55l7 1.5M110 55l-7 1.5") + eyes(59) +
+    P("M87 66C89 81 95 91 100 100C105 91 111 81 113 66C106 73 94 73 87 66Z", "#1d1a17") +
+    P("M89 67Q100 61 111 67Q105 71 100 69Q95 71 89 67Z", "#1d1a17") +
+    P("M47 84h26c0 13-6 19-13 19s-13-6-13-19z", "#d9a441") + P("M51 86h18c-1 6-4 9-9 9s-8-3-9-9z", "#8a1f2a", 'stroke-width="1"') +
+    P("M58 103h4v14h-4z", "#d9a441") + P("M50 117h20v5H50z", "#d9a441") + O(69, 110, 6, sk); },
+  aybike: () => { const sk = "#c98f68"; return [70, 80, 90, 100].map((y, i) => `<ellipse cx="${117 + i * 2.5}" cy="${y}" rx="5" ry="6" fill="#2a1a12" stroke="${INK}" stroke-width="1.5"/>`).join("") +
+    body("#8a2f2a", "#d9a441", sk) + P("M66 106Q100 120 134 106L138 140H62Z", "#a7b0b5") + L("M80 112v28M100 116v24M120 112v28", 1.5) +
+    head(sk, 60) + P("M81 57C79 33 121 33 119 57Z", "#bfc7cb") + P("M79 55h42v6H79z", "#8b949a") + P("M97 55h6v17h-6z", "#bfc7cb") +
+    P("M100 36C104 20 118 13 130 17C119 21 111 29 105 38Z", "#b8312f") + eyes(64) + L("M95 72h10") +
+    P("M143 22l3.5-9 3.5 9v88h-7z", "#e6eaec") + L("M146.5 26v80", 1, "#9aa3a8") +
+    P("M132 108h29v6h-29z", "#d9a441") + P("M144 114h5v16h-5z", "#5a3b1c") + O(146.5, 121, 6, sk); },
+  lal: () => { const sk = "#f0d2b4"; return P("M75 64C71 32 129 32 125 64C129 86 131 102 127 112L73 112C69 102 71 86 75 64Z", "#3a1f2a") +
+    body("#a3436b", "#f0c6d4", sk) + head(sk, 60) + P("M83 58C85 42 115 40 117 58C110 49 92 49 83 58Z", "#3a1f2a") +
+    eyes(61) + L("M90 58l3-2M110 58l-3-2", 1.5) +
+    `<circle cx="89" cy="66" r="3.5" fill="#e98fa5" opacity=".7"/><circle cx="111" cy="66" r="3.5" fill="#e98fa5" opacity=".7"/>` +
+    P("M95 69Q100 72 105 69Q100 70.5 95 69Z", "#b8312f") + O(84, 72, 2, "#d9a441") +
+    P("M120 52q7-1 10 4q-7 2-10-4z", "#4f6b3a") + O(116, 46, 7, "#b8312f") + L("M116 43a3 3 0 1 0 3 3", 1.5) +
+    P("M69 104L41 44l4.5-2 28 60z", "#8a5a2b") + P("M40 40h8l2 6h-9z", "#5a3b1c") +
+    P("M58 96C71 91 88 104 86 122C84 137 64 139 55 129C46 118 49 100 58 96Z", "#c88a4a") +
+    O(69, 117, 4.5, "#3a1f2a") + L("M44 43L74 128", .8) + O(80, 110, 6, sk); },
+  hizir: () => { const sk = "#d9a77f"; return body("#4f6b3a", "#c9b27a", sk) + head(sk, 60) +
+    P("M82 50L100 15L118 50Z", "#7a6440") + O(100, 15, 3.5, "#c9b27a") + P("M74 49h52v7H74z", "#4a3b25") +
+    P("M87 52h10v3.5H87zM103 52h10v3.5h-10z", "#f2eee4", 'stroke-width="1.2"') + `<circle cx="94" cy="60" r="1.9" fill="${INK}"/>` + L("M103 60h6") +
+    P("M82 69C89 61 98 63 100 66C102 63 111 61 118 69C113 66.5 107 71 100 71C93 71 87 66.5 82 69Z", "#f2eee4") +
+    `<circle cx="146" cy="104" r="18" fill="#f6d36b" opacity=".35"/>` + L("M140 88q6-9 12 0") +
+    P("M137 88h18v5h-18z", "#4a3b25") + P("M139 93h14l-1.5 22h-11z", "#f6d36b") + L("M146 96v16", 1.2, "#c98a2a") + P("M137 115h18v5h-18z", "#4a3b25") +
+    O(146, 82, 6, sk); },
+  tolun: () => { const sk = "#c98f68"; return body("#5b4a86", "#d9a441", sk) + head(sk, 60) +
+    P("M79 51C77 28 123 28 121 51Z", "#5a3b1c") + L("M84 48l2-7M91 49l2-9M99 49l1-10M107 49l1-9M114 48l1-7", 1.5, "#3a2412") +
+    P("M100 31q6-11 15-9q-6 4-13 11z", "#b8312f") + L("M89 54l7 2M111 54l-7 2") + eyes(59) +
+    P("M89 66C93 63 98 64 100 65.5C102 64 107 63 111 66L113 84h-4L107 70C103 70 97 70 93 70L91 84h-4Z", "#1d1a17") +
+    P("M44 96h32v28H44z", "#f3ead7") + P("M41 91h38v7H41zM41 121h38v7H41z", "#c9b27a") +
+    L("M50 104h20M50 110h15M50 116h18", 1.2) + P("M58 128h6v8l-3-2-3 2z", "#b8312f", 'stroke-width="1"') + O(78, 110, 6, sk); },
+  eflatun: () => { const sk = "#b98f78"; return P("M70 98C66 52 82 22 100 20C118 22 134 52 130 98Z", "#5d6a73") +
+    body("#3f4a52", "#23899c", sk) + head(sk, 60) + P("M84 58C85 45 115 45 116 58Z", "#1d2328") +
+    `<circle cx="94" cy="60" r="2.6" fill="#52d3e2"/><circle cx="106" cy="60" r="2.6" fill="#52d3e2"/>` + L("M95 70h10") +
+    L("M81 74C77 46 88 32 100 32C112 32 123 46 119 74", 2) + suitAt("glass", 100, 120, .6, "#52d3e2") +
+    `<circle cx="141" cy="104" r="8" fill="none" stroke="#cfd6da" stroke-width="3.5"/><circle cx="155" cy="118" r="8" fill="none" stroke="#cfd6da" stroke-width="3.5"/>` +
+    L("M146 110l4 3", 3, "#cfd6da") + O(132, 112, 6, sk); },
+  sen: () => { const sk = "#e8c4a0"; return P("M66 140C60 100 72 64 100 62C128 64 140 100 134 140Z", "#22283a") +
+    body("#3f4656", "#d4a853", sk) + head(sk, 60) +
+    P("M83 47L85 32L93 41L100 28L107 41L115 32L117 47Z", "#d4a853") + O(100, 40, 2.5, "#b8312f", 'stroke-width="1"') +
+    P("M80 56C82 42 118 42 120 56C112 50 88 50 80 56Z", "#4a3326") + eyes(61) + L("M95 70q5 2 10 0") +
+    P("M89 101h22M89 137h22", "none") + P("M91 103h18c0 8-6 11-9 15 3 4 9 7 9 15H91c0-8 6-11 9-15-3-4-9-7-9-15z", "#f6e9c0") +
+    P("M95 133h10l-5-8z", "#d4a853", 'stroke-width="1"') + O(86, 120, 5.5, sk) + O(114, 120, 5.5, sk); },
+  kehanet: () => `<rect x="6" y="6" width="188" height="134" fill="#7a1f1c" opacity=".55"/>` + O(122, 30, 9, "#f3d9b0") +
+    [[38, 92, 1], [86, 52, 1.4], [132, 84, 1.1], [168, 96, .8]].map(([x, y, k]) =>
+      `<g transform="translate(${x} ${y}) scale(${k})">${P("M0-30c4 10 14 14 14 26a14 14 0 0 1-28 0c0-7 4-11 7-13 0 5 3 7 5 7 0-7-2-13 2-20z", "#e8742a")}${P("M0-12c2 5 7 7 7 12a7 7 0 0 1-14 0c0-3 2-5 3-6 0 2 2 3 3 3 0-3-1-6 1-9z", "#f6c14a", 'stroke-width="1"')}</g>`).join("") +
+    P("M6 140V106h18V94h14v12h12V82h10V66l8-10 8 10v16h12V98h16V88h14v18h16V92h20v12h20v36Z", "#1d1a17")
+};
+
+const ART_CACHE = {};
+function artSVG(who, halfOnly) {
+  const key = who + (halfOnly ? ":h" : "");
+  if (ART_CACHE[key]) return ART_CACHE[key];
+  const w = WHO[who];
+  const bg = `<rect x="6" y="6" width="188" height="134" fill="${w.c}" fill-opacity=".14"/>`;
+  const half = bg + HALF[who]();
+  const frame = '<rect x="6" y="6" width="188" height="%H%" rx="5" fill="none" stroke="#2b2620" stroke-width="1.6"/>';
+  let svg;
+  if (halfOnly) svg = `<svg viewBox="0 0 200 146" preserveAspectRatio="xMidYMid meet"><clipPath id="hc"><rect x="6" y="6" width="188" height="134" rx="5"/></clipPath><g clip-path="url(#hc)">${half}</g>${frame.replace("%H%", 134)}</svg>`;
+  else if (who === "kehanet") svg = `<svg viewBox="0 0 200 280" preserveAspectRatio="xMidYMid meet"><clipPath id="fc"><rect x="6" y="6" width="188" height="268" rx="5"/></clipPath><g clip-path="url(#fc)"><rect x="0" y="0" width="200" height="280" fill="#e5ddcf"/><g transform="translate(-100 -6) scale(2)">${half}</g></g>${frame.replace("%H%", 268)}</svg>`;
+  else svg = `<svg viewBox="0 0 200 280" preserveAspectRatio="xMidYMid meet"><clipPath id="fc"><rect x="6" y="6" width="188" height="268" rx="5"/></clipPath><g clip-path="url(#fc)">${half}<g transform="rotate(180 100 140)">${half}</g></g>` +
+    `<path d="M6 140H194" stroke="#8a7448" stroke-width="1.5"/>` + `<circle cx="100" cy="140" r="11" fill="#e5ddcf" stroke="#8a7448" stroke-width="1.5"/>` +
+    suitAt(w.suit, 100, 140, .5, SUIT[w.suit].red ? "#b8312f" : "#2b2620") + frame.replace("%H%", 268) + `</svg>`;
+  return ART_CACHE[key] = svg;
+}
+window.ZN_ART = artSVG;
+
 /* ================= STATE ================= */
 let S, R;
 function newWorld() { return { t: 0, card: "nur_intro", ret: [], flags: [], bond: 0 }; }
@@ -1167,13 +1283,9 @@ function render(enter) {
   lastBf = c.bfText;
   $("#whoName").textContent = w.n;
   $("#whoRole").textContent = w.r;
-  $("#portrait").style.setProperty("--c", w.c);
-  const mono = $("#mono");
-  mono.textContent = w.m;
-  mono.className = w.m.length > 1 ? "sm" : "";
-  $("#hand").style.transform = `rotate(${(S.t / LAST_T) * 360}deg)`;
-  $("#cornerTL").textContent = `G${dayOf(S.t)}`;
-  $("#cornerBR").textContent = `G${dayOf(S.t)}`;
+  $("#art").innerHTML = artSVG(c.who, !!c.type);
+  const idx = `<span>${w.rank}</span>${suitSVG(w.suit)}`;
+  for (const id of ["#cornerTL", "#cornerBR"]) { $(id).innerHTML = idx; $(id).style.color = SUIT[w.suit].red ? "#a8322d" : "#2b2620"; }
   app.classList.toggle("police", c.who === "eflatun");
 
   cardEl.classList.toggle("pick", c.type === "pick");
