@@ -7,9 +7,10 @@
 <title>Zaman Naibi</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@500;700&display=swap">
 <style>
-/* Layout: one-screen portrait game. Stats on top, story line, swipe card, name, timeline + time controls at the bottom.
+/* Layout: one-screen portrait story game. Clock + resources on top, the scene's words, the swipe card,
+   the speaker, then the 7-day timeline and three time controls.
    Single deliberate dark world: a clocktower at night, brass instruments, bone-paper cards. */
 :root {
   --ink: #0d1922;
@@ -24,6 +25,7 @@
   --muted: #8d9ba2;
   --rose: #e2617f;
   --cyan: #52d3e2;
+  --wing: #c4a0ff;
   --up: #9ad27f;
   --down: #ec6d5c;
   --f-display: "Fraunces", "Iowan Old Style", Georgia, serif;
@@ -66,55 +68,51 @@ body::after {
   transition: filter .3s;
 }
 
-/* ---------- Top: stats ---------- */
+/* ---------- Top ---------- */
 .top { display: flex; flex-direction: column; gap: 8px; }
-.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-.stat { display: flex; flex-direction: column; align-items: center; gap: 3px; }
-.dot { height: 10px; display: flex; align-items: center; justify-content: center; font: 700 11px/1 var(--f-mono); }
-.dot i { display: block; width: 0; height: 0; border-radius: 50%; background: var(--fg); transition: width .15s, height .15s; }
-.dot i.s { width: 6px; height: 6px; }
-.dot i.l { width: 10px; height: 10px; }
-.dot .ar-up { color: var(--up); }
-.dot .ar-dn { color: var(--down); }
-.meter { position: relative; width: 34px; height: 34px; color: var(--brass); }
-.meter svg { width: 34px; height: 34px; fill: currentColor; display: block; }
-.meter .base { opacity: .22; }
-.meter .fill { position: absolute; left: 0; right: 0; bottom: 0; overflow: hidden; transition: height .5s cubic-bezier(.3,.8,.3,1); }
-.meter .fill svg { position: absolute; bottom: 0; left: 0; }
-.stat.warn .meter { color: var(--down); animation: pulse 1s infinite; }
-.stat .lbl { font: 500 10px/1 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-.stat .lbl b { color: var(--fg); font-weight: 700; }
-@keyframes pulse { 50% { opacity: .55; } }
-
-.timebar { display: flex; align-items: center; gap: 10px; }
-.year { font: 700 13px/1 var(--f-mono); letter-spacing: .06em; color: var(--brass); white-space: nowrap; }
-.year small { color: var(--muted); font-weight: 500; }
+.row1, .row2 { display: flex; align-items: center; gap: 12px; }
+.day { flex: 1; font: 700 13px/1 var(--f-mono); letter-spacing: .08em; color: var(--brass); white-space: nowrap; }
+.sand { display: flex; gap: 1px; color: var(--brass); }
+.sand svg { width: 15px; height: 15px; fill: currentColor; }
+.sand svg.empty { fill: none; stroke: var(--brass-dim); stroke-width: 1.4; }
+.icon-btn { appearance: none; border: 1px solid var(--brass-dim); background: transparent; color: var(--fg); width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; padding: 0; }
+.icon-btn svg { width: 15px; height: 15px; fill: currentColor; }
+.icon-btn.off { color: var(--muted); opacity: .6; }
+.icon-btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 .para { flex: 1; min-width: 0; }
 .para-top { display: flex; justify-content: space-between; font: 500 9.5px/1 var(--f-mono); letter-spacing: .1em; color: var(--muted); margin-bottom: 4px; }
 .para-top b { color: var(--rose); }
 .para-track { position: relative; height: 6px; border-radius: 3px; background: var(--ink-3); overflow: hidden; }
 .para-fill { position: absolute; inset: 0 auto 0 0; background: linear-gradient(90deg, var(--rose), #ff9db2); transition: width .5s; }
 .para-track .mk { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(82,211,226,.6); }
-.sand { display: flex; gap: 1px; color: var(--brass); }
-.sand svg { width: 15px; height: 15px; fill: currentColor; }
-.sand svg.empty { fill: none; stroke: var(--brass-dim); stroke-width: 1.4; }
-.sand.locked { color: var(--cyan); }
+.hunt { display: flex; align-items: center; gap: 6px; font: 700 11px/1 var(--f-mono); letter-spacing: .06em; color: var(--muted); white-space: nowrap; padding: 5px 8px; border-radius: 6px; border: 1px solid var(--ink-3); }
+.hunt svg { width: 16px; height: 16px; fill: currentColor; }
+.hunt.on { color: var(--cyan); border-color: rgba(82,211,226,.4); }
+.hunt.near { color: #fff; background: rgba(236,109,92,.25); border-color: var(--down); animation: beat 1s infinite; }
+@keyframes beat { 0%, 40%, 100% { transform: scale(1); } 15% { transform: scale(1.08); } 30% { transform: scale(1.02); } }
 
-/* ---------- Story text ---------- */
+/* ---------- Story ---------- */
 .story {
-  min-height: 5.6em;
-  display: flex; align-items: center; justify-content: center;
+  min-height: 6.2em;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
   text-align: center;
-  font-size: clamp(15px, 4.3vw, 18px);
-  line-height: 1.38;
-  text-wrap: balance;
   padding-inline: 4px;
 }
+.echo { font: italic 400 13.5px/1.35 var(--f-body); color: var(--brass); text-wrap: balance; max-width: 34em; }
+.echo:empty { display: none; }
+.echo.fresh { animation: rise .5s ease-out; }
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } }
+.txt { font-size: clamp(15px, 4.2vw, 17.5px); line-height: 1.38; text-wrap: balance; }
+.bf { display: inline-flex; align-items: center; gap: 5px; font: 500 9.5px/1.3 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--wing); }
+.bf:empty { display: none; }
+.bf svg { width: 13px; height: 13px; fill: currentColor; flex-shrink: 0; }
+.bf.fresh svg { animation: flap .6s ease-in-out 3; }
+@keyframes flap { 50% { transform: scaleX(.3); } }
 
 /* ---------- Card ---------- */
 .stage { flex: 1; min-height: 0; position: relative; display: flex; align-items: center; justify-content: center; perspective: 900px; }
 .card, .card-back {
-  height: min(100%, 400px);
+  height: min(100%, 390px);
   aspect-ratio: 3 / 4;
   max-width: 100%;
   border-radius: 14px;
@@ -149,13 +147,14 @@ body::after {
   outline: 1px solid rgba(138,116,72,.3); outline-offset: 3px;
   border-radius: 9px; pointer-events: none;
 }
+.card.hasmem { box-shadow: 0 0 0 2px rgba(226,97,127,.75), 0 0 28px rgba(226,97,127,.45), 0 18px 40px rgba(0,0,0,.5); }
 .card .corner { position: absolute; font: 700 11px/1 var(--f-mono); color: var(--brass-dim); letter-spacing: .05em; }
 .card .corner.tl { top: 18px; left: 18px; }
 .card .corner.br { bottom: 18px; right: 18px; transform: rotate(180deg); }
 .portrait {
   --c: #777;
-  width: 58%; aspect-ratio: 1; border-radius: 50%;
-  position: relative;
+  width: 56%; aspect-ratio: 1; border-radius: 50%;
+  position: relative; flex-shrink: 0;
   background:
     radial-gradient(circle, transparent 0 62%, rgba(43,38,32,.75) 62% 63.5%, transparent 63.5%),
     repeating-conic-gradient(from -1deg, rgba(43,38,32,.8) 0 2deg, transparent 2deg 30deg),
@@ -163,15 +162,47 @@ body::after {
   box-shadow: 0 0 0 3px var(--paper), 0 0 0 4.5px rgba(43,38,32,.6), 0 8px 18px rgba(0,0,0,.25);
   display: flex; align-items: center; justify-content: center;
   margin-top: -6%;
+  transition: width .3s;
 }
 .portrait span {
-  font: 900 clamp(40px, 15vw, 70px)/1 var(--f-display);
+  font: 900 clamp(40px, 15vw, 68px)/1 var(--f-display);
   color: var(--paper);
   text-shadow: 0 2px 0 rgba(0,0,0,.25);
   font-variation-settings: "opsz" 144;
 }
 .portrait span.sm { font-size: clamp(24px, 9vw, 40px); }
 .portrait .hand { position: absolute; left: 50%; bottom: 50%; width: 2px; height: 34%; background: rgba(43,38,32,.55); transform-origin: bottom center; border-radius: 2px; }
+
+.card.pick, .card.say { cursor: default; justify-content: flex-start; padding-top: 30px; }
+.card.pick .portrait, .card.say .portrait { width: 30%; margin-top: 0; }
+.card.pick .portrait span, .card.say .portrait span { font-size: clamp(26px, 8vw, 36px); }
+.opts { display: none; width: calc(100% - 44px); flex-direction: column; gap: 6px; margin-top: 14px; }
+.card.pick .opts, .card.say .opts { display: flex; }
+.opt {
+  appearance: none; border: 1px solid rgba(43,38,32,.3); background: rgba(255,255,255,.4); color: var(--paper-ink);
+  font: 600 14px/1.2 var(--f-body); padding: 9px 12px; border-radius: 8px; cursor: pointer; text-align: left;
+  touch-action: manipulation;
+}
+.opt:hover { background: rgba(255,255,255,.7); }
+.opt:focus-visible { outline: 2px solid #23899c; outline-offset: 1px; }
+.opt.ghost { background: transparent; border-style: dashed; font-weight: 400; font-style: italic; }
+.say-in {
+  font: 700 17px/1 var(--f-mono); letter-spacing: .04em; padding: 11px 12px; border-radius: 8px;
+  border: 1.5px solid var(--brass-dim); background: #f6f0e4; color: var(--paper-ink);
+  width: 100%; box-sizing: border-box; user-select: text; -webkit-user-select: text;
+}
+.say-in:focus { outline: 2px solid #23899c; }
+.say-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.say-row .opt { text-align: center; }
+
+.memchip {
+  position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%);
+  font: 700 10px/1 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; white-space: nowrap;
+  color: #9b2b55; background: rgba(226,97,127,.16); border: 1px solid rgba(226,97,127,.45);
+  padding: 6px 10px; border-radius: 999px;
+  animation: glow 1.8s ease-in-out infinite;
+}
+@keyframes glow { 50% { box-shadow: 0 0 14px rgba(226,97,127,.6); transform: translate(-50%, -3px); } }
 
 .choice {
   position: absolute; top: 0; left: 0; right: 0;
@@ -183,18 +214,9 @@ body::after {
   text-wrap: balance;
 }
 .choice.r { text-align: right; }
+.choice.u { text-align: center; top: auto; bottom: 0; padding: 34px 20px 22px; background: linear-gradient(0deg, rgba(106,26,58,.95), rgba(106,26,58,.75) 60%, transparent); }
 .choice .tag { display: block; font: 500 9.5px/1.4 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--brass); margin-top: 6px; }
-.choice .tag.end { color: var(--down); }
-
-.reveal { position: absolute; left: 16px; right: 16px; bottom: 30px; display: flex; flex-direction: column; gap: 5px; }
-.rv { display: flex; align-items: center; gap: 6px; font: 600 11.5px/1.2 var(--f-body); background: rgba(43,38,32,.07); border-radius: 6px; padding: 4px 7px; }
-.rv .rl { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.rv .src { font: 500 8.5px/1 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--brass-dim); }
-.fxs { display: flex; gap: 5px; flex-shrink: 0; }
-.fx { display: inline-flex; align-items: center; gap: 1px; font: 700 11px/1 var(--f-mono); }
-.fx svg { width: 13px; height: 13px; fill: var(--paper-ink); opacity: .75; }
-.fx.up { color: #3c7d26; } .fx.dn { color: #b2352a; }
-.fx.end { color: #b2352a; letter-spacing: .05em; }
+.choice.u .tag { color: #ffc2d1; }
 
 .card.enter { animation: enter .45s cubic-bezier(.2,.8,.3,1.1); }
 @keyframes enter { from { transform: rotateY(85deg) scale(.92); opacity: .3; } to { transform: none; opacity: 1; } }
@@ -205,7 +227,7 @@ body::after {
 .who .nm { font: 700 18px/1.1 var(--f-display); letter-spacing: .01em; }
 .who .rl { font: 500 9.5px/1.3 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
 
-/* ---------- Bottom: timeline + controls ---------- */
+/* ---------- Bottom ---------- */
 .bottom { display: flex; flex-direction: column; gap: 8px; }
 .timeline { display: flex; align-items: flex-end; gap: 2px; height: 26px; }
 .tick {
@@ -214,20 +236,18 @@ body::after {
   cursor: default; position: relative;
   transition: height .2s, background .2s;
 }
+.tick.dstart { margin-left: 5px; }
+.tick.dstart:first-child { margin-left: 0; }
 .tick.past { background: var(--brass-dim); cursor: pointer; height: 16px; }
 .tick.past:hover { background: var(--brass); }
 .tick.now { background: var(--brass); height: 24px; box-shadow: 0 0 10px rgba(212,168,83,.6); }
 .tick.sel { background: var(--rose); height: 24px; }
-.tick.kg::after { content: ""; position: absolute; left: 50%; top: -6px; width: 5px; height: 5px; margin-left: -2.5px; border-radius: 50%; background: var(--down); }
-.tick.goal::after { content: ""; position: absolute; left: 50%; top: -6px; width: 5px; height: 5px; margin-left: -2.5px; border-radius: 50%; background: var(--up); }
+.tick.kg::after { content: ""; position: absolute; left: 50%; top: -6px; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: var(--down); }
 .tick:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
-.tl-legend { display: flex; justify-content: space-between; font: 500 9px/1 var(--f-mono); letter-spacing: .08em; color: var(--muted); text-transform: uppercase; }
+.tl-legend { display: flex; justify-content: space-between; font: 500 9px/1 var(--f-mono); letter-spacing: .08em; color: var(--muted); text-transform: uppercase; margin-top: 4px; }
 .tl-legend .kgl { color: var(--down); }
-.tl-legend .gl { color: var(--up); }
 
 .controls { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; }
-.btn.tr { color: var(--cyan); flex-direction: column; gap: 2px; padding: 7px 12px; }
-.btn.tr b { font: 700 10px/1 var(--f-mono); color: var(--fg); letter-spacing: .04em; }
 .btn {
   appearance: none; border: 1px solid var(--brass-dim);
   background: linear-gradient(180deg, var(--ink-3), var(--ink-2));
@@ -242,14 +262,16 @@ body::after {
 .btn small { display: block; font: 500 9px/1.3 var(--f-mono); letter-spacing: .06em; color: var(--muted); text-transform: uppercase; }
 .btn svg { width: 22px; height: 22px; fill: currentColor; flex-shrink: 0; }
 .btn.rw { color: var(--rose); }
-.btn.rw span { color: var(--fg); }
-.btn.ff { color: var(--brass); }
-.btn.ff span { color: var(--fg); }
+.btn.rw span, .btn.jr span { color: var(--fg); }
+.btn.tr { color: var(--cyan); flex-direction: column; gap: 2px; padding: 7px 12px; }
+.btn.tr b { font: 700 10px/1 var(--f-mono); color: var(--fg); letter-spacing: .04em; }
+.btn.jr { color: var(--brass); }
+.btn.jr.new { box-shadow: 0 0 0 1px var(--wing), 0 0 14px rgba(196,160,255,.5); }
 .btn:disabled { opacity: .4; cursor: not-allowed; }
 .btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 .btn:not(:disabled):active { transform: translateY(1px); }
 
-/* ---------- Police mode ---------- */
+/* ---------- Police ---------- */
 #app.police .card { box-shadow: 0 0 0 2px var(--cyan), 0 0 30px rgba(82,211,226,.45), 0 18px 40px rgba(0,0,0,.5); }
 #app.police .who .nm { color: var(--cyan); }
 #app.police::before {
@@ -259,7 +281,7 @@ body::after {
 }
 @keyframes scan { to { background-position: 0 50px; } }
 
-/* ---------- Warp (rewind) ---------- */
+/* ---------- Warp ---------- */
 #warp {
   position: fixed; inset: 0; z-index: 20;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
@@ -268,10 +290,11 @@ body::after {
   opacity: 0; transition: opacity .2s;
 }
 #warp.on { opacity: 1; }
+#warp.fwd { background: radial-gradient(circle, rgba(82,211,226,.22), rgba(13,25,34,.92) 70%); }
+#warp.fwd .warp-lbl { color: var(--cyan); }
 .clock { width: 160px; height: 160px; border-radius: 50%; position: relative;
   border: 2px solid var(--brass);
   background: repeating-conic-gradient(from -1deg, var(--brass) 0 2deg, transparent 2deg 30deg);
-  -webkit-mask: radial-gradient(circle, #000 0 100%);
 }
 .clock::before { content: ""; position: absolute; inset: 10px; border-radius: 50%; background: var(--ink); }
 .clock .h1, .clock .h2 { position: absolute; left: 50%; bottom: 50%; transform-origin: bottom center; background: var(--fg); border-radius: 3px; }
@@ -279,11 +302,17 @@ body::after {
 .clock .h2 { width: 2px; height: 62px; margin-left: -1px; background: var(--rose); }
 #warp.on .h1 { animation: spin 1s cubic-bezier(.5,0,.5,1) reverse; }
 #warp.on .h2 { animation: spin .25s linear infinite reverse; }
+#warp.fwd.on .h1, #warp.fwd.on .h2 { animation-direction: normal; }
 @keyframes spin { to { transform: rotate(360deg); } }
-.warp-year { font: 700 42px/1 var(--f-mono); color: var(--fg); letter-spacing: .05em; }
+.warp-year { font: 700 26px/1 var(--f-mono); color: var(--fg); letter-spacing: .05em; text-transform: uppercase; }
 .warp-lbl { font: 500 11px/1 var(--f-mono); letter-spacing: .3em; color: var(--rose); text-transform: uppercase; }
 #app.warping { filter: hue-rotate(-40deg) saturate(.5) blur(1.5px); animation: jitter .12s steps(2) infinite; }
 @keyframes jitter { 50% { transform: translateX(3px); } }
+#flash { position: fixed; inset: 0; z-index: 19; pointer-events: none; background: var(--rose); opacity: 0; }
+#flash.on { animation: flash .6s ease-out; }
+#flash.mem { background: var(--wing); }
+#flash.hunt { background: var(--cyan); }
+@keyframes flash { 0% { opacity: .35; } 100% { opacity: 0; } }
 
 /* ---------- Overlays ---------- */
 .overlay {
@@ -294,7 +323,7 @@ body::after {
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   padding-block: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-bottom, 0px));
-  overflow-y: auto;
+  box-sizing: border-box;
 }
 .panel {
   width: 100%; max-width: 400px; max-height: 100%;
@@ -306,10 +335,11 @@ body::after {
   display: flex; flex-direction: column; gap: 14px;
   overflow-y: auto;
 }
-.eyebrow { font: 500 10px/1 var(--f-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--brass); }
+.eyebrow { font: 500 10px/1.3 var(--f-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--brass); }
 .panel h1 { margin: 0; font: 900 clamp(38px, 12vw, 52px)/.95 var(--f-display); letter-spacing: -.01em; font-variation-settings: "opsz" 144; text-wrap: balance; }
 .panel h1 em { font-style: italic; font-weight: 500; color: var(--brass); }
 .panel h2 { margin: 0; font: 700 28px/1.05 var(--f-display); text-wrap: balance; }
+.panel h3 { margin: 0; font: 500 10px/1.3 var(--f-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--brass); }
 .panel p { margin: 0; font-size: 15.5px; line-height: 1.5; color: var(--fg); }
 .panel p.hint { font-size: 13.5px; color: var(--muted); font-style: italic; }
 .rules { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
@@ -329,24 +359,20 @@ body::after {
 .cta:disabled { opacity: .4; cursor: not-allowed; }
 .cta:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
 .btns { display: grid; gap: 8px; }
-.endings { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 5px; }
+.endings { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 5px; }
 .endings span { font: 500 10px/1.25 var(--f-mono); padding: 6px 7px; border-radius: 6px; background: var(--ink-3); color: var(--muted); }
-.endings span.got { color: var(--ink); background: var(--brass); }
+.endings span.got { color: var(--ink); background: var(--down); }
 .endings span.got.w { background: var(--up); }
-.endings span.got.s { background: var(--cyan); }
+.endings span.got.s { background: var(--wing); }
 .end-meta { display: flex; gap: 14px; flex-wrap: wrap; font: 500 11px/1 var(--f-mono); letter-spacing: .06em; color: var(--muted); text-transform: uppercase; }
 .end-meta b { color: var(--fg); }
-
-#toast {
-  position: fixed; left: 50%; top: 38%; z-index: 25;
-  transform: translate(-50%, -10px);
-  background: var(--ink-3); border: 1px solid var(--brass-dim); color: var(--fg);
-  font: 600 13px/1.2 var(--f-mono);
-  padding: 8px 12px; border-radius: 8px;
-  opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s;
-  white-space: nowrap; max-width: 90vw; overflow: hidden; text-overflow: ellipsis;
-}
-#toast.on { opacity: 1; transform: translate(-50%, 0); }
+.mems { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.mems li { font-size: 14px; line-height: 1.4; padding: 9px 11px; border-radius: 8px; background: var(--ink-3); border-left: 3px solid var(--wing); }
+.mems li b { display: block; font: 700 15px/1.2 var(--f-display); margin-bottom: 2px; }
+.mems li.secret { border-left-color: var(--rose); font-style: italic; }
+.mems li.none { border-left-color: var(--muted); color: var(--muted); }
+.hearts { font-size: 22px; letter-spacing: 4px; color: var(--rose); }
+.hearts i { font-style: normal; color: var(--ink-3); }
 
 /* ---------- Time tree ---------- */
 .tree-ov { z-index: 35; }
@@ -359,7 +385,7 @@ body::after {
 .tree-scroll { flex: 1; min-height: 170px; overflow: auto; border-radius: 10px; background: var(--ink); border: 1px solid var(--ink-3); -webkit-overflow-scrolling: touch; }
 .tree-scroll svg { display: block; }
 .tn { cursor: pointer; }
-.tn .pulse { animation: ring 1.6s infinite; }
+.pulse { animation: ring 1.6s infinite; }
 @keyframes ring { 50% { opacity: .25; } }
 .tree-info { display: flex; flex-direction: column; gap: 7px; font-size: 14px; line-height: 1.45; }
 .ti-kind { font: 500 10px/1 var(--f-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--brass); }
@@ -367,24 +393,38 @@ body::after {
 .ti-kind.future { color: var(--cyan); }
 .ti-title { font: 700 19px/1.15 var(--f-display); }
 .ti-text { opacity: .85; }
-.ti-row { display: flex; flex-wrap: wrap; gap: 6px 14px; font: 500 11.5px/1.3 var(--f-mono); color: var(--muted); }
-.ti-row span { display: inline-flex; align-items: center; gap: 4px; }
-.ti-row svg { width: 13px; height: 13px; fill: var(--brass); }
-.ti-row b { color: var(--fg); }
 .ti-facts { font-size: 13px; color: var(--muted); }
 .ti-facts b { color: var(--fg); }
+.ti-diff { display: flex; flex-direction: column; gap: 3px; font: 500 12px/1.35 var(--f-mono); }
+.ti-diff .h { color: var(--wing); letter-spacing: .1em; text-transform: uppercase; font-size: 10px; display: flex; gap: 5px; align-items: center; }
+.ti-diff .h svg { width: 13px; height: 13px; fill: currentColor; }
+.ti-diff .p { color: var(--up); }
+.ti-diff .m { color: var(--down); }
 .tree-info .cta { padding: 12px; font-size: 15px; }
 .tree-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font: 500 9.5px/1.2 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
 .tree-legend i { display: inline-block; width: 14px; height: 0; border-top: 2px solid var(--brass); vertical-align: middle; margin-right: 4px; }
 .tree-legend i.d { border-top: 2px dashed var(--muted); }
-#warp.fwd { background: radial-gradient(circle, rgba(82,211,226,.22), rgba(13,25,34,.92) 70%); }
-#warp.fwd .warp-lbl { color: var(--cyan); }
-#warp.fwd.on .h1, #warp.fwd.on .h2 { animation-direction: normal; }
+.tree-legend .c { color: var(--cyan); }
+.tree-legend .x { color: var(--rose); }
 
-@media (max-height: 640px) {
-  .story { min-height: 4.6em; font-size: 15px; }
-  .meter, .meter svg { width: 28px; height: 28px; }
+#toast {
+  position: fixed; left: 50%; top: 36%; z-index: 25;
+  transform: translate(-50%, -10px);
+  background: var(--ink-3); border: 1px solid var(--brass-dim); color: var(--fg);
+  font: 600 13px/1.2 var(--f-mono);
+  padding: 9px 13px; border-radius: 8px;
+  opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s;
+  white-space: nowrap; max-width: 90vw; overflow: hidden; text-overflow: ellipsis;
+}
+#toast.on { opacity: 1; transform: translate(-50%, 0); }
+#toast.mem { border-color: var(--wing); color: var(--wing); background: #24203a; }
+#toast.hunt { border-color: var(--cyan); color: var(--cyan); }
+
+@media (max-height: 680px) {
+  .story { min-height: 5em; }
+  .txt { font-size: 15px; }
   .controls .btn small { display: none; }
+  .tl-legend { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
@@ -395,29 +435,37 @@ body::after {
 
 <div id="app">
   <div class="top">
-    <div class="stats" id="stats"></div>
-    <div class="timebar">
-      <div class="year" id="year">YIL 00</div>
+    <div class="row1">
+      <div class="day" id="day">GÜN 1 · SABAH</div>
+      <div class="sand" id="sand" title="Kum"></div>
+      <button class="icon-btn" id="btnMute" aria-label="Sesi kapat"><svg viewBox="0 0 24 24"><path d="M3 9h4l5-4v14l-5-4H3z"/><path d="M15.5 8.5a5 5 0 0 1 0 7l-1.4-1.4a3 3 0 0 0 0-4.2zM18.4 5.6a9 9 0 0 1 0 12.8L17 17a7 7 0 0 0 0-10z"/></svg></button>
+    </div>
+    <div class="row2">
       <div class="para">
         <div class="para-top"><span>PARADOKS</span><b id="paraVal">0</b></div>
         <div class="para-track">
           <div class="para-fill" id="paraFill" style="width:0%"></div>
-          <i class="mk" style="left:35%"></i><i class="mk" style="left:60%"></i><i class="mk" style="left:80%"></i>
+          <i class="mk" style="left:20%"></i><i class="mk" style="left:50%"></i><i class="mk" style="left:80%"></i>
         </div>
       </div>
-      <div class="sand" id="sand" title="Kum"></div>
+      <div class="hunt" id="hunt"><svg viewBox="0 0 24 24"><path d="M12 5C6.5 5 2.7 9.2 1.5 12c1.2 2.8 5 7 10.5 7s9.3-4.2 10.5-7C21.3 9.2 17.5 5 12 5zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/></svg><span id="huntTxt">—</span></div>
     </div>
   </div>
 
-  <div class="story" id="story"></div>
+  <div class="story">
+    <div class="echo" id="echo"></div>
+    <div class="txt" id="story"></div>
+    <div class="bf" id="bf"></div>
+  </div>
 
   <div class="stage">
     <div class="card-back"></div>
-    <div class="card" id="card" tabindex="0" aria-label="Karar kartı. Sola veya sağa kaydır.">
+    <div class="card" id="card" tabindex="0" aria-label="Sahne kartı. Sola veya sağa kaydır.">
       <div class="corner tl" id="cornerTL"></div>
       <div class="corner br" id="cornerBR"></div>
       <div class="portrait" id="portrait"><i class="hand" id="hand"></i><span id="mono">N</span></div>
-      <div class="reveal" id="reveal"></div>
+      <div class="opts" id="opts"></div>
+      <div class="memchip" id="memchip" hidden>↑ Bir şey hatırlıyorsun</div>
       <div class="choice" id="choice"></div>
     </div>
   </div>
@@ -427,44 +475,43 @@ body::after {
   <div class="bottom">
     <div>
       <div class="timeline" id="timeline"></div>
-      <div class="tl-legend" style="margin-top:4px"><span>Taç</span><span class="kgl">● Kızıl Gece · 14</span><span class="gl">● Hedef · 24</span></div>
+      <div class="tl-legend"><span>Gün 1</span><span>Gün 4</span><span class="kgl">● Kızıl Gece · Gün 7</span></div>
     </div>
     <div class="controls">
       <button class="btn rw" id="btnRw">
         <svg viewBox="0 0 24 24"><path d="M11 6v12L2.5 12zM21.5 6v12L13 12z"/></svg>
-        <span><span id="rwLbl">Geri Sar</span><small id="rwSub">1 kum · 1 yıl</small></span>
+        <span><span id="rwLbl">Geri Sar</span><small id="rwSub">1 kum</small></span>
       </button>
       <button class="btn tr" id="btnTree" aria-label="Zaman ağacı">
-        <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2.6"/><circle cx="19" cy="5" r="2.6"/><circle cx="19" cy="12" r="2.6"/><circle cx="19" cy="19" r="2.6"/><path d="M5 11h3.2c1.6 0 2.3-1 3-2.6.9-2.1 1.9-3.4 4.3-3.4H19v1.6h-3.5c-1.4 0-2 .8-2.7 2.4-.5 1.1-1 2.1-1.8 2.8V11H19v2h-7.8v.2c.8.7 1.3 1.7 1.8 2.8.7 1.6 1.3 2.4 2.7 2.4H19V20h-3.5c-2.4 0-3.4-1.3-4.3-3.4-.7-1.6-1.4-2.6-3-2.6H5z"/></svg>
+        <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2.6"/><circle cx="19" cy="5" r="2.6"/><circle cx="19" cy="19" r="2.6"/><path d="M5 11h4l6-6h4v2h-3.2l-5 5 5 5H19v2h-4l-6-6H5z"/></svg>
         <b id="treeN">AĞAÇ</b>
       </button>
-      <button class="btn ff" id="btnFf">
-        <span><span>İleri Sar</span><small id="ffSub">Sonucu gör</small></span>
-        <svg viewBox="0 0 24 24"><path d="M13 6v12l8.5-6zM2.5 6v12L11 12z"/></svg>
+      <button class="btn jr" id="btnJr">
+        <span><span>Günlük</span><small id="jrSub">Hatıralar</small></span>
+        <svg viewBox="0 0 24 24"><path d="M4 3h6.5A3.5 3.5 0 0 1 14 6.5V21a3 3 0 0 0-3-3H4zM20 3h-3a3 3 0 0 0-3 3v15a3 3 0 0 1 3-3h3z" opacity=".9"/></svg>
       </button>
     </div>
   </div>
 </div>
 
+<div id="flash"></div>
 <div id="warp" aria-hidden="true">
   <div class="warp-lbl">Zaman geri akıyor</div>
   <div class="clock"><i class="h1"></i><i class="h2"></i></div>
-  <div class="warp-year" id="warpYear">YIL 00</div>
+  <div class="warp-year" id="warpYear"></div>
 </div>
-
 <div id="toast" role="status"></div>
 
 <div class="overlay" id="intro">
   <div class="panel">
-    <div class="eyebrow">Bir kum saati · Yirmi dört yıl · Tek bir şehir</div>
+    <div class="eyebrow">Bir kum saati · Yedi gün · Tek bir şehir</div>
     <h1>Zaman <em>Naibi</em></h1>
-    <p>Aras şehrinin tahtına naip olarak oturdun. Elinde zamanı geri akıtan bir kum saati var. Müneccimler, saltanatının on dördüncü yılında şehrin yanacağını söylüyor.</p>
+    <p>Aras şehrinin naibisin. Yaşlı bir saatçi sana zamanı geri akıtan bir kum saati verdi ve şunu söyledi: yedi gün sonra Kızıl Gece gelecek, şehir yanacak, sen de onunla.</p>
     <ul class="rules">
-      <li><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z" opacity=".3"/><path d="M2 11l4-4v3h12V7l4 4-4 4v-3H6v3z"/></svg><span><b>Kaydır.</b> Kartı sola ya da sağa kaydırarak karar ver. Halk, hazine, ordu ve bilim dengede kalmalı. Biri sıfıra düşer ya da taşarsa saltanatın biter.</span></li>
-      <li class="r"><svg viewBox="0 0 24 24"><path d="M11 6v12L2.5 12zM21.5 6v12L13 12z"/></svg><span><b>Geri sar.</b> Bir kum harcayıp geçmiş bir karara dön. Zaman çizgisinden bir yıla dokunarak daha da geriye gidebilirsin. Dünya geri döner, <b>hatıraların kalır</b>.</span></li>
-      <li><svg viewBox="0 0 24 24"><path d="M13 6v12l8.5-6zM2.5 6v12L11 12z"/></svg><span><b>İleri sar.</b> Bir kararın sonucunu önceden gör. Bedava değil, zamanın dokusunu yırtar.</span></li>
-      <li><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2.6"/><circle cx="19" cy="5" r="2.6"/><circle cx="19" cy="19" r="2.6"/><path d="M5 11h4l6-6h4v2h-3.2l-5 5 5 5H19v2h-4l-6-6H5z"/></svg><span><b>Zaman ağacı.</b> Her geri sarış yeni bir dal açar. Ağaçtan terk ettiğin bir geleceğe ya da başka bir dala atlayabilirsin, ama bu paradoksu daha çok artırır.</span></li>
-      <li class="p"><svg viewBox="0 0 24 24"><path d="M12 2.5l8 3v6c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10v-6z"/></svg><span><b>Paradoks.</b> Her zaman oyunu paradoksu artırır. Fazla artarsa <b>Zaman Muhafızları</b> kapını çalar.</span></li>
+      <li><svg viewBox="0 0 24 24"><path d="M2 11l4-4v3h12V7l4 4-4 4v-3H6v3z"/></svg><span><b>Sola, sağa kaydır.</b> Her kart bir sahne. Bazı kararlar seni öldürür. Bu normal.</span></li>
+      <li class="r"><svg viewBox="0 0 24 24"><path d="M11 6v12L2.5 12zM21.5 6v12L13 12z"/></svg><span><b>Geri sar.</b> Dünya geri döner, <b>hatıraların kalır</b>. Bir şeyi öğrendiysen kart parlar: <b>yukarı kaydır</b> ve bildiğini kullan.</span></li>
+      <li><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2.6"/><circle cx="19" cy="5" r="2.6"/><circle cx="19" cy="19" r="2.6"/><path d="M5 11h4l6-6h4v2h-3.2l-5 5 5 5H19v2h-4l-6-6H5z"/></svg><span><b>Zaman ağacı.</b> Her geri sarış yeni bir dal açar. Terk ettiğin bir geleceğe ya da başka bir dala atlayabilirsin.</span></li>
+      <li class="p"><svg viewBox="0 0 24 24"><path d="M12 5C6.5 5 2.7 9.2 1.5 12c1.2 2.8 5 7 10.5 7s9.3-4.2 10.5-7C21.3 9.2 17.5 5 12 5zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/></svg><span><b>Muhafız.</b> Paradoks artınca biri seni ağaçta avlamaya başlar. Geri sardığın yerde bir yırtık kalır, önce oraya gider. Kaçmak için yırtıkları uzağa bırak.</span></li>
     </ul>
     <div>
       <div class="eyebrow" style="margin-bottom:8px">Bulunan sonlar · <span id="introCount">0</span></div>
@@ -493,13 +540,30 @@ body::after {
   </div>
 </div>
 
+<div class="overlay" id="journal" hidden>
+  <div class="panel">
+    <div class="tree-head">
+      <div><div class="eyebrow">Hatıraların zamanla silinmez</div><h2>Günlük</h2></div>
+      <button class="xbtn" id="btnJrClose" aria-label="Kapat">✕</button>
+    </div>
+    <h3>Hatıralar</h3>
+    <ul class="mems" id="mems"></ul>
+    <h3>Lâl'in kalbi · bu zaman çizgisinde</h3>
+    <div class="hearts" id="hearts"></div>
+    <h3>Bu hayat</h3>
+    <div class="end-meta" id="lifeMeta"></div>
+    <h3>Bulunan sonlar · <span id="jrCount"></span></h3>
+    <div class="endings" id="jrEndings"></div>
+  </div>
+</div>
+
 <div class="overlay tree-ov" id="tree" hidden>
   <div class="panel tree-panel">
     <div class="tree-head">
       <div><div class="eyebrow">Bu hayatın bütün zaman çizgileri</div><h2>Zaman Ağacı</h2><div class="tree-sum" id="treeSum"></div></div>
       <button class="xbtn" id="btnTreeClose" aria-label="Kapat">✕</button>
     </div>
-    <div class="tree-legend"><span><i></i>Şu anki çizgin</span><span><i class="d"></i>Terk edilen dallar</span><span>◆ Son</span></div>
+    <div class="tree-legend"><span><i></i>Şu anki çizgin</span><span><i class="d"></i>Terk edilen dallar</span><span>◆ Son</span><span class="c">◉ Muhafız</span><span class="x">✕ Yırtık</span></div>
     <div class="tree-scroll" id="treeScroll"><svg id="treeSvg"></svg></div>
     <div class="tree-info" id="treeInfo"></div>
   </div>
@@ -508,439 +572,504 @@ body::after {
 <script>
 (() => {
 "use strict";
+const $ = s => document.querySelector(s);
+const clone = o => JSON.parse(JSON.stringify(o));
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const pickOne = a => a[Math.floor(Math.random() * a.length)];
+
+/* ================= TIME ================= */
+const PARTS = ["Sabah", "Öğle", "Gece"];
+const LAST_T = 20, MAX_SAND = 6;
+const dayOf = t => Math.floor(t / 3) + 1;
+const when = t => `Gün ${dayOf(t)} · ${PARTS[t % 3]}`;
 
 /* ================= ICONS ================= */
 const ICON = {
-  h: '<svg viewBox="0 0 24 24"><circle cx="8" cy="7.5" r="3.3"/><circle cx="16.6" cy="8.6" r="2.7"/><path d="M2 20.5c0-3.8 2.7-6.6 6-6.6s6 2.8 6 6.6z"/><path d="M14.4 20.5c0-2.4-.6-4.3-1.7-5.7.9-.6 2-.9 3.1-.9 3 0 5.2 2.5 5.2 6.6z"/></svg>',
-  z: '<svg viewBox="0 0 24 24"><ellipse cx="12" cy="5.6" rx="7.5" ry="2.8"/><path d="M4.5 7.9v3.2c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8V7.9c-1.5 1.2-4.3 1.9-7.5 1.9S6 9.1 4.5 7.9z"/><path d="M4.5 13.7v3.2c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8v-3.2c-1.5 1.2-4.3 1.9-7.5 1.9s-6-.7-7.5-1.9z"/></svg>',
-  o: '<svg viewBox="0 0 24 24"><path d="M12 1.8l8.5 3.2v6.3c0 5.3-3.6 9.2-8.5 10.9-4.9-1.7-8.5-5.6-8.5-10.9V5z"/></svg>',
-  b: '<svg viewBox="0 0 24 24"><path d="M12 1.5l2.5 6.8 7.2.5-5.6 4.5 1.9 7-6-4-6 4 1.9-7-5.6-4.5 7.2-.5z"/></svg>',
-  glass: '<svg viewBox="0 0 24 24"><path d="M6 2h12v2.2c0 3.3-2.3 5.7-4.5 7.8 2.2 2.1 4.5 4.5 4.5 7.8V22H6v-2.2c0-3.3 2.3-5.7 4.5-7.8C8.3 9.9 6 7.5 6 4.2z"/></svg>'
+  glass: '<svg viewBox="0 0 24 24"><path d="M6 2h12v2.2c0 3.3-2.3 5.7-4.5 7.8 2.2 2.1 4.5 4.5 4.5 7.8V22H6v-2.2c0-3.3 2.3-5.7 4.5-7.8C8.3 9.9 6 7.5 6 4.2z"/></svg>',
+  wing: '<svg viewBox="0 0 24 24"><path d="M11 12C9 6 4 3 2 5s1 7 5 8c-3 1-4 5-2 6s5-1 6-5zM13 12c2-6 7-9 9-7s-1 7-5 8c3 1 4 5 2 6s-5-1-6-5z"/><rect x="11.3" y="8" width="1.4" height="10" rx=".7"/></svg>'
 };
-const STATS = ["h", "z", "o", "b"];
-const STAT_NAME = { h: "Halk", z: "Hazine", o: "Ordu", b: "Bilim" };
 
 /* ================= CHARACTERS ================= */
 const WHO = {
-  nur:     { n: "Saatçi Nûr",        r: "Kum saatinin ustası",   c: "#b88a35", m: "N" },
-  karan:   { n: "Vezir Karan",       r: "Baş vezir",             c: "#7d3346", m: "K" },
-  aybike:  { n: "Komutan Aybike",    r: "Ordunun başı",          c: "#7a4a2b", m: "A" },
-  selim:   { n: "Hazinedar Selim",   r: "Hazine",                c: "#566a2c", m: "S" },
-  hatice:  { n: "Değirmenci Hatice", r: "Halkın sesi",           c: "#9a5636", m: "H" },
-  bora:    { n: "Müneccim Bora",     r: "Akademi",               c: "#36598a", m: "B" },
-  lavinia: { n: "Tüccar Lavinia",    r: "Denizaşırı tüccar",     c: "#64468a", m: "L" },
-  pamuk:   { n: "Pamuk",             r: "Saray kedisi",          c: "#8e959c", m: "P" },
-  eflatun: { n: "Ajan Eflatun",      r: "Zaman Muhafızları",     c: "#23899c", m: "E" },
-  baskan:  { n: "Muhafız Başkanı",   r: "Zaman Muhafızları",     c: "#155d6b", m: "MB" },
-  yabanci: { n: "Pelerinli Yabancı", r: "Kim olduğu belirsiz",   c: "#3f4656", m: "?" },
-  turist:  { n: "Tuhaf Gezgin",      r: "2300 yılından",         c: "#a8407a", m: "T" },
-  hatira:  { n: "Hatıra",            r: "Başka bir zaman çizgisi", c: "#6a2c49", m: "∞" },
-  kehanet: { n: "Kızıl Gece",        r: "Kehanet gerçekleşiyor", c: "#9e2c27", m: "XIV" }
+  nur:     { n: "Saatçi Nûr",       r: "Kum saatinin ustası",       c: "#b88a35", m: "N" },
+  karan:   { n: "Vezir Karan",      r: "Baş vezir",                 c: "#7d3346", m: "K" },
+  aybike:  { n: "Komutan Aybike",   r: "Ordunun başı",              c: "#7a4a2b", m: "A" },
+  lal:     { n: "Lâl",              r: "Saray ozanı",               c: "#a3436b", m: "L" },
+  hizir:   { n: "Bekçi Hızır",      r: "Saat kulesinin bekçisi",    c: "#4f6b3a", m: "H" },
+  tolun:   { n: "Elçi Tolun",       r: "Doğu Hanlığı",              c: "#5b4a86", m: "T" },
+  eflatun: { n: "Ajan Eflatun",     r: "Zaman Muhafızları",         c: "#23899c", m: "E" },
+  sen:     { n: "Sen",              r: "Yalnız, gecenin içinde",    c: "#3f4656", m: "·" },
+  kehanet: { n: "Kızıl Gece",       r: "Kehanet gerçekleşiyor",     c: "#9e2c27", m: "VII" }
 };
 
 /* ================= ENDINGS ================= */
 const ENDS = {
-  h0:   { t: "Yağma", k: "d", x: "Halk sabrının son damlasını da tüketti. Sarayın kapıları kırıldı, kum saatin bir pazar tezgâhında üç sikkeye satıldı.", hint: "Halk sıfıra düştü." },
-  h100: { t: "Canlı Heykel", k: "d", x: "Halk seni o kadar sevdi ki tanrı ilan etti. Tanrılar konuşmaz, karar vermez. Seni altın kaplama bir heykelin içine yerleştirdiler.", hint: "Halk taştı. Fazlası da öldürür." },
-  z0:   { t: "Boş Kasa", k: "d", x: "Hazine tamtakır. Paralı askerler maaşlarını sarayı Doğu Hanlığı'na satarak tahsil etti.", hint: "Hazine sıfıra düştü." },
-  z100: { t: "Altın Kafes", k: "d", x: "Kasalar taştı. Tüccar loncası şehri ve seni, faiziyle birlikte satın aldı.", hint: "Hazine taştı." },
-  o0:   { t: "Savunmasız", k: "d", x: "Ordu dağıldı. Doğu Hanlığı tek ok atmadan şehre girdi.", hint: "Ordu sıfıra düştü." },
-  o100: { t: "Darbe", k: "d", x: "Komutan Aybike güçlü bir orduyu boşta bırakmanın tehlikesini anlattı. Sonra o orduyla sarayı kuşattı.", hint: "Ordu taştı." },
-  b0:   { t: "Karanlık Çağ", k: "d", x: "Akademi yakıldı. Kum saatini de ‘şeytan işi’ diye meydanda kırdılar.", hint: "Bilim sıfıra düştü." },
-  b100: { t: "Gereksiz Naip", k: "d", x: "Müneccimler zamanın formülünü çözdü. Artık herkesin bir kum saati var ve sana kimsenin ihtiyacı yok.", hint: "Bilim taştı." },
-  kg:   { t: "Kızıl Gece", k: "d", x: "Kehanet gerçekleşti. Vezir Karan gece yarısı kapıları Doğu ordusuna açtı. Aras alevler içinde kaldı.", hint: "Artık ne olacağını biliyorsun. Bu hatıra yeni zaman çizgilerinde de seninle kalacak." },
-  arrest: { t: "Zamanın Dışında", k: "d", x: "Zaman Muhafızları seni gözaltına aldı. Zamanın dışında bir bekleme odasındasın. Duvardaki saatin yelkovanı yok.", hint: "Paradoks 100'e ulaştı. Muhafızlar geri sarmana izin vermez." },
-  guard: { t: "Muhafız", k: "s", x: "Teklifi kabul ettin. Artık sen de zamanın bekçisisin. İlk görevin, kum saatli bir naibi yakalamak. Dosyadaki yüz tanıdık geliyor.", hint: "Gizli son." },
-  broke: { t: "Kırık Saat", k: "s", x: "Kum saatini taş zemine bıraktın. Kum her yöne dağıldı ve zaman ilk kez sana ait olmayan bir şekilde aktı. Muhafızlar seni unuttu. Sen de geri sarmayı.", hint: "Gizli son." },
-  win:  { t: "Zamanı Bilen Naip", k: "w", x: "Yirmi dört yıl doldu. Kızıl Gece bir kehanet olarak kaldı, Aras hâlâ ayakta. Tarih kitapları seni ‘Zamanı Bilen Naip’ diye anacak. Nedenini kimse bilmeyecek.", hint: "Zafer." },
-  clean: { t: "Kusursuz Zaman", k: "w", x: "Yirmi dört yıl, neredeyse hiç iz bırakmadan. Muhafızlar senin varlığından bile habersiz. Kum saati rafta, tozlanıyor.", hint: "Hiç geri sarmadan kazandın." }
+  safak:  { t: "Şafak", k: "w", x: "Doğu ordusu iki yerden birden tuzağa düştü. Tolun zincirlerle Han'a geri gönderildi. Karan, Ece'nin elini tutup şafağı izledi. Aras hiç yanmadı. Kimse nedenini bilmeyecek.", hint: "En iyi son. Herkesi kurtardın." },
+  kizil:  { t: "Kırmızı Şafak", k: "w", x: "Şehir ayakta kaldı. Ama sabah meydanda bir darağacı vardı. Karan'ın son sözü kızının adıydı.", hint: "Şehri kurtardın. Herkesi kurtarmanın bir yolu olmalı…" },
+  ask:    { t: "Zamansız Aşk", k: "s", x: "Lâl'in elini tuttun ve kum saatini ters çevirdin. İkiniz de zamanın dışına düştünüz: ne geçmiş, ne gelecek. Aras'a ne oldu? Bunu hiç öğrenmeyeceksin. Umurunda da değil.", hint: "Gizli son." },
+  dongu:  { t: "Döngü", k: "s", x: "Kum saatini aldın ve geriye, çok geriye gittin. Yıllar sonra bir taç giyme gününde genç bir naibin karşısına çıktın. ‘Yedi gün sonra Kızıl Gece gelecek,’ dedin. Sesin Nûr'un sesiydi.", hint: "Gizli son." },
+  kirik:  { t: "Kırık Saat", k: "s", x: "Kum saatini taş zemine bıraktın. Muhafızlar seni unuttu. Ertesi gece Kızıl Gece geldi ve bu kez geri saramadın.", hint: "Gizli son. Ama acı." },
+  guard:  { t: "Muhafız", k: "s", x: "Teklifi kabul ettin. Artık sen de zamanın bekçisisin. İlk görevin: kum saatli bir naibi yakalamak. Dosyadaki yüz tanıdık geliyor.", hint: "Gizli son." },
+  kg:     { t: "Kızıl Gece", k: "d", x: "Sen kapıları izlerken Doğu askerleri su kemerinden şehre aktı. Aras alevler içinde kaldı.", hint: "Artık nereden girdiklerini biliyorsun. Bu hatıra seninle." },
+  kul:    { t: "Küller", k: "d", x: "Şehir yandı ama halk kurtuldu. Sen sarayla birlikte yandın.", hint: "Halkı kurtardın. Şehri de kurtarmanın bir yolu olmalı." },
+  zehir:  { t: "Zehirli Kadeh", k: "d", x: "Şarap tatlıydı. Sonra acı. Son gördüğün şey Karan'ın gülümsemesiydi.", hint: "Artık kadehin zehirli olduğunu biliyorsun. Geri sar ve şölene hazırlıklı git." },
+  hancer: { t: "Karanlıkta Hançer", k: "d", x: "Kapıyı dinlerken arkandan biri yaklaştı. Son duyduğun kelime bir isimdi: Ece.", hint: "Karan şölende şüphelenmişti. Ama artık sırrını biliyorsun." },
+  teslim: { t: "Beyaz Bayrak", k: "d", x: "Şehri teslim ettin. Han sözünü tutmadı.", hint: "Teslim olmak bir çözüm değil." },
+  arrest: { t: "Zamanın Dışında", k: "d", x: "Ajan Eflatun kolunu tuttu. ‘Yırtıkların seni ele verdi.’ Zamanın dışında, saatsiz bir odada uyandın.", hint: "Muhafız seni yakaladı. Yırtıkları uzağa bırak, kumu idareli harca." }
 };
-const END_ORDER = ["win","clean","guard","broke","kg","arrest","h0","h100","z0","z100","o0","o100","b0","b100"];
+const END_ORDER = ["safak", "kizil", "ask", "dongu", "kirik", "guard", "kg", "kul", "zehir", "hancer", "teslim", "arrest"];
 
 /* ================= META (persists across lives) ================= */
-const META_KEY = "zaman-naibi-v1";
-let META = { endings: [], mem: [], known: {}, rewinds: 0 };
+const META_KEY = "zaman-naibi-v2";
+let META = { endings: [], mem: [], sec: null, rewinds: 0, lives: 0 };
 try { const raw = localStorage.getItem(META_KEY); if (raw) META = Object.assign(META, JSON.parse(raw)); } catch (e) {}
 function saveMeta() { try { localStorage.setItem(META_KEY, JSON.stringify(META)); } catch (e) {} }
 
-const has = (s, f) => s.flags.includes(f);
-const mem = m => META.mem.includes(m);
+const SARKI = ["Kırlangıç Türküsü", "Ay Işığı Gazeli", "Kayıp Gemi", "Bozkır Ninnisi"];
+const CICEK = ["Lale", "Sümbül", "Karanfil", "Nergis"];
+const DUSUNCE = ["Seni öpmeyi", "Buradan kaçmayı", "Yarım kalan bir şiiri", "Hiçbir şeyi"];
+const KELIME = ["kırlangıç", "ayva", "pusula", "mürekkep", "fener", "zeytin", "lacivert", "çınar", "kehribar", "martı", "sedef", "kestane"];
+if (!META.sec) { META.sec = { sarki: pickOne(SARKI), cicek: pickOne(CICEK), dusunce: pickOne(DUSUNCE), kelime: pickOne(KELIME) }; saveMeta(); }
 
-/* ================= CARDS =================
-   l / r: { l: label, fx: {h,z,o,b}, set:[], unset:[], mem:[], sched:[[id, inYears]], sand, para, end, police }
-   pool: random pool; w: weight; once; min: min year; c: condition(s, R)
-*/
-const CARDS = {
-  intro: { who: "nur",
-    t: "Taç başına yeni kondu, Naip. Al şu kum saatini. Ters çevirdiğinde zaman geri akar. Ama zamanın da bekçileri vardır, onları kızdırma.",
-    l: { l: "Şüpheyle al", fx: { b: 5 } },
-    r: { l: "Minnetle al", fx: { h: 5 } } },
-  kehanet: { who: "bora",
-    t: "Yıldızları okudum Naibim. Saltanatının on dördüncü yılında Kızıl Gece gelecek. Şehir içeriden yanacak.",
-    l: { l: "Saçmalık", fx: { b: -10, h: 5 } },
-    r: { l: "Hazırlanacağız", fx: { b: 5, o: 5 } } },
-
-  /* ---- Kızıl Gece storyline ---- */
-  surlar: { who: "aybike", pool: 1, w: 3, once: 1, min: 2,
-    t: "Kuzey surları çatlak. Onarım hazineyi epey yorar ama bir kuşatmaya böyle dayanamayız.",
-    l: { l: "Bekleyebilir", fx: { z: 5 } },
-    r: { l: "Hemen onarın", fx: { z: -15, o: 10 }, set: ["surlar"] } },
-  surlar2: { who: "aybike", pool: 1, w: 3, once: 1, min: 8, c: s => !has(s, "surlar"),
-    t: "Surlar hâlâ çatlak Naibim. Son kez soruyorum: onaralım mı?",
-    l: { l: "Hayır", fx: { o: -5 } },
-    r: { l: "Onarın", fx: { z: -20, o: 10 }, set: ["surlar"] } },
-  elci: { who: "karan", pool: 1, w: 3, once: 1, min: 3,
-    t: "Doğu Hanlığı'ndan elçiler geldi. İzin verin, onları sarayın arka kapısından sessizce ben ağırlayayım.",
-    l: { l: "Herkesin önünde ağırlansınlar", fx: { h: 5, z: -5 }, set: ["elci_acik"] },
-    r: { l: "Sen bilirsin Vezir", fx: { z: 10 } } },
-  hesap: { who: "selim", pool: 1, w: 3, once: 1, min: 4,
-    t: "Vezir Karan'ın hesaplarında Doğu damgalı altınlar buldum. Nereden geldiğini kimse açıklayamıyor.",
-    l: { l: "Vezire dokunulmaz", fx: { z: 5 } },
-    r: { l: "Soruşturun", fx: { z: -10 }, set: ["soru"] } },
-  casus: { who: "aybike", pool: 1, w: 4, once: 1, min: 5, c: s => has(s, "soru") || has(s, "elci_acik"),
-    t: "Sınırda bir Doğulu ulak yakaladık. Üzerinde vezirlik mührü taşıyan bir mektup var. Ağzını açmıyor.",
-    l: { l: "Serbest bırakın", fx: { h: 5, o: -5 } },
-    r: { l: "Mektubu açın", fx: { o: 5, b: 5 }, set: ["delil"] } },
-  kiskirt: { who: "karan", pool: 1, w: 2, once: 1, min: 5, c: s => !has(s, "karan_tutuklu"),
-    t: "Komutan Aybike'nin sadakatinden şüpheleniyorum. Muhafız alayını bana devredin, gözüm üstünde olsun.",
-    l: { l: "Sana güvenmiyorum", fx: { o: 5, h: -5 } },
-    r: { l: "Peki, alay senin", fx: { o: -15, z: 5 }, set: ["karan_ordu"] } },
-  ruya: { who: "hatira", pool: 1, w: 6, once: 1, c: s => mem("kizilgece") && !has(s, "delil"),
-    t: "Bir déjà vu. Alevleri hatırlıyorsun. Kızıl Gece'de kapıları Doğu ordusuna açan kişi Vezir Karan'dı.",
-    l: { l: "Sadece bir rüya", fx: {} },
-    r: { l: "Karan'ı izletin", fx: { b: 5 }, set: ["delil"], para: 6 } },
-  tutukla: { who: "aybike", pool: 1, w: 5, min: 4, c: s => has(s, "delil") && !has(s, "karan_tutuklu"),
-    t: "Delil elimizde. Karan, Doğu Hanı'yla birlikte Kızıl Gece'yi planlıyor. Emredin Naibim.",
-    l: { l: "Henüz değil", fx: {} },
-    r: { l: "Tutuklayın", fx: { h: 10, o: -5, z: 5 }, set: ["karan_tutuklu"] } },
-  kizilgece: { who: "kehanet", dyn: s => {
-    if (has(s, "karan_tutuklu")) return {
-      t: "On dördüncü yıl. Kehanetteki gece geldi, ama Vezir Karan zindanda. Doğu ordusu sınırda işaret bekledi. İşaret gelmedi, geri döndüler.",
-      l: { l: "Karan'ı sürgüne gönder", fx: { h: 5, b: 5 }, set: ["kg_ok"] },
-      r: { l: "Zafer şöleni ver", fx: { h: 10, z: -10 }, set: ["kg_ok"] } };
-    if (has(s, "surlar") && s.st.o >= 55 && !has(s, "karan_ordu")) return {
-      t: "Kızıl Gece! Karan kapıları açtı, ama onarılmış surlar ve hazır ordu Doğu saldırısını püskürttü. Hain gecenin içinde kayboldu.",
-      l: { l: "Peşine düşün", fx: { o: -10, z: -10 }, set: ["kg_ok"] },
-      r: { l: "Önce şehri onarın", fx: { z: -15, h: 5 }, set: ["kg_ok"] } };
-    return {
-      t: "Kızıl Gece. Gece yarısı kapılar ardına kadar açıldı. Doğu ordusu içeride, saray yanıyor. Karan'ın kahkahası alevlerin arasından geliyor.",
-      l: { l: "Son nefesine kadar savaş", end: "kg" },
-      r: { l: "Kum saatine sarıl", end: "kg" } };
-  } },
-
-  /* ---- Saatçi Nûr ---- */
-  nur1: { who: "nur", pool: 1, w: 3, once: 1, min: 4,
-    t: "Kum saatindeki kum, yaşanmamış yıllardan elenir. Biraz daha ister misin? Muhafızlar fark edebilir.",
-    l: { l: "Bilmek istemiyorum", fx: { h: 5 } },
-    r: { l: "Ver", fx: { b: 5 }, sand: 1, para: 5, mem: ["nur_sir"] } },
-  nur2: { who: "nur", pool: 1, w: 4, once: 1, min: 9, c: () => mem("nur_sir"),
-    t: "Muhafızlar peşimde Naip. Beni sarayın mahzeninde saklar mısın?",
-    l: { l: "Seni teslim edeceğim", fx: { b: -10 }, para: -25 },
-    r: { l: "Mahzene in", fx: {}, para: 10, sand: 2, set: ["nur_sakli"] } },
-  nur3: { who: "nur", pool: 1, w: 5, once: 1, min: 15, c: s => has(s, "nur_sakli"),
-    t: "Bir yol daha var. Saati kırarsan zaman kendi yarasını sarar ve Muhafızlar seni unutur. Ama bir daha asla geri saramazsın.",
-    l: { l: "Saat bende kalacak", fx: {} },
-    r: { l: "Kır onu", end: "broke" } },
-
-  /* ---- Future self ---- */
-  yabanci: { who: "yabanci", pool: 1, w: 5, once: 1, min: 3, c: () => META.rewinds >= 4,
-    t: "Yabancı başlığını indiriyor. Yüzü senin yüzün, ama yaşlanmış. ‘Çok geri sardın. Karan'a güvenme. Ve Muhafızlara asla katılma.’",
-    l: { l: "Sahtekâr!", fx: { o: 5 }, para: -5 },
-    r: { l: "Seni dinliyorum", fx: { b: 5 }, para: 10, set: ["delil"], mem: ["gelecek_ben"] } },
-
-  /* ---- Time Police ---- */
-  p1: { who: "eflatun",
-    t: "Zaman Muhafızları. Şehrinizde zaman dalgalanmaları ölçtük. Size tuhaf gelen bir şey oldu mu Naip?",
-    l: { l: "Hiçbir şey", fx: {}, para: 5 },
-    r: { l: "Bir saatçiden şüpheleniyorum", fx: { b: -5 }, para: -15 } },
-  p2: { who: "eflatun",
-    t: "Ajan Eflatun geri döndü. ‘Kum saatini teslim edin. Sizin için de en iyisi bu.’",
-    l: { l: "Rüşvet teklif et", fx: { z: -20 }, para: -15 },
-    r: { l: "Teslim et", fx: { b: -10 }, para: -40, set: ["saatsiz"] } },
-  p3: { who: "baskan",
-    t: "Muhafız Başkanı bizzat geldi. ‘Zamanı bu kadar iyi büken biri ya bize katılır ya da zamandan silinir.’",
-    l: { l: "Asla", fx: {}, para: 10 },
-    r: { l: "Katılıyorum", end: "guard" } },
-  devriye: { who: "eflatun", pool: 1, w: 3, c: (s, R) => R.para >= 45 && !has(s, "saatsiz"),
-    t: "Muhafız devriyesi sarayı didik didik arıyor. Kum saati hâlâ masanda.",
-    l: { l: "Bahçeye göm", fx: { b: -5 }, para: -8 },
-    r: { l: "Şölen verip oyala", fx: { z: -10, h: 5 }, para: -8 } },
-  turist: { who: "turist", pool: 1, w: 1, once: 1, min: 2,
-    t: "Merhaba! 2300 yılından geliyorum, tarih turu. Ünlü Naip'le bir hatıra resmi çekebilir miyiz?",
-    l: { l: "Defol", fx: { h: -5 }, para: -5 },
-    r: { l: "Poz ver", fx: { h: 5, b: 5 }, para: 6 } },
-
-  /* ---- Everyday pool ---- */
-  ambar: { who: "hatice", pool: 1,
-    t: "Değirmenler durdu, un fiyatı uçtu. Tahıl ambarlarını açalım mı?",
-    l: { l: "Ambarlar kapalı kalsın", fx: { h: -10, z: 5 } },
-    r: { l: "Açın", fx: { h: 10, z: -10 } } },
-  vergi: { who: "selim", pool: 1,
-    t: "Vergileri artırmamızı öneririm Naibim. Kasada örümcekler yuva yapıyor.",
-    l: { l: "Hayır", fx: { z: -5, h: 5 } },
-    r: { l: "Artırın", fx: { z: 15, h: -10 } } },
-  maas: { who: "aybike", pool: 1,
-    t: "Askerler üç aydır maaş alamadı. Kışlada homurtular başladı.",
-    l: { l: "Beklesinler", fx: { o: -10 } },
-    r: { l: "Ödeyin", fx: { o: 10, z: -10 } } },
-  gozlem: { who: "bora", pool: 1,
-    t: "Akademi yeni bir gözlemevi istiyor. Yıldızlar geleceği söylüyor, biraz daha yakından bakalım.",
-    l: { l: "Lüks bu", fx: { b: -10, z: 5 } },
-    r: { l: "Yapılsın", fx: { b: 15, z: -10 } } },
-  liman: { who: "lavinia", pool: 1,
-    t: "Limanınıza vergisiz girmek istiyorum. Karşılığında baharat, ipek ve dedikodu getiririm.",
-    l: { l: "Reddet", fx: { z: -5, o: 5 } },
-    r: { l: "Anlaştık", fx: { z: 10, h: 5, o: -5 } } },
-  kedi: { who: "pamuk", pool: 1, once: 1,
-    t: "Saray kedisi Pamuk tahtına kıvrılmış uyuyor. Komutan Aybike toplantı için bekliyor.",
-    l: { l: "Kaldırın", fx: { h: -5, o: 5 } },
-    r: { l: "Uyusun, toplantı ertelendi", fx: { h: 5, o: -5 } } },
-  festival: { who: "hatice", pool: 1,
-    t: "Halk bir festival istiyor. Hasat iyi geçti, biraz neşeyi hak ettik.",
-    l: { l: "Para yok", fx: { h: -10 } },
-    r: { l: "Festival!", fx: { h: 15, z: -10 } } },
-  kuyruklu: { who: "bora", pool: 1, once: 1,
-    t: "Gökte kuyruklu yıldız görüldü. Halk kıyamet geliyor diye sokaklarda.",
-    l: { l: "Susturun", fx: { b: -10, o: 5 } },
-    r: { l: "Bilimsel açıklama yap", fx: { b: 10, h: -5 } } },
-  sinir: { who: "aybike", pool: 1,
-    t: "Doğu sınırında çatışma çıktı. Saldıralım mı, yoksa elçi mi gönderelim?",
-    l: { l: "Elçi gönderin", fx: { o: -5, z: -5, h: 5 } },
-    r: { l: "Saldırın", fx: { o: 10, h: -10, z: -5 } } },
-  darphane: { who: "selim", pool: 1, once: 1,
-    t: "Sikkelerdeki altını azaltıp daha çok para basabiliriz. Kimse fark etmez.",
-    l: { l: "Hile olmaz", fx: { z: -5, h: 5 } },
-    r: { l: "Basın", fx: { z: 15 }, sched: [["enflasyon", 3]] } },
-  enflasyon: { who: "hatice",
-    t: "Paralar değersizleşti! Bir somun ekmek beş sikke oldu. Kimse fark etmez demişlerdi.",
-    l: { l: "Halk alışır", fx: { h: -15, z: 5 } },
-    r: { l: "Sikkeleri geri toplayın", fx: { z: -15, h: 10 } } },
-  mekanik: { who: "lavinia", pool: 1, once: 1,
-    t: "Size denizaşırı bir mekanik saat satayım. Zamanı ölçmek isteyen bir hükümdar için ideal.",
-    l: { l: "Benim saatim var", fx: { h: 5 } },
-    r: { l: "Alayım", fx: { z: -10, b: 10 } } },
-  veba_soz: { who: "hatice", pool: 1, once: 1, min: 3,
-    t: "Limana gelen gemilerde hastalık varmış. Limanı kapatalım mı?",
-    l: { l: "Ticaret sürsün", fx: { z: 10 }, sched: [["veba", 2]] },
-    r: { l: "Kapatın", fx: { z: -15, h: 5 } } },
-  veba: { who: "bora",
-    t: "Veba şehre girdi! Akademi karantina öneriyor. Rahipler dua yeter diyor.",
-    l: { l: "Dua edelim", fx: { h: -20, b: -10 } },
-    r: { l: "Karantina", fx: { h: -10, z: -10, b: 10 } } },
-  merak: { who: "aybike", pool: 1, once: 1,
-    t: "Askerler masanızdaki kum saatini merak ediyor. ‘Naip büyü yapıyor’ diye fısıldaşıyorlar.",
-    l: { l: "Gösterin onlara", fx: { o: 10 }, para: 5 },
-    r: { l: "Saklayın", fx: { o: -5 } } },
-  incele: { who: "bora", pool: 1, once: 1, min: 3,
-    t: "Kum saatini incelememe izin verin. Zamanın nasıl büküldüğünü anlamak istiyorum.",
-    l: { l: "Asla", fx: { b: -10 } },
-    r: { l: "İncele", fx: { b: 15 }, para: 6 } },
-  bahce: { who: "karan", pool: 1, once: 1,
-    t: "Saray bahçelerini genişletelim. Size daha görkemli bir saray yakışır.",
-    l: { l: "Gereksiz", fx: { z: 5, h: 5 } },
-    r: { l: "Genişletin", fx: { z: -10, h: -5, o: 5 } } },
-  borc: { who: "selim", pool: 1, once: 1,
-    t: "Denizaşırı bankerler borç vermek istiyor. Faizi biraz yüksek.",
-    l: { l: "Reddet", fx: { z: -5 } },
-    r: { l: "Borç alın", fx: { z: 20 }, sched: [["borc_odeme", 4]] } },
-  borc_odeme: { who: "selim",
-    t: "Bankerler parasını istiyor, faiziyle birlikte. Ödemezsek paralı asker gönderecekler.",
-    l: { l: "Ödemeyin", fx: { o: -15, h: -5 } },
-    r: { l: "Ödeyin", fx: { z: -25 } } },
-  akademi: { who: "hatice", pool: 1, once: 1,
-    t: "Kızlarımız akademiye girmek istiyor. Hocalar gelenek diye karşı çıkıyor.",
-    l: { l: "Gelenek gelenektir", fx: { b: -10, h: -5 } },
-    r: { l: "Kapılar herkese açık", fx: { b: 15, h: 5, o: -5 } } },
-  suvari: { who: "aybike", pool: 1,
-    t: "Yeni bir süvari birliği kuralım. Doğulu atlılar bizi hazırlıksız yakalamasın.",
-    l: { l: "Pahalı", fx: { o: -5, z: 5 } },
-    r: { l: "Kurun", fx: { o: 15, z: -10 } } },
-  matbaa: { who: "bora", pool: 1, once: 1, min: 4,
-    t: "Akademi bir baskı makinesi yaptı! Kitaplar artık elle yazılmak zorunda değil.",
-    l: { l: "Tehlikeli fikirler yayılır", fx: { b: -10, o: 5 } },
-    r: { l: "Kitaplar basılsın", fx: { b: 10, h: 5, z: -5 } } },
-  silah: { who: "lavinia", pool: 1,
-    t: "Doğu Hanlığı'na barut satıyorum. İsterseniz size de satarım, aynı fiyata.",
-    l: { l: "Kovun onu", fx: { z: 5, o: -5 } },
-    r: { l: "Satın alın", fx: { o: 10, z: -10 } } },
-  sel: { who: "hatice", pool: 1,
-    t: "Nehir taştı, aşağı köyler sular altında.",
-    l: { l: "Kendi çarelerine baksınlar", fx: { h: -15 } },
-    r: { l: "Yardım gönderin", fx: { h: 10, z: -10, o: -5 } } },
-  fare: { who: "pamuk", pool: 1, once: 1, min: 6,
-    t: "Pamuk ambardaki fare ordusunu tek başına bozguna uğrattı. Saray onu konuşuyor.",
-    l: { l: "Ödülü: bir balık", fx: { h: 5 } },
-    r: { l: "Pamuk'a rütbe verin", fx: { h: 10, o: -5 } } },
-  maden: { who: "selim", pool: 1, once: 1,
-    t: "Dağlarda gümüş madeni bulundu!",
-    l: { l: "Gelir halka dağıtılsın", fx: { h: 10, z: 5 } },
-    r: { l: "Hepsi hazineye", fx: { z: 15, h: -5 } } },
-  catlak: { who: "bora", pool: 1, once: 1, min: 5,
-    t: "Bir saatçi çırağı zamandaki ‘çatlakları’ ölçen bir alet yaptı. Sarayın çevresinde ibre deli gibi oynuyor.",
-    l: { l: "Aleti yok edin", fx: { b: -10 }, para: -10 },
-    r: { l: "Geliştirsin", fx: { b: 10 }, para: 5 } },
-  dilekce: { who: "hatice", pool: 1,
-    t: "Esnaf, saray muhafızlarının pazardan parasız mal aldığından yakınıyor.",
-    l: { l: "Muhafızlar haklıdır", fx: { o: 5, h: -10 } },
-    r: { l: "Cezalandırın", fx: { h: 10, o: -10 } } },
-  kutuphane: { who: "bora", pool: 1,
-    t: "Eski kütüphanede yangın tehlikesi var. Kitapları taşımak için para lazım.",
-    l: { l: "Kitaplar bekleyebilir", fx: { b: -10 } },
-    r: { l: "Taşıyın", fx: { b: 10, z: -10 } } }
+const MEMS = {
+  zehir:      ["Zehirli kadeh", "Şölende Karan'ın doldurduğu kadeh zehirli."],
+  ece:        ["Ece", "Karan'ın kızı Ece, Doğu Hanı'nın elinde rehin. Karan bu yüzden ihanet ediyor."],
+  kemer:      ["Su kemeri", "Kızıl Gece'de Doğu ordusu kapılardan değil, su kemerinden giriyor."],
+  oyala:      ["Tolun'u oyala", "Ece'yi kurtarmak için önce Tolun'u oyalamak gerek. Yoksa pusu kurar."],
+  lal_ajan:   ["Lâl'in sırrı", "Lâl, Zaman Muhafızları'nın ajanı. Seni izlemek için gönderilmiş."],
+  nur_sen:    ["Nûr kim?", "Nûr ‘olacağın kişi’ olduğunu ima etti. Saatçinin yüzü… tanıdık."],
+  hizir_duydu:["Hızır'ın kelimesi", "Hızır sana gizli kelimesini fısıldadı. Günlüğe yazmadın. Zaman yolcuları kendi hafızasına güvenir.", true],
+  harita:     ["Casusun haritası", "Doğulu casusun haritasında su kemeri işaretliydi. Ne anlama geldiğini çözemedin."],
+  lal_sarki:  ["Lâl'in şarkısı", () => `O gece çaldığı şarkı: ${META.sec.sarki}.`],
+  lal_cicek:  ["Lâl'in çiçeği", () => `En sevdiği çiçek: ${META.sec.cicek}.`],
+  lal_dusunce:["Lâl'in aklındaki", () => `Balkonda düşündüğü şey: ${META.sec.dusunce.toLocaleLowerCase("tr")}.`]
 };
-for (const id in CARDS) CARDS[id].id = id;
+
+/* Flags in the current world, in words, for the tree's butterfly diff */
+const FLAG_TEXT = {
+  kapi: "Ana kapı tutuldu", sur: "Askerler surlara yayıldı", kemer_tutuldu: "Su kemerinde pusu var",
+  karan_sarsildi: "Karan, Ece'yi bildiğini öğrendi", zehir_red: "Şölende kadehi reddettin", karan_ifsa: "Karan'ın zehri açığa çıktı",
+  karan_dost: "Karan seninle", karan_zindan: "Karan zindanda", karan_izle: "Karan izleniyor", karan_tuzak: "Karan tuzak kuracak",
+  oyala: "Tolun oyalandı", savas: "Tolun'a meydan okudun", ece_kurtarma: "Ece için birlik gönderildi", ece_kurtuldu: "Ece kurtuldu",
+  ece_kayip: "Ece kurtarılamadı", hizir_dost: "Hızır dostun", lal_soyledi: "Lâl'e sırrını açtın", lal_sevgili: "Lâl seninle",
+  lal_uzak: "Lâl senden uzak", tahliye: "Halk tahliye ediliyor", hazir: "Askerler gerçeği biliyor", dongu_bilgi: "Nûr'un sırrını biliyorsun"
+};
+
+const has = (s, f) => s.flags.includes(f);
+const mem = k => META.mem.includes(k);
+
+function guess(key, list, okRes, badRes, memKey) {
+  return () => list.map(x => x === META.sec[key]
+    ? { l: x, bond: 1, res: okRes, mem: [memKey] }
+    : { l: x, res: badRes(META.sec[key]), mem: [memKey] });
+}
+
+/* ================= SCENES =================
+   option: { l, res, set, unset, mem, bond, para, sand, end, next, ret, spawn, ihbar, escape, hunterReset }
+   card:   { who, t, bf(s), l, r, u:{need(s), ...option}, type:'pick'|'say', opts(s), say:{ok, fail}, dyn(s), c(s) }
+*/
+const C = {};
+const card = (id, o) => { o.id = id; C[id] = o; };
+
+/* ---- Day 1 ---- */
+card("nur_intro", { who: "nur",
+  t: "Taç giyme gecesi. Yaşlı saatçi Nûr elinde bir kum saatiyle bekliyor. ‘Yedi gün sonra Kızıl Gece gelecek, Naip. Şehir yanacak, sen de onunla. Ters çevir, zaman geri akar.’",
+  l: { l: "Bu bir masal", res: "Nûr gülümsedi: ‘Herkes önce böyle der.’" },
+  r: { l: "Neden ben?", res: "‘Çünkü bunu zaten yaptın,’ dedi Nûr. Ne demek istediğini anlamadın." },
+  u: { need: () => mem("nur_sen"), l: "Sen bensin, değil mi?", para: 3, set: ["dongu_bilgi"], res: "Nûr'un gözleri doldu. ‘Bu sefer erken anladın.’" } });
+
+card("karan_elci", { who: "karan",
+  t: "Vezir Karan eğiliyor. ‘Doğu Hanlığı'ndan elçi Tolun geldi Naibim. Barış istiyorlar. İzin verin onu ben ağırlayayım, siz yorulmayın.’",
+  l: { l: "Elçiyle ben görüşürüm", res: "Karan'ın gülümsemesi bir an gerildi." },
+  r: { l: "Sen ilgilen Vezir", res: "Karan memnun ayrıldı. Fazla memnun." },
+  u: { need: () => mem("ece"), l: "Ece nasıl, Karan?", para: 3, set: ["karan_sarsildi"], res: "Karan'ın elindeki mühür yere düştü. ‘Kızımın adını… nereden biliyorsunuz?’" } });
+
+card("lal_sarki", { who: "lal", type: "pick",
+  t: "Saray ozanı Lâl sazını akort ediyor. ‘Bu gece size bir şarkı çalacağım Naibim. Ama önce tahmin edin: hangisi?’",
+  opts: guess("sarki", SARKI, "Lâl'in gözleri parladı. ‘Aklımı mı okuyorsunuz?’ Şarkıyı yalnızca senin için çaldı.",
+    a => `‘Yok!’ diye güldü Lâl. ‘${a} çalacaktım. Belki bir dahaki sefere.’`, "lal_sarki") });
+
+/* ---- Day 2 ---- */
+card("aybike_sur", { who: "aybike",
+  t: "Komutan Aybike haritayı açıyor. ‘Kızıl Gece söylentisi doğruysa nereyi tutalım? Ana kapıyı mı, surları mı?’",
+  l: { l: "Ana kapıyı", set: ["kapi"], res: "Aybike en iyi askerlerini ana kapıya dizdi." },
+  r: { l: "Surları", set: ["sur"], res: "Askerler surlara yayıldı. İnce ama uzun bir çizgi." },
+  u: { need: () => mem("kemer"), l: "Su kemerini tutun", para: 3, set: ["kemer_tutuldu"], res: "Aybike kaşını kaldırdı: ‘Su kemeri mi? Oradan kim girer ki?’ Yine de emri uyguladı." } });
+
+card("hizir_meet", { who: "hizir",
+  t: "Saat kulesinin bekçisi Hızır sana uzun uzun bakıyor. ‘Sende bir tuhaflık var. Gölgen bir saniye geç geliyor. Sen… zaman yolcusu musun?’",
+  l: { l: "Ne saçmalık", res: "‘Hıh. Hepsi böyle der.’ Hızır kuleye geri döndü." },
+  r: { l: "Evet, öyleyim", next: "hizir_test" } });
+
+card("hizir_test", { who: "hizir", type: "say",
+  t: "‘Kanıtla öyleyse. Gerçek bir yolcu benim gizli kelimemi bilir. Onu kimseye söylemedim. Henüz.’",
+  say: {
+    ok: { l: "Kelimeyi söyledin", next: "hizir_dost_k", set: ["hizir_dost"], sand: 1, res: "Hızır'ın ağzı açık kaldı. ‘Aa… Gerçekten yolcusun!’" },
+    fail: { l: "Bilemedin", next: "hizir_kelime", res: "‘Hı-hı. Tahmin ettiğim gibi.’" } } });
+
+card("hizir_kelime", { who: "hizir",
+  t: () => `‘Ama bak ne yapacağım. Kelimem “${META.sec.kelime}”. Bir sonraki bana bunu söyle. O ben seni hatırlamayacak, ama kelimeyi tanıyacak.’`,
+  l: { l: "Aklımda tutarım", mem: ["hizir_duydu"] },
+  r: { l: "Unutmam", mem: ["hizir_duydu"] } });
+
+card("hizir_dost_k", { who: "hizir",
+  t: "‘Madem yolcusun, iki öğüt. Bir: Muhafızlar yırttığın zamanın kokusunu alır. Geri sardığında ayrıldığın yerde bir yırtık kalır, önce oraya giderler. İki: Kızıl Gece'de kapılara değil, sulara bak.’",
+  l: { l: "Sulara mı?", mem: ["kemer"], res: "‘Su kemeri, evlat. Sular şehre nereden giriyorsa ölüm de oradan girer.’" },
+  r: { l: "Teşekkürler Hızır", mem: ["kemer"], res: "Hızır göz kırptı. ‘Su kemeri. Unutma.’" } });
+
+card("sulen", { who: "karan",
+  t: "Barış şerefine bir şölen. Vezir Karan kadehini kendi elleriyle dolduruyor ve gülümsüyor. ‘Aras'ın geleceğine, Naibim.’",
+  l: { l: "İçmeyeceğim", set: ["zehir_red"], res: "Karan'ın gülümsemesi bir an dondu." },
+  r: { l: "Şerefe!", end: "zehir", mem: ["zehir"] },
+  u: { need: () => mem("zehir"), l: "Kadehleri değiştir", para: 3, set: ["karan_ifsa"], res: "Kadehini Karan'ınkiyle değiştirdin. Karan kadehe baktı, sana baktı. İçmedi. Artık biliyorsun. O da bildiğini biliyor." } });
+
+card("sulen_dost", { who: "karan", c: s => has(s, "karan_sarsildi"),
+  t: "Şölen. Karan kadehini doldururken elleri titriyor. Sonra şişeyi yere bırakıyor. ‘Bu şaraptan içmeyin Naibim,’ diye fısıldıyor.",
+  bf: () => "Ece'nin adını andığın için",
+  l: { l: "Neden?", set: ["karan_ifsa"], res: "‘Bu gece değil. Yarın gece… her şeyi anlatacağım.’" },
+  r: { l: "Teşekkür ederim", set: ["karan_ifsa"], res: "Karan başını eğdi. Gözleri dolmuştu." } });
+
+/* ---- Day 3 ---- */
+card("lal_cicek", { who: "lal", type: "pick",
+  t: "Lâl elinde bir çiçekle geliyor ama arkasına saklıyor. ‘En sevdiğim çiçeği bilirseniz, sizindir.’",
+  opts: guess("cicek", CICEK, "‘Nasıl bildiniz?’ Lâl çiçeği yakana taktı, parmakları bir an boynunda kaldı.",
+    a => `Lâl dudak büktü. ‘${a}. Hiç dikkat etmiyorsunuz.’`, "lal_cicek") });
+
+card("tolun", { who: "tolun",
+  t: "Doğu elçisi Tolun tahtın önünde. ‘Hanımız cömerttir. Şehri savaşmadan verin, canınız bağışlansın.’",
+  l: { l: "Defol", set: ["savas"], res: "Tolun gülümsedi. ‘Yedinci gece görüşürüz.’ Kampına hemen haberci yolladı." },
+  r: { l: "Düşünmem lazım, zaman ver", set: ["oyala"], res: "Tolun memnun ayrıldı. Kampına yolladığı mesajı gördün: ‘Acele yok. Naip korkuyor.’" },
+  u: { need: () => mem("ece"), l: "Ece'yi serbest bırakın", para: 3, set: ["savas"], res: "Tolun'un yüzü gerildi. ‘Demek biliyorsunuz. O zaman pazarlık bitti.’" } });
+
+card("karan_itiraf", { who: "karan", c: s => has(s, "karan_ifsa"),
+  t: "Karan gece yarısı odana geliyor, gözleri kızarmış. ‘Biliyorsunuz. Kızım Ece Doğu Hanı'nın elinde. Yedinci gece kapıyı açmazsam onu öldürecekler.’",
+  bf: s => has(s, "karan_sarsildi") ? "Ece'nin adını andığın için" : "Şölende kadehi değiştirdiğin için",
+  l: { l: "Hainlerin yeri zindan", set: ["karan_zindan"], mem: ["ece"], res: "Muhafızlar Karan'ı götürdü. Koridordan bağırdı: ‘Ece'yi öldürecekler!’" },
+  r: { l: "Ece'yi birlikte kurtaracağız", set: ["karan_dost"], mem: ["ece"], res: "Karan dizlerinin üstüne çöktü. Yıllardır ilk kez biri ona yardım teklif ediyordu." } });
+
+card("karan_fisilti", { who: "sen",
+  t: "Gece. Vezir Karan'ın odasından fısıltılar geliyor. Biri ağlıyor mu?",
+  l: { l: "Uyumaya git", res: "Rüyanda bir kız çocuğu adını söylüyordu. Uyanınca hatırlamadın." },
+  r: { l: "Kapıyı dinle" },
+  dyn: s => has(s, "zehir_red")
+    ? { r: { l: "Kapıyı dinle", end: "hancer", mem: ["ece"] } }
+    : { r: { l: "Kapıyı dinle", mem: ["ece"], res: "‘…Ece'ye dokunmayın… yedinci gece kapıyı açacağım…’ Karan'ın sesi titriyordu. Fark edilmeden uzaklaştın." } } });
+
+/* ---- Day 4 ---- */
+card("nur_yasli", { who: "nur",
+  t: "Nûr dün olduğundan daha yaşlı görünüyor. ‘Kum saatini kaç kez çevirdin? Her çevirişinde ben biraz daha yaşlanıyorum. Fark ettin mi?’",
+  l: { l: "Bu ne demek?", res: "‘Sonra anlarsın. Belki de anlamazsın. Bazı döngüler kısadır.’" },
+  r: { l: "Kimsin sen?", mem: ["nur_sen"], res: "‘Ben, vazgeçmeyen halinim. Ya da olacağın kişi.’ Nûr'un gözleri… senin gözlerin." } });
+
+card("aybike_kurtar", { who: "aybike", c: s => has(s, "karan_dost"),
+  t: "Aybike sesini alçaltıyor. ‘Karan bana her şeyi anlattı. Ece'yi Doğu kampından kaçırmak için gizli bir birlik hazırladım. Gönderelim mi?’",
+  bf: () => "Karan'a yardım sözü verdiğin için",
+  l: { l: "Çok riskli", res: "Aybike birliği dağıttı. Karan'ın gözlerindeki ışık söndü." },
+  r: { l: "Gönderin", set: ["ece_kurtarma"], res: "Gece yarısı on iki gölge surlardan aşağı süzüldü." } });
+
+card("aybike_tatbikat", { who: "aybike",
+  t: "Aybike endişeli. ‘Kızıl Gece söylentisi kışlaya da ulaştı. Askerler huzursuz.’",
+  l: { l: "Söylentiyi yalanla", res: "Askerler rahatladı. Belki fazla." },
+  r: { l: "Gerçeği anlat", set: ["hazir"], res: "Kışlada sessizlik. Sonra biri kılıcını bilemeye başladı." } });
+
+card("lal_balkon", { who: "lal",
+  t: "Lâl balkonda yıldızlara bakıyor. ‘Naibim… sizce bir insan aynı geceyi iki kez yaşayabilir mi?’",
+  l: { l: "Saçmalık", res: "Lâl'in yüzündeki ışık söndü. ‘Haklısınız. Saçmalık.’" },
+  r: { l: "Ben yaşadım", bond: 1, para: 5, set: ["lal_soyledi"], res: "Lâl sana uzun uzun baktı. ‘Biliyordum,’ diye fısıldadı. Neyi bildiğini sormadın." },
+  u: { need: () => mem("lal_ajan"), l: "Sen bir Muhafızsın, Lâl", para: 3, next: "lal_itiraf", res: "Lâl'in nefesi kesildi." } });
+
+/* ---- Day 5 ---- */
+card("lal_dusunce", { who: "lal", type: "pick", c: s => s.bond >= 2,
+  t: "Lâl yüzüne yaklaşıyor. ‘Son bir tahmin. Şu an ne düşünüyorum?’",
+  bf: () => "Lâl'in tahminlerini bildiğin için",
+  opts: guess("dusunce", DUSUNCE, "Lâl güldü ve seni öptü. ‘Hile yapıyorsunuz, biliyorum. Umurumda değil.’",
+    a => `‘Hayır,’ dedi Lâl yavaşça. ‘${a.toLocaleLowerCase("tr")} düşünüyordum.’ Bir şey kırıldı.`, "lal_dusunce") });
+
+card("kule_gece", { who: "sen",
+  t: "Saat kulesinden şehre bakıyorsun. Ufukta Doğu kamp ateşleri. Kum saatinin kumu avucunda ılık.",
+  l: { l: "Ateşleri say", res: "Otuz bir ateş. Ama hiçbiri ana kapının karşısında değil. Hepsi nehrin yukarısında. Garip." },
+  r: { l: "Uyumaya git", res: "Rüyanda su sesi duydun. Suyun içinde kılıç sesleri." } });
+
+card("lal_mektup", { who: "sen", c: s => s.bond >= 1 && !mem("lal_ajan"),
+  t: "Lâl'in odasında, masada mühürlü bir mektup. Mührün üstünde bir kum saati amblemi var.",
+  l: { l: "Dokunma", res: "Mektubu bıraktın. Bazı sırlar beklemeyi sever." },
+  r: { l: "Aç", mem: ["lal_ajan"], res: "‘Muhafızlık Merkezine: Naip bir zaman yolcusu. Henüz bildirmedim. Neden bilmiyorum. — L.’" } });
+
+card("tolun_casus", { who: "aybike",
+  t: "Aybike bir adamı yaka paça getiriyor. ‘Tolun'un adamı. Sarayda dolaşıyordu. Üzerinde bir harita var.’",
+  l: { l: "Haritayı yakın", res: "Harita alevlerde kıvrıldı. İçinde bir şey işaretliydi; görmedin bile." },
+  r: { l: "Haritayı getirin", mem: ["harita"], res: "Haritada tek bir yer işaretli: su kemerinin şehre girdiği yer. Neden orası?" } });
+
+card("lal_itiraf", { who: "lal", c: () => mem("lal_ajan"),
+  t: "Lâl kapıyı kapatıyor. ‘Evet. Zaman Muhafızlarındanım. Seni yakalamam için gönderildim. Ama…’ Sesi titriyor.",
+  l: { l: "Beni ihbar et, bitsin", ihbar: true, res: "Lâl ağlayarak çıktı. Az sonra koridorda gri pelerinler belirdi." },
+  r: { l: "Benimle kal" },
+  dyn: s => s.bond >= 3
+    ? { bf: "Lâl'in kalbini kazandığın için", r: { l: "Benimle kal", set: ["lal_sevgili"], para: -15, res: "Lâl raporu mumun alevine tuttu. ‘Bu gece seninleyim. Zaman ne derse desin.’" } }
+    : { r: { l: "Benimle kal", set: ["lal_uzak"], res: "‘Seni yeterince tanımıyorum,’ dedi Lâl, ve gitti. Tahminleri hatırlasaydın…" } } });
+
+/* ---- Day 6 ---- */
+card("ece_sonuc", { who: "aybike", c: s => has(s, "ece_kurtarma"),
+  t: "", l: { l: "" }, r: { l: "" },
+  dyn: s => has(s, "oyala")
+    ? { t: "Şafakta Aybike döndü, yanında titreyen genç bir kız: Ece! Karan koşup kızına sarıldı.", bf: "Tolun'u oyaladığın için",
+        l: { l: "Karan'ı yalnız bırakın", set: ["ece_kurtuldu"], res: "Karan'ın ağlayışı koridorlarda yankılandı. Bu kez sevinçten." },
+        r: { l: "Kutlama yok, hazırlanın", set: ["ece_kurtuldu"], res: "Karan gözyaşlarını sildi. ‘Bu gece için bir planım var.’" } }
+    : { t: "Kurtarma birliği pusuya düştü. Tolun hazırlıklıydı. Ece'yi başka bir kampa kaçırdılar, Aybike yaralı döndü.", bf: "Tolun'a meydan okuduğun için",
+        l: { l: "Karan'a sen söyle", set: ["ece_kayip"], mem: ["oyala"], res: "Karan tek kelime etmedi. Tolun'u oyalamak gerekirdi…" },
+        r: { l: "Aybike'yi tedavi ettirin", set: ["ece_kayip"], mem: ["oyala"], res: "Aybike dişlerinin arasından: ‘Tolun uyanıktı. Onu oyalamalıydık.’" } } });
+
+card("tolun_son", { who: "tolun",
+  t: "Tolun son kez geliyor. ‘Yarın gece. Kapılarınızı açın, canınızı bağışlayalım. Son teklifim.’",
+  l: { l: "Defol", res: "Tolun omuz silkti. ‘Siz bilirsiniz.’" },
+  r: { l: "Şehri teslim ediyorum", end: "teslim" } });
+
+card("hizir_saat", { who: "hizir", c: s => has(s, "hizir_dost"),
+  t: "Hızır kulenin dişlilerini yağlıyor. ‘Yarın gece. Bir iyilik daha: kulenin saatini durdurursam Muhafızlar bir süre kör olur.’",
+  bf: () => "Hızır'a kelimesini söylediğin için",
+  l: { l: "Gerek yok", res: "‘Sen bilirsin yolcu.’" },
+  r: { l: "Durdur", hunterReset: true, para: -15, res: "Kulenin saati durdu. Şehirde tuhaf bir sessizlik. Muhafız izini kaybetti." } });
+
+card("nur_son", { who: "nur",
+  t: "Nûr artık çok yaşlı. ‘Yarın gece her şey belli olacak. İstersen kum saatini kır. Muhafızlar seni unutur, sen de geri sarmayı.’",
+  l: { l: "Sonuna kadar gideceğim", res: "‘Ben de öyle demiştim,’ dedi Nûr." },
+  r: { l: "Kır", end: "kirik" },
+  u: { need: () => mem("nur_sen"), l: "Sen yaşlı benim, değil mi?", para: 3, set: ["dongu_bilgi"], res: "Nûr uzun süre sustu. ‘Evet. Ve bir gün, sen de ben olacaksın.’" } });
+
+/* ---- Day 7 ---- */
+card("aybike_son", { who: "aybike",
+  t: "Aybike zırhını kuşanmış. ‘Bu gece. Son emirleriniz?’",
+  l: { l: "Kapıları tutun", set: ["kapi"], res: "Ana kapıya kalaslar çakıldı." },
+  r: { l: "Halkı tahliye edin", set: ["tahliye"], res: "Halk sessizce dağlara doğru yola çıktı." },
+  u: { need: s => mem("kemer") && !has(s, "kemer_tutuldu"), l: "Su kemerine pusu kurun", para: 3, set: ["kemer_tutuldu"], res: "Aybike bir an duraksadı, sonra başını salladı. ‘Su kemeri. Anladım.’" },
+  dyn: s => has(s, "kemer_tutuldu") ? { t: "Aybike zırhını kuşanmış. ‘Su kemerinde pusu hazır. Başka emir?’", bf: "Su kemerini önceden tuttuğun için" } : {} });
+
+card("karan_son", { who: "karan", t: "", l: { l: "" }, r: { l: "" },
+  dyn: s => {
+    if (has(s, "karan_dost") && has(s, "ece_kurtuldu")) return {
+      t: "Karan kararlı. ‘Ece güvende. Bu gece kapıyı yine açacağım, ama Doğu ordusunu tuzağa çekmek için.’", bf: "Ece'yi kurtardığın için",
+      l: { l: "Çok tehlikeli", set: ["karan_izle"], res: "Karan başını eğdi. Kapıdan uzak duracak." },
+      r: { l: "Yap", set: ["karan_tuzak"], res: "Karan'ın gözlerinde yıllardır ilk kez korku yoktu." } };
+    if (has(s, "karan_dost")) return {
+      t: "Karan bitkin. ‘Ece hâlâ onlarda. Bu gece… ne yapacağımı bilmiyorum.’", bf: "Ece kurtarılamadığı için",
+      l: { l: "Kapıdan uzak dur", set: ["karan_izle"], res: "Karan'ı odasına kilitlettin. Ağlayışını duydun." },
+      r: { l: "Kızın için ne gerekiyorsa", res: "Karan sessizce çıktı. Kapıya doğru." } };
+    if (has(s, "karan_zindan")) return {
+      t: "Zindandan Karan'ın sesi: ‘Beni durdurdunuz. Ama onları durduramazsınız. Sulardan gelecekler!’", bf: "Karan'ı zindana attığın için",
+      l: { l: "Ne demek istiyor?", mem: ["kemer"] }, r: { l: "Susturun onu", mem: ["kemer"] } };
+    return {
+      t: "Karan eğiliyor. ‘Bu gece erken yatın Naibim. Yorgun görünüyorsunuz.’",
+      l: { l: "Haklısın", res: "Karan'ın gözleri bir an parladı." },
+      r: { l: "Seni izleteceğim", set: ["karan_izle"], res: "Karan'ın yüzünde bir şey çatladı." } };
+  } });
+
+card("kizilgece", { who: "kehanet", t: "", l: { l: "" }, r: { l: "" },
+  dyn: s => {
+    const k = has(s, "kemer_tutuldu");
+    const u = has(s, "lal_sevgili") ? { need: () => true, l: "Lâl'in elini tut ve zamanın dışına kaç", end: "ask" }
+      : has(s, "dongu_bilgi") ? { need: () => true, l: "Kum saatini genç kendine götür", end: "dongu" } : null;
+    const fall = has(s, "tahliye") ? "kul" : "kg";
+    let o;
+    if (k && has(s, "karan_tuzak")) o = {
+      t: "Kızıl Gece. Karan ana kapıyı açıyor. Doğu ordusu içeri dalıyor… ve tuzağa. Su kemerinden gelen ikinci kol Aybike'nin pususuna çarpıyor.",
+      bf: "Ece'yi kurtardığın, Karan'ı kazandığın, su kemerini tuttuğun için",
+      l: { l: "Ateş!", end: "safak" }, r: { l: "Tolun'u canlı yakalayın", end: "safak" } };
+    else if (k && (has(s, "karan_zindan") || has(s, "karan_izle") || has(s, "kapi"))) o = {
+      t: "Kızıl Gece. Su kemerinden sızan Doğu askerleri Aybike'nin pususuna düşüyor. Ana kapı kapalı kalıyor.",
+      bf: "Su kemerini tuttuğun ve kapıyı koruduğun için",
+      l: { l: "Sonuna kadar savaş", end: "kizil" }, r: { l: "Surlara çık", end: "kizil" } };
+    else if (k) o = {
+      t: "Su kemeri tutuldu. Ama gece yarısı biri ana kapıyı içeriden açtı. Doğu ordusu içeride.",
+      bf: "Su kemerini tuttun ama kapıyı korumadın",
+      l: { l: "Savaş", end: fall }, r: { l: "Kum saatine sarıl", end: fall } };
+    else o = {
+      t: "Kızıl Gece. Sen kapıları izlerken arkadan çığlıklar yükseliyor. Doğu askerleri su kemerinden şehre akıyor.",
+      l: { l: "Son nefesine kadar savaş", end: fall, mem: ["kemer"] }, r: { l: "Kum saatine sarıl", end: fall, mem: ["kemer"] } };
+    if (u) o.u = u;
+    return o;
+  } });
+
+/* ---- Inserted: the Time Police ---- */
+card("eflatun_giris", { who: "eflatun",
+  t: "Kapıda gri pelerinli bir kadın. ‘Ajan Eflatun, Zaman Muhafızları. Bu şehirde zaman yırtılıyor. Yırtıkları takip edip kaynağını bulacağım.’ Gözleri bir an üzerinde durdu.",
+  l: { l: "Kolay gelsin", spawn: true, ret: true, res: "Zaman ağacında artık biri seni arıyor. Geri sardığın her yerde bir yırtık kalacak." },
+  r: { l: "Burada yırtık falan yok", spawn: true, ret: true, para: 3, res: "‘Göreceğiz.’ Zaman ağacında artık biri seni arıyor." } });
+
+card("eflatun_teklif", { who: "eflatun",
+  t: "Eflatun karşında, ama kelepçe çıkarmıyor. ‘Seni çoktan yakalayabilirdim. Ama zamanı bu kadar iyi büken birini harcamak yazık. Bize katıl.’",
+  l: { l: "Asla", ret: true, para: 5, res: "‘O zaman av devam ediyor.’" },
+  r: { l: "Katılıyorum", end: "guard" } });
+
+card("yakalandi", { who: "eflatun", t: "", l: { l: "" }, r: { l: "" },
+  dyn: s => {
+    const o = {
+      t: "Ajan Eflatun tam karşında. ‘Seni buldum, yolcu.’ Elinde gümüş bir kelepçe parlıyor.",
+      l: { l: "Teslim ol", end: "arrest" },
+      r: R.sand >= 2 ? { l: "Kum saatini çevir ve kaç (2 kum)", escape: true, ret: true, para: 5, res: "Kum avucundan aktı. Eflatun bir anda zamanın en başına savruldu." }
+                     : { l: "Kaçmaya çalış", end: "arrest" } };
+    if (has(s, "lal_sevgili")) o.u = { need: () => true, l: "Lâl araya girer", hunterReset: true, ret: true, para: -10, res: "Lâl, Eflatun'un önüne geçti. ‘O benim görevim.’ Eflatun geri çekildi." };
+    else if (has(s, "hizir_dost")) o.u = { need: () => true, l: "Hızır'ın gizli geçidi", hunterReset: true, ret: true, res: "Hızır duvardaki dişliyi çevirdi. Saatin içinden kaçtın." };
+    return o;
+  } });
+
+/* ---- Story order: 7 days × sabah / öğle / gece. First scene whose condition holds is played. ---- */
+const SLOTS = [
+  ["nur_intro"], ["karan_elci"], ["lal_sarki"],
+  ["aybike_sur"], ["hizir_meet"], ["sulen_dost", "sulen"],
+  ["lal_cicek"], ["tolun"], ["karan_itiraf", "karan_fisilti"],
+  ["nur_yasli"], ["aybike_kurtar", "aybike_tatbikat"], ["lal_balkon"],
+  ["lal_dusunce", "kule_gece"], ["lal_mektup", "tolun_casus"], ["lal_itiraf", "kule_gece"],
+  ["ece_sonuc", "tolun_son"], ["hizir_saat", "hizir_meet"], ["nur_son"],
+  ["aybike_son"], ["karan_son"], ["kizilgece"]
+];
 
 /* ================= STATE ================= */
 let S, R;
-const KG_YEAR = 14, GOAL_YEAR = 24, MAX_SAND = 5, DIFF = 1.5;
-
-function newWorld() {
-  return {
-    year: 0,
-    st: { h: 50, z: 50, o: 50, b: 50 },
-    flags: [], sched: [{ id: "kehanet", at: 1 }, { id: "kizilgece", at: KG_YEAR }],
-    seen: [], recent: [], rng: (Math.random() * 4294967296) >>> 0,
-    police: 0, card: "intro"
-  };
-}
+function newWorld() { return { t: 0, card: "nur_intro", ret: [], flags: [], bond: 0 }; }
 function newRun() {
   S = newWorld();
-  R = { para: 0, sand: 3, nodes: [{ id: 0, parent: null, side: null, label: null, end: null, snap: clone(S), kids: [] }],
-        cur: 0, peeked: false, sandYears: [], sel: null, over: null, rewinds: 0 };
-}
-const clone = o => JSON.parse(JSON.stringify(o));
-const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-
-function rnd() {
-  S.rng = (S.rng + 0x6D2B79F5) >>> 0;
-  let t = S.rng;
-  t = Math.imul(t ^ (t >>> 15), t | 1);
-  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  R = { para: 0, sand: 3, nodes: [{ id: 0, parent: null, label: null, end: null, snap: clone(S), kids: [] }],
+        cur: 0, sel: null, over: null, rewinds: 0, days: [], hunter: null, eflShown: false, teklifShown: false, echo: "" };
 }
 
-function resolve(id) {
-  const c = CARDS[id];
-  if (c.dyn) { const d = c.dyn(S); return { id, who: c.who, t: d.t, l: d.l, r: d.r, dyn: true }; }
-  return c;
+function pickScene() {
+  const list = SLOTS[Math.min(S.t, LAST_T)];
+  for (const id of list) { const c = C[id]; if (!c.c || c.c(S)) return id; }
+  return list[list.length - 1];
 }
 
-function nextCard() {
-  // scheduled
-  S.sched.sort((a, b) => a.at - b.at);
-  const due = S.sched.findIndex(x => x.at <= S.year);
-  if (due >= 0) return S.sched.splice(due, 1)[0].id;
-  // police
-  if (!has(S, "saatsiz")) {
-    if (R.para >= 80 && S.police < 3) { S.police = 3; return "p3"; }
-    if (R.para >= 60 && S.police < 2) { S.police = 2; return "p2"; }
-    if (R.para >= 35 && S.police < 1) { S.police = 1; return "p1"; }
-  }
-  const ok = relax => Object.values(CARDS).filter(c =>
-    c.pool && !(c.once && S.seen.includes(c.id)) && (relax || !S.recent.includes(c.id)) &&
-    (!c.min || S.year >= c.min) && (!c.c || c.c(S, R)));
-  let cand = ok(false);
-  if (!cand.length) cand = ok(true);
-  const total = cand.reduce((a, c) => a + (c.w || 1), 0);
-  let x = rnd() * total;
-  for (const c of cand) { x -= (c.w || 1); if (x <= 0) return c.id; }
-  return cand[cand.length - 1].id;
+function resolve(id, s = S) {
+  const c = C[id];
+  const r = Object.assign({}, c, c.dyn ? c.dyn(s) : {});
+  if (typeof r.t === "function") r.t = r.t(s);
+  r.bfText = typeof r.bf === "function" ? r.bf(s) : (r.bf || "");
+  r.uOk = !!(r.u && (!r.u.need || r.u.need(s)));
+  if (r.type === "pick") r.list = r.opts(s);
+  return r;
 }
 
-function revealed(card, side) {
-  if (R.peeked) return "peek";
-  if (!card.dyn && META.known[card.id] && META.known[card.id][side]) return "mem";
-  return null;
-}
-
-/* ================= ACTIONS ================= */
-/* Every state is a node in a tree. A choice adds a child; rewinding moves R.cur back to an
-   ancestor, so the next choice opens a new branch. Old branches stay and can be jumped to. */
+/* ================= TREE HELPERS ================= */
 const node = id => R.nodes[id];
 function pathIds(id) { const p = []; while (id != null) { p.unshift(id); id = node(id).parent; } return p; }
 function ancestors() { return pathIds(R.cur).slice(0, -1).map(node); }
-function relation(id) {
-  const cur = pathIds(R.cur), tgt = pathIds(id);
-  let i = 0; while (i < cur.length && i < tgt.length && cur[i] === tgt[i]) i++;
-  return { up: cur.length - i, down: tgt.length - i };
+function relation(a, b = R.cur) {
+  const pa = pathIds(b), pb = pathIds(a);
+  let i = 0; while (i < pa.length && i < pb.length && pa[i] === pb[i]) i++;
+  return { up: pa.length - i, down: pb.length - i };
+}
+const dist = (a, b) => { const r = relation(a, b); return r.up + r.down; };
+function stepToward(a, b) {
+  const pa = pathIds(a), pb = pathIds(b);
+  let i = 0; while (i < pa.length && i < pb.length && pa[i] === pb[i]) i++;
+  return pa.length > i ? node(a).parent : pb[i];
 }
 function jumpCost(id) {
   const { up, down } = relation(id);
-  return down ? Math.min(40, 12 + 2 * (up + down)) : Math.min(50, 8 + 4 * up);
+  return down ? Math.min(35, 10 + 2 * (up + down)) : Math.min(30, 6 + 3 * up);
+}
+const leafCount = () => R.nodes.filter(n => !n.kids.length).length;
+
+/* ================= THE HUNTER =================
+   The agent walks the tree. It always heads for the newest tear (the spot you jumped away from),
+   seals it, then the next. With no tears left it comes straight for you. */
+function sealTears() {
+  const H = R.hunter;
+  while (H.tears.length && H.tears[H.tears.length - 1] === H.node) { H.tears.pop(); toast("Muhafız bir yırtığı mühürledi", "hunt"); }
+}
+function hunterStep(n) {
+  const H = R.hunter; if (!H) return;
+  for (let i = 0; i < n; i++) {
+    sealTears();
+    const target = H.tears.length ? H.tears[H.tears.length - 1] : R.cur;
+    if (H.node === target) break;
+    H.node = stepToward(H.node, target);
+  }
+  sealTears();
+}
+function checkCaught() {
+  if (!R.hunter || R.hunter.node !== R.cur || S.card === "yakalandi") return false;
+  S.ret.push(S.card); S.card = "yakalandi";
+  node(R.cur).snap = clone(S);
+  flash("hunt"); SFX.caught(); buzz([80, 60, 160]);
+  return true;
 }
 
-function choose(side) {
-  const card = resolve(S.card);
-  const o = card[side];
+/* ================= DECISIONS ================= */
+function decide(o) {
   const parent = R.cur;
   R.sel = null;
-
-  if (!card.dyn) {
-    META.known[card.id] = META.known[card.id] || {};
-    META.known[card.id][side] = 1;
-  }
-  if (card.id === "kizilgece" && o.end) addMem("kizilgece");
-
-  const fx = o.fx || {};
-  for (const k of STATS) if (fx[k]) S.st[k] = clamp(S.st[k] + Math.round(fx[k] * DIFF), 0, 100);
+  let end = o.end || null;
+  R.echo = o.res ? (typeof o.res === "function" ? o.res(S) : o.res) : "";
   (o.set || []).forEach(f => { if (!S.flags.includes(f)) S.flags.push(f); });
   (o.unset || []).forEach(f => { S.flags = S.flags.filter(x => x !== f); });
-  (o.mem || []).forEach(addMem);
-  (o.sched || []).forEach(([id, n]) => S.sched.push({ id, at: S.year + n }));
-  if (o.sand) { R.sand = clamp(R.sand + o.sand, 0, MAX_SAND); toast("+" + o.sand + " kum"); }
-  if (has(S, "saatsiz")) R.sand = 0;
+  if (o.bond) S.bond = clamp(S.bond + o.bond, 0, 4);
   if (o.para) R.para = clamp(R.para + o.para, 0, 100);
-
-  if (!S.seen.includes(card.id)) S.seen.push(card.id);
-  S.recent.push(card.id); if (S.recent.length > 7) S.recent.shift();
-  S.year++;
-  R.peeked = false;
-  R.para = clamp(R.para - 1, 0, 100);
-  saveMeta();
-
-  let end = null;
-  if (o.end) end = o.end;
-  else if (R.para >= 100) end = "arrest";
-  else {
-    for (const k of STATS) {
-      if (S.st[k] <= 0) { end = k + "0"; break; }
-      if (S.st[k] >= 100) { end = k + "100"; break; }
-    }
-    if (!end && S.year >= GOAL_YEAR) end = R.rewinds === 0 ? "clean" : "win";
+  if (o.sand) { R.sand = clamp(R.sand + o.sand, 0, MAX_SAND); toast(`+${o.sand} kum`); }
+  if (o.spawn && !R.hunter) R.hunter = { node: 0, tears: [] };
+  if (o.hunterReset && R.hunter) { R.hunter.node = 0; R.hunter.tears = []; }
+  if (o.escape) {
+    if (R.sand >= 2) { R.sand -= 2; if (R.hunter) { R.hunter.node = 0; R.hunter.tears = []; } }
+    else { end = "arrest"; R.echo = "Kum yetmedi."; }
   }
+  const fresh = (o.mem || []).filter(k => !mem(k));
+  fresh.forEach(k => META.mem.push(k));
+  R.para = clamp(R.para - 2, 0, 100);
+
   if (!end) {
-    if (S.year % 5 === 0 && !R.sandYears.includes(S.year) && !has(S, "saatsiz")) {
-      R.sandYears.push(S.year);
-      if (R.sand < MAX_SAND) { R.sand++; toast("Kum saati doldu · +1 kum"); }
+    if (o.ret) S.card = S.ret.pop() || pickScene();
+    else if (o.next) S.card = o.next;
+    else {
+      S.t++;
+      if (S.t % 3 === 0 && !R.days.includes(S.t)) {
+        R.days.push(S.t);
+        if (R.sand < MAX_SAND) { R.sand++; const tt = S.t; setTimeout(() => toast(`${when(tt)} · +1 kum`), 900); }
+      }
+      S.card = pickScene();
     }
-    S.card = nextCard();
+    if (!R.eflShown && R.para >= 20 && !o.spawn) { R.eflShown = true; S.ret.push(S.card); S.card = "eflatun_giris"; }
+    else if (R.hunter && !R.teklifShown && R.para >= 80) { R.teklifShown = true; S.ret.push(S.card); S.card = "eflatun_teklif"; }
   }
-  addNode(parent, side, o.l, end);
+  if (!end && R.para >= 100) end = "arrest";
+  addNode(parent, o.l, end);
+  if (o.ihbar) { if (!R.hunter) R.hunter = { node: 0, tears: [] }; R.hunter.node = R.cur; R.hunter.tears = []; }
+  else hunterStep(R.para >= 50 ? 2 : 1);
+  if (!end) checkCaught();
+  saveMeta();
+  if (fresh.length) memAlert(fresh);
   if (end) finish(end);
 }
 
-function addNode(parent, side, label, end) {
+function addNode(parent, label, end) {
   const snap = clone(S), key = JSON.stringify(snap), p = node(parent);
-  const same = p.kids.map(node).find(k => k.side === side && k.end === end && JSON.stringify(k.snap) === key);
+  const same = p.kids.map(node).find(k => k.label === label && k.end === end && JSON.stringify(k.snap) === key);
   if (same) { R.cur = same.id; return; }
-  const n = { id: R.nodes.length, parent, side, label, end, snap, kids: [] };
+  const n = { id: R.nodes.length, parent, label, end, snap, kids: [] };
   R.nodes.push(n);
-  if (p.kids.length) toast("Yeni bir zaman dalı açıldı");
+  if (p.kids.length) setTimeout(() => toast("Yeni bir zaman dalı açıldı"), 300);
   p.kids.push(n.id);
   R.cur = n.id;
 }
 
-function addMem(m) { if (!META.mem.includes(m)) META.mem.push(m); }
+function memAlert(keys) {
+  const names = keys.filter(k => MEMS[k]).map(k => MEMS[k][0]);
+  if (!names.length) return;
+  setTimeout(() => {
+    toast("Yeni hatıra · " + names.join(", "), "mem");
+    flash("mem"); SFX.mem(); buzz(30);
+    $("#btnJr").classList.add("new");
+  }, 450);
+}
 
+/* ================= TIME TRAVEL ================= */
 function rewindTarget() {
   const anc = ancestors();
   if (!anc.length) return null;
-  if (R.sel != null) { const t = anc.find(n => n.snap.year === R.sel); if (t) return t; }
+  if (R.sel != null) { const t = anc.find(n => n.snap.t === R.sel); if (t) return t; }
   return anc[anc.length - 1];
 }
-function canTravel() { return R.sand >= 1 && !has(S, "saatsiz"); }
-function canRewind() { return canTravel() && node(R.cur).parent != null; }
-function travelBlock() { return has(S, "saatsiz") ? "Kum saati Muhafızlarda" : R.sand < 1 ? "Kum kalmadı" : "Geri saracak geçmiş yok"; }
+const canTravel = () => R.sand >= 1;
+const canRewind = () => canTravel() && node(R.cur).parent != null;
+const travelBlock = () => R.sand < 1 ? "Kum kalmadı" : "Geri saracak geçmiş yok";
 
 function doRewind() {
   const t = rewindTarget();
@@ -951,98 +1080,369 @@ function doRewind() {
 function jumpTo(id) {
   const t = node(id);
   if (!canTravel() || id === R.cur || t.end || busy) { nudge(); toast(travelBlock()); return false; }
-  const rel = relation(id), cost = jumpCost(id), from = S.year;
+  const rel = relation(id), cost = jumpCost(id), from = S.t;
   R.sand--;
   R.para = clamp(R.para + cost, 0, 100);
   R.rewinds++; META.rewinds++; saveMeta();
-  R.cur = id; R.sel = null; R.peeked = false; R.over = null;
+  if (R.hunter) R.hunter.tears.push(R.cur);
+  R.cur = id; R.sel = null; R.over = null;
+  R.echo = !rel.up ? "Terk ettiğin geleceğe döndün. Her şey bıraktığın gibi." : "Zaman geri aktı. Hatıraların seninle.";
   $("#end").hidden = true;
-  const label = !rel.up ? "Terk ettiğin geleceğe" : rel.down ? "Başka bir dala atlıyorsun" : "Zaman geri akıyor";
-  warp(from, t.snap.year, label, !rel.up, () => {
+  hunterStep(2);
+  const fwd = !rel.up;
+  const label = fwd ? "Terk ettiğin geleceğe" : rel.down ? "Başka bir dala atlıyorsun" : "Zaman geri akıyor";
+  fwd ? SFX.forward() : SFX.rewind();
+  warp(from, t.snap.t, label, fwd, () => {
     S = clone(t.snap);
+    if (S.card === "yakalandi" && !(R.hunter && R.hunter.node === R.cur)) S.card = S.ret.pop() || pickScene();
     if (R.para >= 100) { render(); finish("arrest"); return; }
+    checkCaught();
     render(true);
   });
   return true;
-}
-
-function doPeek() {
-  if (R.peeked || busy || R.over) return;
-  R.peeked = true;
-  R.para = clamp(R.para + 6, 0, 100);
-  render();
-  if (R.para >= 100) finish("arrest");
 }
 
 function finish(id) {
   R.over = id;
   if (!META.endings.includes(id)) META.endings.push(id);
   saveMeta();
+  const k = ENDS[id].k;
+  if (k === "w") SFX.win(); else if (k === "s") SFX.mem(); else { SFX.death(); buzz([200, 100, 300]); }
   render();
-  setTimeout(() => showEnd(id), 350);
+  setTimeout(() => showEnd(id), 450);
+}
+
+/* ================= RENDER ================= */
+const app = $("#app"), cardEl = $("#card"), choiceEl = $("#choice");
+let lastEcho = "", lastBf = "", lastHeart = -1, CUR = null;
+
+function render(enter) {
+  $("#day").textContent = when(S.t).toLocaleUpperCase("tr");
+  $("#paraVal").textContent = R.para;
+  $("#paraFill").style.width = R.para + "%";
+  $("#sand").innerHTML = Array.from({ length: MAX_SAND }, (_, i) => ICON.glass.replace("<svg", `<svg class="${i < R.sand ? "" : "empty"}"`)).join("");
+
+  const hunt = $("#hunt");
+  if (!R.hunter) { hunt.className = "hunt"; $("#huntTxt").textContent = "Muhafız yok"; lastHeart = -1; }
+  else {
+    const d = dist(R.hunter.node, R.cur);
+    hunt.className = "hunt on" + (d <= 2 ? " near" : "");
+    $("#huntTxt").textContent = d === 0 ? "BURADA" : `${d} adım`;
+    if (d <= 2 && d !== lastHeart) SFX.heart();
+    lastHeart = d;
+  }
+
+  const anc = ancestors();
+  let th = "";
+  for (let t = 0; t <= LAST_T; t++) {
+    const past = t < S.t && anc.some(n => n.snap.t === t);
+    const cls = ["tick"];
+    if (t % 3 === 0) cls.push("dstart");
+    if (t === S.t) cls.push("now"); else if (past) cls.push("past");
+    if (R.sel === t) cls.push("sel");
+    if (t === LAST_T) cls.push("kg");
+    th += `<button class="${cls.join(" ")}" data-t="${t}" ${past ? "" : 'tabindex="-1"'} aria-label="${when(t)}"></button>`;
+  }
+  $("#timeline").innerHTML = th;
+
+  const rt = rewindTarget();
+  $("#rwLbl").textContent = rt && R.sel != null ? when(rt.snap.t).replace("Gün ", "G") : "Geri Sar";
+  $("#rwSub").textContent = R.sand < 1 ? "Kum yok" : `1 kum · P+${rt ? jumpCost(rt.id) : 9}`;
+  $("#btnRw").disabled = !canRewind() || !!R.over;
+  const lc = leafCount();
+  $("#treeN").textContent = lc > 1 ? `${lc} DAL` : "AĞAÇ";
+  $("#jrSub").textContent = `${META.mem.filter(k => MEMS[k]).length} hatıra`;
+
+  if (R.over) return;
+  const c = CUR = resolve(S.card);
+  const w = WHO[c.who];
+  const echo = $("#echo");
+  echo.textContent = R.echo || "";
+  if (R.echo && R.echo !== lastEcho) { echo.classList.remove("fresh"); void echo.offsetWidth; echo.classList.add("fresh"); }
+  lastEcho = R.echo;
+  $("#story").textContent = c.t;
+  const bf = $("#bf");
+  bf.innerHTML = c.bfText ? `${ICON.wing}<span>${c.bfText}</span>` : "";
+  if (c.bfText && c.bfText !== lastBf) { bf.classList.remove("fresh"); void bf.offsetWidth; bf.classList.add("fresh"); }
+  lastBf = c.bfText;
+  $("#whoName").textContent = w.n;
+  $("#whoRole").textContent = w.r;
+  $("#portrait").style.setProperty("--c", w.c);
+  const mono = $("#mono");
+  mono.textContent = w.m;
+  mono.className = w.m.length > 1 ? "sm" : "";
+  $("#hand").style.transform = `rotate(${(S.t / LAST_T) * 360}deg)`;
+  $("#cornerTL").textContent = `G${dayOf(S.t)}`;
+  $("#cornerBR").textContent = `G${dayOf(S.t)}`;
+  app.classList.toggle("police", c.who === "eflatun");
+
+  cardEl.classList.toggle("pick", c.type === "pick");
+  cardEl.classList.toggle("say", c.type === "say");
+  cardEl.classList.toggle("hasmem", c.uOk && !c.type);
+  $("#memchip").hidden = !(c.uOk && !c.type);
+  const opts = $("#opts");
+  if (c.type === "pick") {
+    opts.innerHTML = c.list.map((o, i) => `<button class="opt" data-i="${i}">${o.l}</button>`).join("");
+  } else if (c.type === "say") {
+    opts.innerHTML = `<input class="say-in" id="sayIn" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Gizli kelime…" aria-label="Gizli kelime">
+      <div class="say-row"><button class="opt ghost" id="sayNo">Bilmiyorum</button><button class="opt" id="sayGo">Söyle</button></div>`;
+  } else opts.innerHTML = "";
+
+  if (enter) { cardEl.classList.remove("enter"); void cardEl.offsetWidth; cardEl.classList.add("enter"); }
+  clearDrag();
+}
+
+function showDrag(side, amt) {
+  const o = CUR[side];
+  choiceEl.className = "choice " + side;
+  choiceEl.innerHTML = o.l + (side === "u" ? `<span class="tag">Bildiğini kullan</span>` : "");
+  choiceEl.style.opacity = Math.min(1, amt);
+}
+function clearDrag() { choiceEl.style.opacity = 0; }
+
+/* ================= INPUT ================= */
+let drag = null, busy = false;
+const THRESH = () => Math.min(90, cardEl.offsetWidth * 0.28);
+const swipeable = () => CUR && !CUR.type && !busy && !R.over;
+
+cardEl.addEventListener("pointerdown", e => {
+  if (!swipeable()) return;
+  drag = { x: e.clientX, y: e.clientY, id: e.pointerId, dx: 0, dy: 0 };
+  cardEl.setPointerCapture(e.pointerId);
+  cardEl.style.transition = "none";
+  cardEl.classList.remove("enter");
+});
+cardEl.addEventListener("pointermove", e => {
+  if (!drag || e.pointerId !== drag.id) return;
+  drag.dx = e.clientX - drag.x;
+  drag.dy = Math.min(0, e.clientY - drag.y);
+  const up = CUR.uOk && -drag.dy > Math.abs(drag.dx);
+  if (up) {
+    cardEl.style.transform = `translateY(${drag.dy}px) scale(${1 - Math.min(.06, -drag.dy / 1500)})`;
+    if (-drag.dy > 8) showDrag("u", -drag.dy / THRESH()); else clearDrag();
+  } else {
+    cardEl.style.transform = `translateX(${drag.dx}px) rotate(${drag.dx / 16}deg)`;
+    if (Math.abs(drag.dx) > 8) showDrag(drag.dx < 0 ? "l" : "r", Math.abs(drag.dx) / THRESH()); else clearDrag();
+  }
+});
+function endDrag(e) {
+  if (!drag || e.pointerId !== drag.id) return;
+  const { dx, dy } = drag; drag = null;
+  const up = CUR.uOk && -dy > Math.abs(dx);
+  if (up && -dy >= THRESH()) commit("u");
+  else if (!up && Math.abs(dx) >= THRESH()) commit(dx < 0 ? "l" : "r");
+  else {
+    cardEl.style.transition = "transform .3s cubic-bezier(.3,1.4,.5,1)";
+    cardEl.style.transform = "";
+    clearDrag();
+  }
+}
+cardEl.addEventListener("pointerup", endDrag);
+cardEl.addEventListener("pointercancel", endDrag);
+
+function flyOut(transform, opt) {
+  busy = true;
+  SFX.swipe();
+  cardEl.style.transition = "transform .3s ease-in, opacity .3s";
+  cardEl.style.transform = transform;
+  cardEl.style.opacity = "0";
+  setTimeout(() => {
+    decide(opt);
+    cardEl.style.transition = "none";
+    cardEl.style.transform = "";
+    cardEl.style.opacity = "1";
+    busy = false;
+    render(!R.over);
+  }, 300);
+}
+function commit(side) {
+  if (!swipeable()) return;
+  if (side === "u" && !CUR.uOk) return;
+  const o = side === "u" ? CUR.u : CUR[side];
+  showDrag(side, 1);
+  const tr = side === "u" ? "translateY(-130%) scale(.9)" : `translateX(${side === "l" ? -140 : 140}%) rotate(${side === "l" ? -28 : 28}deg)`;
+  flyOut(tr, o);
+}
+
+const norm = s => s.toLocaleLowerCase("tr").replace(/[^a-zçğıöşüâîû]/g, "");
+$("#opts").addEventListener("click", e => {
+  if (busy || R.over || !CUR) return;
+  const b = e.target.closest(".opt"); if (!b) return;
+  if (CUR.type === "pick") flyOut("scale(.9) translateY(-20px)", CUR.list[+b.dataset.i]);
+  else if (CUR.type === "say") {
+    if (b.id === "sayNo") flyOut("scale(.9)", CUR.say.fail);
+    else sayGo();
+  }
+});
+function sayGo() {
+  const v = norm($("#sayIn").value);
+  if (!v) { $("#sayIn").focus(); return; }
+  flyOut("scale(.9)", v === norm(META.sec.kelime) ? CUR.say.ok : CUR.say.fail);
+}
+$("#opts").addEventListener("keydown", e => { if (e.key === "Enter" && e.target.id === "sayIn") { e.preventDefault(); sayGo(); } });
+
+function nudge() { cardEl.classList.remove("nudge"); void cardEl.offsetWidth; cardEl.classList.add("nudge"); }
+
+$("#timeline").addEventListener("click", e => {
+  const b = e.target.closest(".tick"); if (!b || R.over || busy) return;
+  const t = +b.dataset.t;
+  if (t >= S.t || !ancestors().some(n => n.snap.t === t)) { R.sel = null; render(); return; }
+  R.sel = R.sel === t ? null : t;
+  render();
+});
+$("#btnRw").addEventListener("click", () => { if (!busy && !R.over) doRewind(); });
+$("#btnTree").addEventListener("click", openTree);
+$("#btnJr").addEventListener("click", openJournal);
+$("#btnEndTree").addEventListener("click", openTree);
+$("#btnTreeClose").addEventListener("click", () => { $("#tree").hidden = true; });
+$("#btnJrClose").addEventListener("click", () => { $("#journal").hidden = true; });
+$("#tree").addEventListener("click", e => { if (e.target.id === "tree") $("#tree").hidden = true; });
+$("#journal").addEventListener("click", e => { if (e.target.id === "journal") $("#journal").hidden = true; });
+$("#treeSvg").addEventListener("click", e => {
+  const g = e.target.closest(".tn"); if (!g) return;
+  treeSel = +g.dataset.id; drawTree();
+});
+$("#treeInfo").addEventListener("click", e => {
+  if (e.target.id !== "btnJump") return;
+  $("#tree").hidden = true;
+  jumpTo(treeSel);
+});
+$("#btnMute").addEventListener("click", () => {
+  muted = !muted;
+  $("#btnMute").classList.toggle("off", muted);
+  $("#btnMute").setAttribute("aria-label", muted ? "Sesi aç" : "Sesi kapat");
+});
+
+document.addEventListener("keydown", e => {
+  if (e.target.id === "sayIn") return;
+  if (!$("#tree").hidden || !$("#journal").hidden) { if (e.key === "Escape") { $("#tree").hidden = true; $("#journal").hidden = true; } return; }
+  if (!$("#intro").hidden || busy) return;
+  if (e.key === "t" || e.key === "T") { openTree(); return; }
+  if (e.key === "g" || e.key === "G") { openJournal(); return; }
+  if (!$("#end").hidden) return;
+  if (e.key === "ArrowLeft") commit("l");
+  else if (e.key === "ArrowRight") commit("r");
+  else if (e.key === "ArrowUp") commit("u");
+  else if (e.key === "r" || e.key === "R") doRewind();
+});
+
+/* ================= SOUND & FEEL ================= */
+let AC = null, muted = false;
+function ac() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = null; } }
+  if (AC && AC.state === "suspended") AC.resume();
+  return AC;
+}
+function tone(f, dur, type = "sine", vol = .12, delay = 0, to = null) {
+  const a = !muted && ac(); if (!a) return;
+  const t0 = a.currentTime + delay, o = a.createOscillator(), g = a.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, t0);
+  if (to) o.frequency.exponentialRampToValueAtTime(to, t0 + dur);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(vol, t0 + .02);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.connect(g).connect(a.destination); o.start(t0); o.stop(t0 + dur + .05);
+}
+function noise(dur, vol = .08, freq = 1200) {
+  const a = !muted && ac(); if (!a) return;
+  const b = a.createBuffer(1, Math.floor(a.sampleRate * dur), a.sampleRate), d = b.getChannelData(0);
+  for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+  const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+  f.type = "bandpass"; f.frequency.value = freq; g.gain.value = vol;
+  s.buffer = b; s.connect(f).connect(g).connect(a.destination); s.start();
+}
+const SFX = {
+  swipe() { noise(.18, .07, 900); },
+  rewind() { tone(900, 1, "sawtooth", .035, 0, 90); for (let i = 0; i < 8; i++) tone(1400 - i * 120, .05, "square", .025, i * .11); },
+  forward() { tone(90, 1, "sawtooth", .035, 0, 900); for (let i = 0; i < 8; i++) tone(500 + i * 120, .05, "square", .025, i * .11); },
+  mem() { [660, 880, 1320, 1760].forEach((f, i) => tone(f, .9, "sine", .07, i * .09)); },
+  heart() { tone(70, .14, "sine", .3, 0); tone(60, .16, "sine", .25, .2); },
+  caught() { tone(220, .5, "square", .06, 0, 110); tone(233, .5, "square", .05, 0, 116); },
+  death() { tone(146, 1.6, "triangle", .12, 0, 55); tone(155, 1.6, "triangle", .08, .05, 58); },
+  win() { [523, 659, 784, 1046].forEach((f, i) => tone(f, 1.4, "triangle", .07, i * .12)); }
+};
+function buzz(p) { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} }
+function flash(kind) { const f = $("#flash"); f.className = ""; void f.offsetWidth; f.className = "on " + (kind || ""); }
+
+let toastT;
+function toast(msg, kind) {
+  const t = $("#toast");
+  t.textContent = msg; t.className = "on " + (kind || "");
+  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("on"), 2200);
+}
+
+function warp(from, to, label, fwd, cb) {
+  busy = true;
+  const w = $("#warp"), y = $("#warpYear");
+  w.querySelector(".warp-lbl").textContent = label;
+  w.classList.toggle("fwd", fwd);
+  w.classList.add("on"); app.classList.add("warping");
+  const dur = matchMedia("(prefers-reduced-motion: reduce)").matches ? 150 : 1000;
+  const t0 = performance.now();
+  (function step(t) {
+    const p = Math.min(1, (t - t0) / dur);
+    y.textContent = when(Math.round(from + (to - from) * p));
+    if (p < 1) requestAnimationFrame(step);
+    else setTimeout(() => { w.classList.remove("on"); app.classList.remove("warping"); busy = false; cb(); }, 120);
+  })(t0);
 }
 
 /* ================= TIME TREE ================= */
 let TP = {}, treeSel = 0;
-const TX = y => 34 + y * 46, TY = l => 46 + l * 46;
-function leafCount() { return R.nodes.filter(n => !n.kids.length).length; }
-
+const TX = d => 30 + d * 44, TY = l => 40 + l * 46;
 function drawTree() {
+  const onPath = new Set(pathIds(R.cur));
   let lane = 0; TP = {};
-  const walk = id => {
+  const walk = (id, d) => {
     const n = node(id);
     if (!n.kids.length) TP[id] = { l: lane++ };
     else {
-      // keep the current line on top, so the main story reads as one straight row
       const kids = n.kids.slice().sort((a, b) => onPath.has(b) - onPath.has(a));
-      kids.forEach(walk);
+      kids.forEach(k => walk(k, d + 1));
       TP[id] = { l: TP[kids[0]].l };
     }
-    TP[id].X = TX(n.snap.year); TP[id].Y = TY(TP[id].l);
+    TP[id].X = TX(d); TP[id].Y = TY(TP[id].l); TP[id].d = d;
   };
-  const onPath = new Set(pathIds(R.cur));
-  walk(0);
-  const W = TX(GOAL_YEAR) + 150, H = TY(lane - 1) + 36;
+  walk(0, 0);
+  const maxD = Math.max(...Object.values(TP).map(p => p.d));
+  const W = TX(maxD) + 170, H = TY(lane - 1) + 36;
   let g = "";
-  for (let y = 0; y <= GOAL_YEAR; y++) {
-    const x = TX(y);
-    g += `<line x1="${x}" y1="26" x2="${x}" y2="${H}" stroke="rgba(141,155,162,.08)"/>`;
-    if (y % 2 === 0 || y === KG_YEAR) g += `<text x="${x}" y="16" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="${y === KG_YEAR ? "#ec6d5c" : "#8d9ba2"}">${y}</text>`;
+  for (const id of onPath) {
+    const n = node(id), p = TP[id];
+    const prev = n.parent != null ? node(n.parent).snap.t : -1;
+    if (dayOf(n.snap.t) !== dayOf(prev) && !n.end) g += `<text x="${p.X}" y="16" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="${n.snap.t >= 18 ? "#ec6d5c" : "#8d9ba2"}">G${dayOf(n.snap.t)}</text>`;
   }
-  g += `<line x1="${TX(KG_YEAR)}" y1="24" x2="${TX(KG_YEAR)}" y2="${H}" stroke="#ec6d5c" stroke-width="1.2" stroke-dasharray="3 4" opacity=".7"/>`;
-  g += `<line x1="${TX(GOAL_YEAR)}" y1="24" x2="${TX(GOAL_YEAR)}" y2="${H}" stroke="#9ad27f" stroke-width="1.2" stroke-dasharray="3 4" opacity=".7"/>`;
-  // edges
   for (const n of R.nodes) {
     if (n.parent == null) continue;
-    const a = TP[n.parent], b = TP[n.id];
-    const main = onPath.has(n.id);
+    const a = TP[n.parent], b = TP[n.id], main = onPath.has(n.id);
     const d = a.Y === b.Y ? `M${a.X} ${a.Y}L${b.X} ${b.Y}` : `M${a.X} ${a.Y}C${a.X + 26} ${a.Y} ${b.X - 26} ${b.Y} ${b.X} ${b.Y}`;
     g += `<path d="${d}" fill="none" stroke="${main ? "#d4a853" : "#8d9ba2"}" stroke-width="${main ? 2.6 : 1.5}" ${main ? "" : 'stroke-dasharray="4 3" opacity=".6"'}/>`;
   }
-  // nodes
+  const tears = R.hunter ? R.hunter.tears : [];
   for (const n of R.nodes) {
     const p = TP[n.id], main = onPath.has(n.id);
     let inner;
     if (n.end) {
-      const e = ENDS[n.end];
-      const col = e.k === "w" ? "#9ad27f" : e.k === "s" ? "#52d3e2" : "#ec6d5c";
+      const e = ENDS[n.end], col = e.k === "w" ? "#9ad27f" : e.k === "s" ? "#c4a0ff" : "#ec6d5c";
       inner = `<rect x="${p.X - 7}" y="${p.Y - 7}" width="14" height="14" transform="rotate(45 ${p.X} ${p.Y})" fill="${col}"/>` +
         `<text x="${p.X + 14}" y="${p.Y + 4}" font-family="Fraunces, Georgia, serif" font-weight="700" font-size="12.5" fill="${col}">${e.t}</text>`;
     } else {
-      const w = WHO[CARDS[n.snap.card].who];
+      const w = WHO[C[n.snap.card].who];
       inner = `<circle cx="${p.X}" cy="${p.Y}" r="8.5" fill="${w.c}" stroke="${main ? "#d4a853" : "#0d1922"}" stroke-width="2" opacity="${main ? 1 : .6}"/>`;
     }
+    if (tears.includes(n.id)) inner += `<path d="M${p.X - 6} ${p.Y - 18}l12 12M${p.X + 6} ${p.Y - 18}l-12 12" stroke="#e2617f" stroke-width="2.5" stroke-linecap="round"/>`;
     if (n.id === R.cur) inner = `<circle class="pulse" cx="${p.X}" cy="${p.Y}" r="15" fill="none" stroke="#d4a853" stroke-width="2"/>` + inner;
-    if (n.id === treeSel) inner += `<circle cx="${p.X}" cy="${p.Y}" r="12.5" fill="none" stroke="#52d3e2" stroke-width="2"/>`;
+    if (n.id === treeSel) inner += `<circle cx="${p.X}" cy="${p.Y}" r="12.5" fill="none" stroke="#ebe4d4" stroke-width="1.5" stroke-dasharray="2 2"/>`;
+    if (R.hunter && R.hunter.node === n.id) inner += `<g class="pulse"><circle cx="${p.X}" cy="${p.Y + 19}" r="8" fill="#52d3e2"/><circle cx="${p.X}" cy="${p.Y + 19}" r="3" fill="#0d1922"/></g>`;
     g += `<g class="tn" data-id="${n.id}"><circle cx="${p.X}" cy="${p.Y}" r="20" fill="transparent"/>${inner}</g>`;
   }
   const svg = $("#treeSvg");
   svg.setAttribute("width", W); svg.setAttribute("height", H);
   svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
   svg.innerHTML = g;
-
   const ends = R.nodes.filter(n => n.end).length;
-  $("#treeSum").textContent = `${leafCount()} dal · ${R.nodes.length - 1} karar · ${ends} son · ${R.sand} kum`;
+  const hd = R.hunter ? ` · Muhafız ${dist(R.hunter.node, R.cur)} adım` : "";
+  $("#treeSum").textContent = `${leafCount()} dal · ${R.nodes.length - 1} karar · ${ends} son · ${R.sand} kum${hd}`;
   treeInfo();
 }
 
@@ -1058,17 +1458,25 @@ function treeInfo() {
     const e = ENDS[n.end];
     h += `<div class="ti-title">${e.t}</div><div class="ti-text">${e.x}</div>`;
   } else {
-    const c = CARDS[n.snap.card], w = WHO[c.who];
-    h += `<div class="ti-title">Yıl ${n.snap.year} · ${w.n}</div><div class="ti-text">${c.dyn ? c.dyn(n.snap).t : c.t}</div>`;
+    const c = resolve(n.snap.card, n.snap), w = WHO[c.who];
+    h += `<div class="ti-title">${when(n.snap.t)} · ${w.n}</div><div class="ti-text">${c.t}</div>`;
   }
-  h += `<div class="ti-row">${STATS.map(k => `<span>${ICON[k]}<b>${n.snap.st[k]}</b></span>`).join("")}</div>`;
   const facts = [];
   if (n.label) facts.push(`Buraya <b>“${n.label}”</b> diyerek geldin.`);
-  if (n.kids.length) facts.push("Buradan: " + n.kids.map(k => `<b>${node(k).side === "l" ? "←" : "→"} ${node(k).label}</b>`).join(" · "));
+  if (n.kids.length) facts.push("Buradan: " + n.kids.map(k => `<b>${node(k).label}</b>`).join(" · "));
   if (facts.length) h += `<div class="ti-facts">${facts.join("<br>")}</div>`;
+  if (n.id !== R.cur) {
+    const a = n.snap.flags, b = node(R.cur).snap.flags;
+    const plus = a.filter(f => !b.includes(f) && FLAG_TEXT[f]).map(f => `<span class="p">+ ${FLAG_TEXT[f]}</span>`);
+    const minus = b.filter(f => !a.includes(f) && FLAG_TEXT[f]).map(f => `<span class="m">− ${FLAG_TEXT[f]}</span>`);
+    const nb = n.snap.bond, cb = node(R.cur).snap.bond;
+    if (nb !== cb) plus.push(`<span class="${nb > cb ? "p" : "m"}">Lâl'in kalbi: ${cb} → ${nb}</span>`);
+    if (plus.length || minus.length) h += `<div class="ti-diff"><span class="h">${ICON.wing}Bu dalda farklı olanlar</span>${plus.join("")}${minus.join("")}</div>`;
+  }
   if (n.id !== R.cur && !n.end) {
     const ok = canTravel();
-    h += `<button class="cta ${rel.up && rel.down ? "rose" : ""}" id="btnJump" ${ok ? "" : "disabled"}>${ok ? `Buraya atla · 1 kum · Paradoks +${jumpCost(n.id)}` : travelBlock()}</button>`;
+    const near = R.hunter && R.hunter.node === n.id;
+    h += `<button class="cta ${rel.up && rel.down ? "rose" : ""}" id="btnJump" ${ok ? "" : "disabled"}>${ok ? `Buraya atla · 1 kum · Paradoks +${jumpCost(n.id)}${near ? " · Muhafız orada!" : ""}` : travelBlock()}</button>`;
   }
   $("#treeInfo").innerHTML = h;
 }
@@ -1082,247 +1490,20 @@ function openTree() {
   sc.scrollLeft = p.X - sc.clientWidth * 0.6;
   sc.scrollTop = p.Y - sc.clientHeight / 2;
 }
-function closeTree() { $("#tree").hidden = true; }
 
-/* ================= RENDER ================= */
-const $ = s => document.querySelector(s);
-const app = $("#app"), cardEl = $("#card"), choiceEl = $("#choice");
-
-function buildStats() {
-  $("#stats").innerHTML = STATS.map(k => `
-    <div class="stat" id="st-${k}">
-      <div class="dot" id="dot-${k}"></div>
-      <div class="meter"><div class="base">${ICON[k]}</div><div class="fill" id="fill-${k}">${ICON[k]}</div></div>
-      <div class="lbl">${STAT_NAME[k]} <b id="val-${k}">50</b></div>
-    </div>`).join("");
-}
-
-const pad2 = n => String(n).padStart(2, "0");
-function roman(n) {
-  if (n <= 0) return "·";
-  const m = [[10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"]];
-  let s = ""; for (const [v, r] of m) while (n >= v) { s += r; n -= v; } return s;
-}
-
-function fxHtml(o) {
-  if (o.end) return `<span class="fx end">SON</span>`;
-  const fx = o.fx || {};
-  let h = STATS.filter(k => fx[k]).map(k =>
-    `<span class="fx ${fx[k] > 0 ? "up" : "dn"}">${ICON[k]}${fx[k] > 0 ? "▲" : "▼"}${Math.abs(fx[k]) >= 15 ? (fx[k] > 0 ? "▲" : "▼") : ""}</span>`).join("");
-  if (o.sand) h += `<span class="fx up">${ICON.glass}+${o.sand}</span>`;
-  if (o.para) h += `<span class="fx ${o.para > 0 ? "dn" : "up"}">P${o.para > 0 ? "+" : ""}${o.para}</span>`;
-  return h || `<span class="fx">—</span>`;
-}
-
-function render(enter) {
-  for (const k of STATS) {
-    const v = S.st[k];
-    $("#fill-" + k).style.height = v + "%";
-    $("#val-" + k).textContent = v;
-    $("#st-" + k).classList.toggle("warn", v <= 15 || v >= 85);
-  }
-  $("#year").innerHTML = `YIL ${pad2(S.year)}<small>/${GOAL_YEAR}</small>`;
-  $("#paraVal").textContent = R.para;
-  $("#paraFill").style.width = R.para + "%";
-
-  const sandEl = $("#sand");
-  sandEl.classList.toggle("locked", has(S, "saatsiz"));
-  sandEl.innerHTML = Array.from({ length: MAX_SAND }, (_, i) => ICON.glass.replace("<svg", `<svg class="${i < R.sand ? "" : "empty"}"`)).join("");
-
-  // timeline
-  const tl = $("#timeline");
-  let th = "";
-  const anc = ancestors();
-  for (let y = 0; y <= GOAL_YEAR; y++) {
-    const inHist = anc.some(h => h.snap.year === y);
-    const cls = ["tick"];
-    if (y === S.year) cls.push("now"); else if (inHist) cls.push("past");
-    if (R.sel === y) cls.push("sel");
-    if (y === KG_YEAR) cls.push("kg");
-    if (y === GOAL_YEAR) cls.push("goal");
-    th += `<button class="${cls.join(" ")}" data-y="${y}" ${inHist && y !== S.year ? "" : 'tabindex="-1"'} aria-label="Yıl ${y}"></button>`;
-  }
-  tl.innerHTML = th;
-
-  // controls
-  const rt = rewindTarget();
-  $("#rwLbl").textContent = rt && R.sel != null ? `${S.year - rt.snap.year} yıl geri` : "Geri Sar";
-  $("#rwSub").textContent = has(S, "saatsiz") ? "Saat Muhafızlarda" : `1 kum · P+${rt ? jumpCost(rt.id) : 12}`;
-  const lc = leafCount();
-  $("#treeN").textContent = lc > 1 ? `${lc} DAL` : "AĞAÇ";
-  $("#btnRw").disabled = !canRewind() || !!R.over;
-  $("#btnFf").disabled = R.peeked || !!R.over;
-  $("#ffSub").textContent = R.peeked ? "Görüldü" : "Sonucu gör · P+6";
-
-  if (R.over) return;
-  const card = resolve(S.card);
-  const w = WHO[card.who];
-  $("#story").textContent = card.t;
-  $("#whoName").textContent = w.n;
-  $("#whoRole").textContent = w.r;
-  const pt = $("#portrait");
-  pt.style.setProperty("--c", w.c);
-  const mono = $("#mono");
-  mono.textContent = w.m;
-  mono.className = w.m.length > 1 ? "sm" : "";
-  $("#hand").style.transform = `rotate(${(S.year / GOAL_YEAR) * 360}deg)`;
-  $("#cornerTL").textContent = roman(S.year);
-  $("#cornerBR").textContent = roman(S.year);
-  app.classList.toggle("police", card.who === "eflatun" || card.who === "baskan");
-
-  // reveal strip
-  const rv = [];
-  for (const side of ["l", "r"]) {
-    const src = revealed(card, side);
-    if (!src) continue;
-    rv.push(`<div class="rv"><span class="rl">${side === "l" ? "← " : ""}${card[side].l}${side === "r" ? " →" : ""}</span><span class="src">${src === "mem" ? "hatıra" : ""}</span><span class="fxs">${fxHtml(card[side])}</span></div>`);
-  }
-  $("#reveal").innerHTML = rv.join("");
-
-  if (enter) {
-    cardEl.classList.remove("enter"); void cardEl.offsetWidth; cardEl.classList.add("enter");
-  }
-  clearDrag();
-}
-
-function showDrag(side, amt) {
-  const card = resolve(S.card);
-  const o = card[side];
-  choiceEl.className = "choice " + side;
-  const src = revealed(card, side);
-  let tag = "";
-  if (src && o.end) tag = `<span class="tag end">Bu yol bir son</span>`;
-  else if (src === "mem") tag = `<span class="tag">Bunu daha önce yaşadın</span>`;
-  choiceEl.innerHTML = o.l + tag;
-  choiceEl.style.opacity = Math.min(1, amt);
-  const fx = o.fx || {};
-  for (const k of STATS) {
-    const d = $("#dot-" + k);
-    const v = fx[k];
-    if (!v || amt < .25) { d.innerHTML = ""; continue; }
-    if (src) d.innerHTML = `<span class="${v > 0 ? "ar-up" : "ar-dn"}">${v > 0 ? "▲" : "▼"}${Math.abs(v) >= 15 ? (v > 0 ? "▲" : "▼") : ""}</span>`;
-    else d.innerHTML = `<i class="${Math.abs(v) >= 15 ? "l" : "s"}"></i>`;
-  }
-}
-function clearDrag() {
-  choiceEl.style.opacity = 0;
-  for (const k of STATS) $("#dot-" + k).innerHTML = "";
-}
-
-/* ================= INPUT ================= */
-let drag = null, busy = false;
-const THRESH = () => Math.min(90, cardEl.offsetWidth * 0.28);
-
-cardEl.addEventListener("pointerdown", e => {
-  if (busy || R.over) return;
-  drag = { x: e.clientX, id: e.pointerId, dx: 0 };
-  cardEl.setPointerCapture(e.pointerId);
-  cardEl.style.transition = "none";
-  cardEl.classList.remove("enter");
-});
-cardEl.addEventListener("pointermove", e => {
-  if (!drag || e.pointerId !== drag.id) return;
-  drag.dx = e.clientX - drag.x;
-  const dx = drag.dx;
-  cardEl.style.transform = `translateX(${dx}px) rotate(${dx / 16}deg)`;
-  if (Math.abs(dx) > 8) showDrag(dx < 0 ? "l" : "r", Math.abs(dx) / THRESH());
-  else clearDrag();
-});
-function endDrag(e) {
-  if (!drag || e.pointerId !== drag.id) return;
-  const dx = drag.dx; drag = null;
-  if (Math.abs(dx) >= THRESH()) commit(dx < 0 ? "l" : "r");
-  else {
-    cardEl.style.transition = "transform .3s cubic-bezier(.3,1.4,.5,1)";
-    cardEl.style.transform = "";
-    clearDrag();
-  }
-}
-cardEl.addEventListener("pointerup", endDrag);
-cardEl.addEventListener("pointercancel", endDrag);
-
-function commit(side) {
-  if (busy || R.over) return;
-  busy = true;
-  const dir = side === "l" ? -1 : 1;
-  showDrag(side, 1);
-  cardEl.style.transition = "transform .3s ease-in, opacity .3s";
-  cardEl.style.transform = `translateX(${dir * 140}%) rotate(${dir * 28}deg)`;
-  cardEl.style.opacity = "0";
-  setTimeout(() => {
-    choose(side);
-    cardEl.style.transition = "none";
-    cardEl.style.transform = "";
-    cardEl.style.opacity = "1";
-    render(!R.over);
-    busy = false;
-  }, 300);
-}
-
-function nudge() { cardEl.classList.remove("nudge"); void cardEl.offsetWidth; cardEl.classList.add("nudge"); }
-
-$("#timeline").addEventListener("click", e => {
-  const b = e.target.closest(".tick"); if (!b || R.over || busy) return;
-  const y = +b.dataset.y;
-  if (y === S.year || !ancestors().some(h => h.snap.year === y)) { R.sel = null; render(); return; }
-  R.sel = R.sel === y ? null : y;
-  render();
-});
-$("#btnRw").addEventListener("click", () => { if (!busy && !R.over) doRewind(); });
-$("#btnFf").addEventListener("click", doPeek);
-$("#btnTree").addEventListener("click", openTree);
-$("#btnEndTree").addEventListener("click", openTree);
-$("#btnTreeClose").addEventListener("click", closeTree);
-$("#tree").addEventListener("click", e => { if (e.target.id === "tree") closeTree(); });
-$("#treeSvg").addEventListener("click", e => {
-  const g = e.target.closest(".tn"); if (!g) return;
-  treeSel = +g.dataset.id; drawTree();
-});
-$("#treeInfo").addEventListener("click", e => {
-  if (e.target.id !== "btnJump") return;
-  closeTree();
-  jumpTo(treeSel);
-});
-
-document.addEventListener("keydown", e => {
-  if (!$("#tree").hidden) { if (e.key === "Escape" || e.key === "t" || e.key === "T") closeTree(); return; }
-  if (!$("#intro").hidden || busy) return;
-  if (e.key === "t" || e.key === "T") { openTree(); return; }
-  if (!$("#end").hidden) return;
-  if (e.key === "ArrowLeft") commit("l");
-  else if (e.key === "ArrowRight") commit("r");
-  else if (e.key === "r" || e.key === "R") doRewind();
-  else if (e.key === "f" || e.key === "F") doPeek();
-});
-
-/* ================= FX ================= */
-let toastT;
-function toast(msg) {
-  const t = $("#toast");
-  t.textContent = msg; t.classList.add("on");
-  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("on"), 1800);
-}
-
-function warp(from, to, label, fwd, cb) {
-  busy = true;
-  const w = $("#warp"), y = $("#warpYear");
-  w.querySelector(".warp-lbl").textContent = label;
-  w.classList.toggle("fwd", fwd);
-  w.classList.add("on"); app.classList.add("warping");
-  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const dur = reduce ? 150 : 1000;
-  const t0 = performance.now();
-  (function step(t) {
-    const p = Math.min(1, (t - t0) / dur);
-    y.textContent = "YIL " + pad2(Math.round(from - (from - to) * p));
-    if (p < 1) requestAnimationFrame(step);
-    else {
-      setTimeout(() => {
-        w.classList.remove("on"); app.classList.remove("warping");
-        busy = false; cb();
-      }, 120);
-    }
-  })(t0);
+/* ================= JOURNAL ================= */
+function openJournal() {
+  $("#btnJr").classList.remove("new");
+  const items = META.mem.filter(k => MEMS[k]).map(k => {
+    const [title, body, secret] = MEMS[k];
+    return `<li class="${secret ? "secret" : ""}"><b>${title}</b>${typeof body === "function" ? body() : body}</li>`;
+  });
+  $("#mems").innerHTML = items.length ? items.join("") : `<li class="none">Henüz hiçbir şey hatırlamıyorsun. Ölüm iyi bir öğretmendir.</li>`;
+  $("#hearts").innerHTML = "♥".repeat(S.bond) + `<i>${"♥".repeat(4 - S.bond)}</i>`;
+  $("#lifeMeta").innerHTML = `<span>Hayat <b>${META.lives}</b></span><span>Geri sarma <b>${R.rewinds}</b></span><span>Dal <b>${leafCount()}</b></span><span>Kum <b>${R.sand}</b></span>`;
+  $("#jrCount").textContent = `${META.endings.length}/${END_ORDER.length}`;
+  $("#jrEndings").innerHTML = endingsHtml();
+  $("#journal").hidden = false;
 }
 
 /* ================= OVERLAYS ================= */
@@ -1334,36 +1515,35 @@ function endingsHtml() {
 }
 function showEnd(id) {
   const e = ENDS[id];
-  $("#endEyebrow").textContent = e.k === "w" ? "Zafer" : e.k === "s" ? "Gizli son" : `Son · ${Math.max(0, S.year - 1)}. yıl`;
+  $("#endEyebrow").textContent = e.k === "w" ? "Zafer" : e.k === "s" ? "Gizli son" : `Son · ${when(S.t)}`;
   $("#endTitle").textContent = e.t;
   $("#endText").textContent = e.x;
   $("#endHint").textContent = e.hint;
-  $("#endMeta").innerHTML = `<span>Yıl <b>${S.year}</b></span><span>Geri sarma <b>${R.rewinds}</b></span><span>Paradoks <b>${R.para}</b></span><span>Kum <b>${R.sand}</b></span>`;
+  $("#endMeta").innerHTML = `<span>Geri sarma <b>${R.rewinds}</b></span><span>Dal <b>${leafCount()}</b></span><span>Paradoks <b>${R.para}</b></span><span>Kum <b>${R.sand}</b></span>`;
   $("#endCount").textContent = `${META.endings.length}/${END_ORDER.length}`;
   $("#endEndings").innerHTML = endingsHtml();
-  const final = e.k !== "d" || id === "arrest";
   const rb = $("#btnEndRw");
-  rb.hidden = final;
+  rb.hidden = e.k !== "d" || id === "arrest";
   rb.disabled = !canRewind();
-  rb.textContent = canRewind() ? `Geri sar · 1 kum (kalan ${R.sand})` : has(S, "saatsiz") ? "Kum saati Muhafızlarda" : "Kum kalmadı";
+  rb.textContent = canRewind() ? `Geri sar · 1 kum (kalan ${R.sand})` : "Kum kalmadı";
   $("#end").hidden = false;
 }
-$("#btnEndRw").addEventListener("click", () => {
-  if (!canRewind()) return;
-  doRewind();
-});
+$("#btnEndRw").addEventListener("click", () => { if (canRewind()) doRewind(); });
 $("#btnRestart").addEventListener("click", () => {
   $("#end").hidden = true;
-  newRun(); render(true);
-  if (META.mem.length) toast("Önceki hayatlarını hatırlıyorsun…");
+  META.lives++; saveMeta();
+  newRun();
+  R.echo = META.mem.length ? "Yeni bir hayat. Ama hatıraların seninle." : "";
+  render(true);
 });
 $("#btnStart").addEventListener("click", () => {
+  ac();
   $("#intro").hidden = true;
+  META.lives++; saveMeta();
   render(true);
 });
 
 /* ================= BOOT ================= */
-buildStats();
 newRun();
 render();
 $("#introCount").textContent = `${META.endings.length}/${END_ORDER.length}`;
