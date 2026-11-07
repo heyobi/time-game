@@ -450,7 +450,7 @@ body::after {
         <div class="para-top"><span>PARADOKS</span><b id="paraVal">0</b></div>
         <div class="para-track">
           <div class="para-fill" id="paraFill" style="width:0%"></div>
-          <i class="mk" style="left:20%"></i><i class="mk" style="left:50%"></i><i class="mk" style="left:80%"></i>
+          <i class="mk" style="left:40%"></i>
         </div>
       </div>
       <div class="hunt" id="hunt"><svg viewBox="0 0 24 24"><path d="M12 5C6.5 5 2.7 9.2 1.5 12c1.2 2.8 5 7 10.5 7s9.3-4.2 10.5-7C21.3 9.2 17.5 5 12 5zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/></svg><span id="huntTxt">—</span></div>
@@ -516,7 +516,7 @@ body::after {
       <li><svg viewBox="0 0 24 24"><path d="M2 11l4-4v3h12V7l4 4-4 4v-3H6v3z"/></svg><span><b>Sola, sağa kaydır.</b> Her kart bir sahne. Bazı kararlar seni öldürür. Bu normal.</span></li>
       <li class="r"><svg viewBox="0 0 24 24"><path d="M11 6v12L2.5 12zM21.5 6v12L13 12z"/></svg><span><b>Geri sar.</b> Dünya geri döner, <b>hatıraların kalır</b>. Bir şeyi öğrendiysen kart parlar: <b>yukarı kaydır</b> ve bildiğini kullan.</span></li>
       <li><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2.6"/><circle cx="19" cy="5" r="2.6"/><circle cx="19" cy="19" r="2.6"/><path d="M5 11h4l6-6h4v2h-3.2l-5 5 5 5H19v2h-4l-6-6H5z"/></svg><span><b>Zaman ağacı.</b> Her geri sarış yeni bir dal açar. Terk ettiğin bir geleceğe ya da başka bir dala atlayabilirsin.</span></li>
-      <li class="p"><svg viewBox="0 0 24 24"><path d="M12 5C6.5 5 2.7 9.2 1.5 12c1.2 2.8 5 7 10.5 7s9.3-4.2 10.5-7C21.3 9.2 17.5 5 12 5zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/></svg><span><b>Muhafız.</b> Paradoks artınca biri seni ağaçta avlamaya başlar. Geri sardığın yerde bir yırtık kalır, önce oraya gider. Kaçmak için yırtıkları uzağa bırak.</span></li>
+      <li class="p"><svg viewBox="0 0 24 24"><path d="M12 5C6.5 5 2.7 9.2 1.5 12c1.2 2.8 5 7 10.5 7s9.3-4.2 10.5-7C21.3 9.2 17.5 5 12 5zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/></svg><span><b>Muhafız.</b> Bilmemen gereken bir şeyi her kullandığında Ajan Eflatun'un dosyasına bir iz düşer. 4. ve 7. gün seni sorgular. İzleri inandırıcı cevaplarla sil.</span></li>
     </ul>
     <div>
       <div class="eyebrow" style="margin-bottom:8px">Bulunan sonlar · <span id="introCount">0</span></div>
@@ -568,7 +568,7 @@ body::after {
       <div><div class="eyebrow">Bu hayatın bütün zaman çizgileri</div><h2>Zaman Ağacı</h2><div class="tree-sum" id="treeSum"></div></div>
       <button class="xbtn" id="btnTreeClose" aria-label="Kapat">✕</button>
     </div>
-    <div class="tree-legend"><span><i></i>Şu anki çizgin</span><span><i class="d"></i>Terk edilen dallar</span><span>◆ Son</span><span class="c">◉ Muhafız</span><span class="x">✕ Yırtık</span></div>
+    <div class="tree-legend"><span><i></i>Şu anki çizgin</span><span><i class="d"></i>Terk edilen dallar</span><span>◆ Son</span></div>
     <div class="tree-scroll" id="treeScroll"><svg id="treeSvg"></svg></div>
     <div class="tree-info" id="treeInfo"></div>
   </div>
@@ -584,7 +584,7 @@ const pickOne = a => a[Math.floor(Math.random() * a.length)];
 
 /* ================= TIME ================= */
 const PARTS = ["Sabah", "Öğle", "Akşam", "Gece"];
-const LAST_T = 27, MAX_SAND = 6;
+const LAST_T = 27, MAX_SAND = 6, EFLATUN_T = 11, SORGU_T = [12, 24];
 const dayOf = t => Math.floor(t / 4) + 1;
 const when = t => `Gün ${dayOf(t)} · ${PARTS[t % 4]}`;
 
@@ -626,13 +626,13 @@ const ENDS = {
   ask:    { t: "Zamansız Aşk", k: "s", x: "Lâl'in elini tuttun ve kum saatini ters çevirdin. İkiniz de zamanın dışına düştünüz: ne geçmiş, ne gelecek. Aras'a ne oldu? Bunu hiç öğrenmeyeceksin. Umurunda da değil.", hint: "Gizli son." },
   dongu:  { t: "Döngü", k: "s", x: "Kum saatini aldın ve geriye, çok geriye gittin. Yıllar sonra bir taç giyme gününde genç bir naibin karşısına çıktın. ‘Yedi gün sonra Kızıl Gece gelecek,’ dedin. Sesin Nûr'un sesiydi.", hint: "Gizli son." },
   kirik:  { t: "Kırık Saat", k: "s", x: "Kum saatini taş zemine bıraktın. Muhafızlar seni unuttu. Ertesi gece Kızıl Gece geldi ve bu kez geri saramadın.", hint: "Gizli son. Ama acı." },
-  guard:  { t: "Muhafız", k: "s", x: "Teklifi kabul ettin. Artık sen de zamanın bekçisisin. İlk görevin: kum saatli bir naibi yakalamak. Dosyadaki yüz tanıdık geliyor.", hint: "Gizli son." },
+  guard:  { t: "Muhafız", k: "s", x: "Eflatun'un teklifini kabul ettin. Artık sen de zamanın bekçisisin. İlk görevin: kum saatli bir naibi sorgulamak. Dosyadaki yüz tanıdık geliyor.", hint: "Gizli son: sorgularda bütün izleri sildin." },
   kg:     { t: "Kızıl Gece", k: "d", x: "Sen kapıları izlerken Doğu askerleri su kemerinden şehre aktı. Aras alevler içinde kaldı.", hint: "Artık nereden girdiklerini biliyorsun. Bu hatıra seninle." },
   kul:    { t: "Küller", k: "d", x: "Şehir yandı ama halk kurtuldu. Sen sarayla birlikte yandın.", hint: "Halkı kurtardın. Şehri de kurtarmanın bir yolu olmalı." },
   zehir:  { t: "Zehirli Kadeh", k: "d", x: "Şarap tatlıydı. Sonra acı. Son gördüğün şey Karan'ın gülümsemesiydi.", hint: "Artık kadehin zehirli olduğunu biliyorsun. Geri sar ve şölene hazırlıklı git." },
   hancer: { t: "Karanlıkta Hançer", k: "d", x: "Kapıyı dinlerken arkandan biri yaklaştı. Son duyduğun kelime bir isimdi: Ece.", hint: "Karan şölende şüphelenmişti. Ama artık sırrını biliyorsun." },
   teslim: { t: "Beyaz Bayrak", k: "d", x: "Şehri teslim ettin. Han sözünü tutmadı.", hint: "Teslim olmak bir çözüm değil." },
-  arrest: { t: "Zamanın Dışında", k: "d", x: "Ajan Eflatun kolunu tuttu. ‘Yırtıkların seni ele verdi.’ Zamanın dışında, saatsiz bir odada uyandın.", hint: "Muhafız seni yakaladı. Yırtıkları uzağa bırak, kumu idareli harca." }
+  arrest: { t: "Zamanın Dışında", k: "d", x: "Ajan Eflatun kolunu tuttu. ‘Dosyanız doldu, Naip.’ Zamanın dışında, saatsiz bir odada uyandın.", hint: "Eflatun'un sorularına inandırıcı cevaplar bul. Yanlış cevaptan sonra söyledikleri doğrusunun ipucunu verir. Geri sarmak burada da işe yarar." }
 };
 const END_ORDER = ["safak", "kizil", "ask", "dongu", "kirik", "guard", "kg", "kul", "zehir", "hancer", "teslim", "arrest"];
 
@@ -670,7 +670,7 @@ const FLAG_TEXT = {
   karan_dost: "Karan seninle", karan_zindan: "Karan zindanda", karan_izle: "Karan izleniyor", karan_tuzak: "Karan tuzak kuracak",
   oyala: "Tolun oyalandı", savas: "Tolun'a meydan okudun", ece_kurtarma: "Ece için birlik gönderildi", ece_kurtuldu: "Ece kurtuldu",
   ece_kayip: "Ece kurtarılamadı", hizir_dost: "Hızır dostun", hizir_soyledi: "Hızır kelimesini sana söyledi", lal_soyledi: "Lâl'e sırrını açtın", lal_sevgili: "Lâl seninle",
-  lal_uzak: "Lâl senden uzak", lal_yuzlesti: "Lâl sırrını açıkladı", lal_ihbar: "Lâl seni ihbar etti", mektup_okundu: "Lâl'in mektubunu okudun", tahliye: "Halk tahliye ediliyor", hazir: "Askerler gerçeği biliyor", dongu_bilgi: "Nûr'un sırrını biliyorsun"
+  lal_uzak: "Lâl senden uzak", lal_yuzlesti: "Lâl sırrını açıkladı", lal_ihbar: "Lâl seni ihbar etti", hizir_tanik: "Hızır sorguda tanıklık etti", mektup_okundu: "Lâl'in mektubunu okudun", tahliye: "Halk tahliye ediliyor", hazir: "Askerler gerçeği biliyor", dongu_bilgi: "Nûr'un sırrını biliyorsun"
 };
 
 const has = (s, f) => s.flags.includes(f);
@@ -683,7 +683,7 @@ function guess(key, list, okRes, badRes, memKey) {
 }
 
 /* ================= SCENES =================
-   option: { l, res, set, unset, mem, bond, para, sand, end, next, ret, spawn, ihbar, escape, hunterReset }
+   option: { l, res, set, unset, mem, bond, para, sand, end, next, ret, iz, clear, dropIz, sorgu }
    card:   { who, t, bf(s), l, r, u:{need(s), ...option}, type:'pick'|'say', opts(s), say:{ok, fail}, dyn(s), c(s) }
 */
 const C = {};
@@ -694,13 +694,13 @@ card("nur_intro", { who: "nur",
   t: "Taç giyme sabahı. Yaşlı saatçi Nûr elinde bir kum saatiyle bekliyor. ‘Yedi gün sonra Kızıl Gece gelecek, Naip. Şehir yanacak, sen de onunla. Ters çevir, zaman geri akar.’",
   l: { l: "Bu bir masal", res: "Nûr gülümsedi: ‘Herkes önce böyle der.’" },
   r: { l: "Neden ben?", res: "‘Çünkü bunu zaten yaptın,’ dedi Nûr. Ne demek istediğini anlamadın." },
-  u: { need: () => mem("nur_sen"), l: "Sen bensin, değil mi?", para: 3, set: ["dongu_bilgi"], res: "Nûr'un gözleri doldu. ‘Bu sefer erken anladın.’" } });
+  u: { need: () => mem("nur_sen"), l: "Sen bensin, değil mi?", para: 3, iz: "nur", set: ["dongu_bilgi"], res: "Nûr'un gözleri doldu. ‘Bu sefer erken anladın.’" } });
 
 card("karan_elci", { who: "karan",
   t: "Vezir Karan eğiliyor. Bileğinde ince, çocukça bir boncuk bileklik var. ‘Doğu Hanlığı'ndan elçi Tolun geldi Naibim. Barış istiyorlar. İzin verin onu ben ağırlayayım.’",
   l: { l: "Elçiyle ben görüşürüm", res: "Karan'ın gülümsemesi bir an gerildi." },
   r: { l: "Sen ilgilen Vezir", res: "Karan memnun ayrıldı. Fazla memnun." },
-  u: { need: () => mem("ece"), l: "Bilekliğin… Ece mi yaptı?", para: 3, set: ["karan_sarsildi"], res: "Karan bileğini yeninin içine sakladı. ‘Bu adı kimden duydunuz?’ Sesi buz gibiydi. Artık sana sarayın her köşesinde casusu olan biri gibi bakıyor." } });
+  u: { need: () => mem("ece"), l: "Bilekliğin… Ece mi yaptı?", para: 3, iz: "bileklik", set: ["karan_sarsildi"], res: "Karan bileğini yeninin içine sakladı. ‘Bu adı kimden duydunuz?’ Sesi buz gibiydi. Artık sana sarayın her köşesinde casusu olan biri gibi bakıyor." } });
 
 card("lal_sarki", { who: "lal", type: "pick",
   t: "Saray ozanı Lâl sazını akort ediyor. Sazın sapında pirinç bir pusula var; iğnesi kuzeyi değil, seni gösteriyor. ‘Size bir şarkı çalacağım. Ama önce tahmin edin: hangisi?’",
@@ -712,7 +712,7 @@ card("aybike_sur", { who: "aybike",
   t: "Komutan Aybike haritayı açıyor. ‘Kızıl Gece söylentisi doğruysa nereyi tutalım? Ana kapıyı mı, surları mı?’",
   l: { l: "Ana kapıyı", set: ["kapi"], res: "Aybike en iyi askerlerini ana kapıya dizdi." },
   r: { l: "Surları", set: ["sur"], res: "Askerler surlara yayıldı. İnce ama uzun bir çizgi." },
-  u: { need: () => mem("kemer"), l: "Su kemerini tutun", para: 3, set: ["kemer_tutuldu"], res: "Aybike kaşını kaldırdı: ‘Su kemeri mi? Oradan kim girer ki?’ Yine de emri uyguladı." } });
+  u: { need: () => mem("kemer"), l: "Su kemerini tutun", para: 3, iz: "kemer", set: ["kemer_tutuldu"], res: "Aybike kaşını kaldırdı: ‘Su kemeri mi? Oradan kim girer ki?’ Yine de emri uyguladı." } });
 
 card("hizir_meet", { who: "hizir",
   t: "Saat kulesinin bekçisi Hızır sana uzun uzun bakıyor. ‘Gölgen bir saniye geç geliyor. Bunu yalnızca bir kez gördüm: yıllar önce, kendi gölgemde. Sen… zaman yolcusu musun?’",
@@ -723,7 +723,7 @@ card("hizir_meet", { who: "hizir",
 card("hizir_test", { who: "hizir", type: "say",
   t: "‘Kanıtla öyleyse. Gerçek bir yolcu benim gizli kelimemi bilir. Onu kimseye söylemedim. Henüz.’",
   say: {
-    ok: { l: "Kelimeyi söyledin", next: "hizir_dost_k", set: ["hizir_dost"], sand: 1, res: "Hızır'ın ağzı açık kaldı. ‘Aa… Gerçekten yolcusun!’" },
+    ok: { l: "Kelimeyi söyledin", next: "hizir_dost_k", set: ["hizir_dost"], sand: 1, iz: "hizir", res: "Hızır'ın ağzı açık kaldı. ‘Aa… Gerçekten yolcusun!’" },
     fail: { l: "Bilemedin", next: "hizir_kelime", res: "‘Hı-hı. Tahmin ettiğim gibi.’" } },
   // A word he told you in this same timeline proves nothing: only knowledge carried in from another one counts.
   dyn: s => has(s, "hizir_soyledi") ? { say: {
@@ -750,7 +750,7 @@ card("sulen", { who: "karan",
   t: "Barış şerefine bir şölen. Vezir Karan kadehini kendi elleriyle dolduruyor ve gülümsüyor. ‘Aras'ın geleceğine, Naibim.’",
   l: { l: "İçmeyeceğim", set: ["zehir_red"], res: "Karan'ın gülümsemesi bir an dondu." },
   r: { l: "Şerefe!", end: "zehir", mem: ["zehir"] },
-  u: { need: () => mem("zehir"), l: "Kadehleri değiştir", para: 3, set: ["karan_ifsa"], res: "Kadehini Karan'ınkiyle değiştirdin. Karan kadehe baktı, sana baktı. İçmedi. Artık biliyorsun. O da bildiğini biliyor." } });
+  u: { need: () => mem("zehir"), l: "Kadehleri değiştir", para: 3, iz: "kadeh", set: ["karan_ifsa"], res: "Kadehini Karan'ınkiyle değiştirdin. Karan kadehe baktı, sana baktı. İçmedi. Artık biliyorsun. O da bildiğini biliyor." } });
 
 card("sulen_dost", { who: "karan", c: s => has(s, "karan_sarsildi"),
   t: "Şölen. Karan kadehini doldururken duraksıyor, şişeyi masaya bırakıyor. Eğilip fısıldıyor: ‘Casuslarınız her şeyi biliyorsa bunu da bilsinler. Bu şaraptan içmeyin.’",
@@ -768,7 +768,7 @@ card("tolun", { who: "tolun",
   t: "Doğu elçisi Tolun tahtın önünde. ‘Hanımız cömerttir. Şehri savaşmadan verin, canınız bağışlansın.’",
   l: { l: "Defol", set: ["savas"], res: "Tolun gülümsedi. ‘Yedinci gece görüşürüz.’ Kampına hemen haberci yolladı." },
   r: { l: "Düşünmem lazım, zaman ver", set: ["oyala"], res: "Tolun memnun ayrıldı. Kampına yolladığı mesajı gördün: ‘Acele yok. Naip korkuyor.’" },
-  u: { need: () => mem("ece"), l: "Ece'yi serbest bırakın", para: 3, set: ["savas"], res: "Tolun'un yüzü gerildi. ‘Demek biliyorsunuz. O zaman pazarlık bitti.’" } });
+  u: { need: () => mem("ece"), l: "Ece'yi serbest bırakın", para: 3, iz: "rehin", set: ["savas"], res: "Tolun'un yüzü gerildi. ‘Demek biliyorsunuz. O zaman pazarlık bitti.’" } });
 
 card("karan_itiraf", { who: "karan", c: s => has(s, "karan_sikisti"),
   t: "Karan sabah erkenden geliyor, gözleri uykusuzluktan kızarmış. ‘Bütün gece düşündüm. Casusunuz iyi iş çıkarmış. Evet… kızım Ece Doğu Hanı'nın elinde. Yedinci gece kapıyı açmazsam onu öldürecekler.’",
@@ -821,7 +821,7 @@ card("lal_balkon", { who: "lal",
   t: "Lâl balkonda, avucundaki pusulaya bakıyor. İğne deli gibi dönüyor. ‘Naibim… sizce bir insan aynı geceyi iki kez yaşayabilir mi?’",
   l: { l: "Saçmalık", res: "Lâl'in yüzündeki ışık söndü. ‘Haklısınız. Saçmalık.’" },
   r: { l: "Ben yaşadım", bond: 1, para: 5, set: ["lal_soyledi"], res: "Lâl sana uzun uzun baktı. ‘Biliyordum,’ diye fısıldadı. Neyi bildiğini sormadın." },
-  u: { need: s => mem("lal_ajan") && !has(s, "lal_yuzlesti"), l: "Sen bir Muhafızsın, Lâl", para: 3, bond: 1, set: ["lal_sordun"], next: "lal_itiraf", res: "Lâl'in nefesi kesildi. Bunu ancak başka bir zamanı yaşamış biri bilebilirdi. Yani sen de…" } });
+  u: { need: s => mem("lal_ajan") && !has(s, "lal_yuzlesti"), l: "Sen bir Muhafızsın, Lâl", para: 3, iz: "lal", bond: 1, set: ["lal_sordun"], next: "lal_itiraf", res: "Lâl'in nefesi kesildi. Bunu ancak başka bir zamanı yaşamış biri bilebilirdi. Yani sen de…" } });
 
 /* ---- Day 5 ---- */
 card("lal_dusunce", { who: "lal", type: "pick", c: s => s.bond >= 2 && !has(s, "lal_uzak") && !has(s, "lal_ihbar"),
@@ -864,7 +864,7 @@ card("lal_itiraf", { who: "lal",
       : "Lâl gece yarısı kapını çalıyor. ‘Sana yalan söyledim. Ben ozan değilim. Zaman Muhafızlarındanım, seni izlemem için gönderildim. Ama…’ Sesi titriyor.";
     const bf = has(s, "lal_sordun") ? "Sırrını başka bir zamandan bildiğin için" : has(s, "mektup_okundu") ? "Mektubu açtığın için" : "Lâl'in kalbini kazandığın için";
     return { t, bf,
-      l: { l: "Beni ihbar et, bitsin", ihbar: true, set: done.concat("lal_ihbar"), mem: ["lal_ajan"], res: "Lâl ağlayarak çıktı. Az sonra koridorda gri pelerinler belirdi." },
+      l: { l: "Beni ihbar et, bitsin", end: "arrest", set: done.concat("lal_ihbar"), mem: ["lal_ajan"] },
       r: s.bond >= 3
         ? { l: "Benimle kal", set: done.concat("lal_sevgili"), mem: ["lal_ajan"], para: -15, res: "Lâl raporu mumun alevine tuttu. ‘Bu gece seninleyim. Zaman ne derse desin.’" }
         : { l: "Benimle kal", set: done.concat("lal_uzak"), mem: ["lal_ajan"], res: "‘Seni yeterince tanımıyorum,’ dedi Lâl, ve gitti." } };
@@ -887,23 +887,23 @@ card("tolun_son", { who: "tolun",
   r: { l: "Şehri teslim ediyorum", end: "teslim" } });
 
 card("hizir_saat", { who: "hizir", c: s => has(s, "hizir_dost"),
-  t: "Hızır kulenin dişlilerini yağlıyor. ‘Yarın gece. Bir iyilik daha: kulenin saatini durdurursam Muhafızlar bir süre kör olur.’",
+  t: "Hızır kulenin dişlilerini yağlıyor. ‘Yarın gece. Bir iyilik daha: gri pelerinli kadın dün gece kulede uyudu. Dosyasından bir sayfa yürütebilirim.’",
   bf: () => "Hızır'a kelimesini söylediğin için",
   l: { l: "Gerek yok", res: "‘Sen bilirsin yolcu.’" },
-  r: { l: "Durdur", hunterReset: true, para: -15, res: "Kulenin saati durdu. Şehirde tuhaf bir sessizlik. Muhafız izini kaybetti." } });
+  r: { l: "Yürüt", dropIz: true, res: "Hızır bir sayfayı katlayıp cebine koydu. ‘Bir iz eksik. Kimse fark etmez.’" } });
 
 card("nur_son", { who: "nur",
   t: "Nûr artık çok yaşlı. ‘Yarın gece her şey belli olacak. İstersen kum saatini kır. Muhafızlar seni unutur, sen de geri sarmayı.’",
   l: { l: "Sonuna kadar gideceğim", res: "‘Ben de öyle demiştim,’ dedi Nûr." },
   r: { l: "Kır", end: "kirik" },
-  u: { need: s => mem("nur_sen") && !has(s, "dongu_bilgi"), l: "Sen yaşlı benim, değil mi?", para: 3, set: ["dongu_bilgi"], res: "Nûr uzun süre sustu. ‘Evet. Ve bir gün, sen de ben olacaksın.’" } });
+  u: { need: s => mem("nur_sen") && !has(s, "dongu_bilgi"), l: "Sen yaşlı benim, değil mi?", para: 3, iz: "nur", set: ["dongu_bilgi"], res: "Nûr uzun süre sustu. ‘Evet. Ve bir gün, sen de ben olacaksın.’" } });
 
 /* ---- Day 7 ---- */
 card("aybike_son", { who: "aybike",
   t: "Aybike zırhını kuşanmış. ‘Bu gece. Son emirleriniz?’",
   l: { l: "Kapıları tutun", set: ["kapi"], res: "Ana kapıya kalaslar çakıldı." },
   r: { l: "Halkı tahliye edin", set: ["tahliye"], res: "Halk sessizce dağlara doğru yola çıktı." },
-  u: { need: s => mem("kemer") && !has(s, "kemer_tutuldu"), l: "Su kemerine pusu kurun", para: 3, set: ["kemer_tutuldu"], res: "Aybike bir an duraksadı, sonra başını salladı. ‘Su kemeri. Anladım.’" },
+  u: { need: s => mem("kemer") && !has(s, "kemer_tutuldu"), l: "Su kemerine pusu kurun", para: 3, iz: "kemer", set: ["kemer_tutuldu"], res: "Aybike bir an duraksadı, sonra başını salladı. ‘Su kemeri. Anladım.’" },
   dyn: s => has(s, "kemer_tutuldu") ? { t: "Aybike zırhını kuşanmış. ‘Su kemerinde pusu hazır. Başka emir?’", bf: "Su kemerini önceden tuttuğun için" } : {} });
 
 card("karan_son", { who: "karan", t: "", l: { l: "" }, r: { l: "" },
@@ -957,7 +957,7 @@ card("lal_pusula", { who: "lal",
   t: "Lâl'in sazından pirinç pusula düşüyor. Eğilip alıyorsun. İğne avucunda dönüp duruyor, sonra sana kilitleniyor.",
   l: { l: "Geri ver", res: "Lâl pusulayı kaptı. ‘Babamdan kalma. Bozuk.’ Yalan söylediği belliydi." },
   r: { l: "Bu neyi gösteriyor?", res: "‘Fırtınaları,’ dedi Lâl. ‘Bazen insanların içindeki fırtınaları.’ Gözlerini kaçırdı." },
-  u: { need: s => mem("lal_ajan") && !has(s, "lal_yuzlesti"), l: "Muhafız pusulası bu, değil mi?", para: 3, bond: 1, set: ["lal_sordun"], next: "lal_itiraf", res: "Lâl'in yüzü bembeyaz oldu." } });
+  u: { need: s => mem("lal_ajan") && !has(s, "lal_yuzlesti"), l: "Muhafız pusulası bu, değil mi?", para: 3, iz: "lal", bond: 1, set: ["lal_sordun"], next: "lal_itiraf", res: "Lâl'in yüzü bembeyaz oldu." } });
 
 card("lal_balkon_sonra", { who: "lal", c: s => has(s, "lal_yuzlesti"), t: "", l: { l: "" }, r: { l: "" },
   dyn: s => has(s, "lal_sevgili")
@@ -993,34 +993,97 @@ card("son_aksam", { who: "aybike", t: "", l: { l: "" }, r: { l: "" },
       t: "Lâl sazını bırakıyor. ‘Bu gece ne olursa olsun yanındayım. Zamanın içinde ya da dışında.’",
       l: { l: "Yanımda kal", res: "Lâl elini avucuna bıraktı." }, r: { l: "Sen kaç, kurtul", res: "‘Hayır,’ dedi Lâl. ‘Bu sefer kaçmıyorum.’" } };
     if (has(s, "hizir_dost")) return { who: "hizir",
-      t: "Hızır kulenin tepesinden sesleniyor. ‘Gece yarısı çanı çalacağım. O an Muhafızlar sağır olur.’",
-      l: { l: "Gerek yok", res: "‘Sen bilirsin yolcu.’" }, r: { l: "Çal", hunterReset: true, para: -10, res: "Çan sesi şehrin üstüne yayıldı. Zaman bir an nefes aldı." } };
+      t: "Hızır kulenin tepesinden sesleniyor. ‘Gece yarısı çanı çalayım mı? Uyuyan kalmasın.’",
+      l: { l: "Gerek yok", res: "‘Sen bilirsin yolcu.’" }, r: { l: "Çal", set: ["hazir"], res: "Çan sesi şehrin üstüne yayıldı. Herkes uyanık." } };
     return {
       t: "Aybike askerleri meydana dizmiş. ‘Bir söz söyleyin onlara, Naibim.’",
       l: { l: "Şehir için", res: "Mızraklar göğe kalktı." }, r: { l: "Birbiriniz için", set: ["hazir"], res: "Askerler birbirine baktı. Sonra tek ses: ‘Birbirimiz için!’" } };
   } });
 
-/* ---- Inserted: the Time Police ---- */
+/* ---- The Time Police: Eflatun arrives on day 3 and questions you on days 4 and 7 ----
+   Every use of knowledge you shouldn't have leaves an "iz" in her file. Each question has one
+   answer that holds up; a wrong answer's rebuttal hints at the right one, so you can rewind and retry. */
+const QS = {
+  kadeh: { q: "‘Şölende vezirin kadehiyle kendi kadehinizi değiştirdiniz. Neden?’", o: [
+    { l: "Kadehim çatlaktı", res: "‘Saray kadehleri gümüştür, Naip. Gümüş çatlamaz.’ Defterine bir şey yazdı." },
+    { l: "Vezirin kadehi daha doluydu", pass: 1, res: "Eflatun burun kıvırdı. ‘Açgözlü bir naip. İnandırıcı.’ Bir satırı çizdi." },
+    { l: "İçimden bir ses söyledi", res: "‘Muhafızlar iç seslere inanmaz. Kadehlere, kadehlerin doluluğuna inanır.’" } ] },
+  bileklik: { q: "‘Taç gününde vezirin kızının adını biliyordunuz. Kimse size söylememişti.’", o: [
+    { l: "Rüyamda gördüm", res: "‘Rüyalar dosyaya girmez, Naip. Ama boncuklar girer.’" },
+    { l: "Casuslarım söyledi", res: "‘Casuslarınızın adlarını verin.’ Veremedin. ‘Adınızı bir boncuğa mı yazdınız?’" },
+    { l: "Adı bilekliğin boncuklarındaydı", pass: 1, res: "Eflatun bir an düşündü. ‘Boncukta harfler… olabilir.’ Satırı çizdi." } ] },
+  kemer: { q: "‘Askerleri su kemerine yığdınız. Kimse oradan saldırı beklemiyordu.’", o: [
+    { l: "Kamp ateşleri nehrin yukarısındaydı", pass: 1, res: "‘Ateşleri saymışsınız.’ Eflatun ilk kez etkilenmiş göründü." },
+    { l: "İçgüdü", res: "‘Fazla isabetli bir içgüdü. Kuleden bakan biri ateşleri görürdü, ya siz?’" },
+    { l: "Bir bekçi söyledi", res: "‘Saat kulesindeki ihtiyar mı? Onunla da konuşacağım.’ Hızır'ı yaktın." } ] },
+  rehin: { q: "‘Elçiye rehin kızı sordunuz. Rehin bilgisi gizliydi.’", o: [
+    { l: "Saray dedikodusu", res: "‘Saray o kızı tanımıyor bile. Bilen tek kişi vezirin kendisi.’" },
+    { l: "Vezir bana itiraf etmişti", pass: "itiraf", res: "‘Kayıtlar doğruluyor. Vezir o sabah sizinle görüşmüş.’ Satırı çizdi." },
+    { l: "Tolun'u kızdırmak istedim", res: "‘Kızdırdınız. Ama bilgiyi nereden aldınız?’" } ] },
+  lal: { q: "‘Ajanım Lâl'in kimliğini nasıl bildiniz?’", o: [
+    { l: "Tahmin ettim", res: "‘Kimse bir ozanı Muhafız sanmaz. Bir şey gördünüz. Ne?’" },
+    { l: "Söylemem", res: "‘Susmak da bir cevaptır. Kötü bir cevap.’" },
+    { l: "Pusulasının iğnesi bana dönüyordu", pass: 1, res: "Eflatun dişlerini sıktı. ‘Acemi. Pusulasını saklamayı bilmiyor.’ Satırı çizdi." } ] },
+  hizir: { q: "‘Saat kulesindeki ihtiyarla gizli bir parolayla konuşmuşsunuz.’", o: [
+    { l: "Ne parolası?", res: "‘Bekçi bütün mahalleye anlatmış: Aa, gerçekten yolcusun! diye bağırmış. Kule kapısında ne denir, siz söyleyin.’" },
+    { l: "Kuleye o kelimeyle girilir", pass: 1, res: "‘Bekçi parolası… Doğru, kuleler parolayla açılır.’ Satırı çizdi." },
+    { l: "O ihtiyar deli", res: "‘Deli ama dürüst. Siz değilsiniz.’" } ] },
+  nur: { q: "‘Saatçiye “Sen bensin” demişsiniz. Ne demek bu?’", o: [
+    { l: "Söylediğim gibi", res: "Eflatun'un kalemi durdu. ‘Bunu Başkan'a ileteceğim.’" },
+    { l: "Hatırlamıyorum", res: "‘Siz her şeyi hatırlıyorsunuz, Naip. Sorun da bu. Ozanlar bile böyle cümleleri şiir diye okur.’" },
+    { l: "Bir şiirdi, ona okuyordum", pass: 1, res: "‘Şiir mi? …Kötü bir şiir.’ Ama satırı çizdi." } ] },
+  yirtik: { q: "‘Şehirde zaman yırtıkları ölçtüm. Hepsi sarayın etrafında.’", o: [
+    { l: "Yırtık ne demek?", res: "‘Bilmeyen biri böyle sormazdı. Bilmeyen biri kuleyi gösterirdi.’" },
+    { l: "Saat kulesi saraya çok yakın", pass: 1, res: "‘Kuledeki eski mekanizma… olabilir.’ Ölçerine şüpheyle baktı." },
+    { l: "Aletiniz bozuk", res: "‘Aletim üç yüz yıldır yanılmadı.’" } ] }
+};
+const IZ_NAME = { kadeh: "kadeh", bileklik: "bileklik", kemer: "su kemeri", rehin: "rehin", lal: "Lâl", hizir: "Hızır", nur: "Nûr", yirtik: "yırtıklar" };
+
 card("eflatun_giris", { who: "eflatun",
-  t: "Kapıda gri pelerinli bir kadın. ‘Ajan Eflatun, Zaman Muhafızları. Bu şehirde zaman yırtılıyor. Yırtıkları takip edip kaynağını bulacağım.’ Gözleri bir an üzerinde durdu.",
-  l: { l: "Kolay gelsin", spawn: true, ret: true, res: "Zaman ağacında artık biri seni arıyor. Geri sardığın her yerde bir yırtık kalacak." },
-  r: { l: "Burada yırtık falan yok", spawn: true, ret: true, para: 3, res: "‘Göreceğiz.’ Zaman ağacında artık biri seni arıyor." } });
+  t: "Kapıda gri pelerinli bir kadın. ‘Ajan Eflatun, Zaman Muhafızları. Bu şehirde zaman yırtılıyor. Tuhaf olan her şeyi not edeceğim. Yarın sabah konuşuruz, Naip.’",
+  l: { l: "Kolay gelsin", ret: true, res: "Eflatun ince bir dosya açtı. İlk sayfaya senin adını yazdı." },
+  r: { l: "Burada tuhaf bir şey yok", ret: true, res: "‘Herkes böyle der.’ Dosyasına bir şey karaladı." } });
 
-card("eflatun_teklif", { who: "eflatun",
-  t: "Eflatun karşında, ama kelepçe çıkarmıyor. ‘Seni çoktan yakalayabilirdim. Ama zamanı bu kadar iyi büken birini harcamak yazık. Bize katıl.’",
-  l: { l: "Asla", ret: true, para: 5, res: "‘O zaman av devam ediyor.’" },
-  r: { l: "Katılıyorum", end: "guard" } });
-
-card("yakalandi", { who: "eflatun", t: "", l: { l: "" }, r: { l: "" },
+card("sorgu_giris", { who: "eflatun", t: "", l: { l: "" }, r: { l: "" },
   dyn: s => {
-    const o = {
-      t: "Ajan Eflatun tam karşında. ‘Seni buldum, yolcu.’ Elinde gümüş bir kelepçe parlıyor.",
-      l: { l: "Teslim ol", end: "arrest" },
-      r: R.sand >= 2 ? { l: "Kum saatini çevir ve kaç (2 kum)", escape: true, ret: true, para: 5, res: "Kum avucundan aktı. Eflatun bir anda zamanın en başına savruldu." }
-                     : { l: "Kaçmaya çalış", end: "arrest" } };
-    if (has(s, "lal_sevgili")) o.u = { need: () => true, l: "Lâl araya girer", hunterReset: true, ret: true, para: -10, res: "Lâl, Eflatun'un önüne geçti. ‘O benim görevim.’ Eflatun geri çekildi." };
-    else if (has(s, "hizir_dost")) o.u = { need: () => true, l: "Hızır'ın gizli geçidi", hunterReset: true, ret: true, res: "Hızır duvardaki dişliyi çevirdi. Saatin içinden kaçtın." };
-    return o;
+    const n = s.sorgu.length, final = s.round === 2;
+    if (!n) return { t: final ? "Eflatun son kez karşında. Dosyasını açıyor: boş. ‘Sizde bir tuhaflık var, Naip. Ama kanıtım yok.’" : "Eflatun dosyasını açıyor: boş. ‘Sizde bir tuhaflık var ama kanıtım yok. Yedinci sabah yine geleceğim.’",
+      l: { l: "Buyurun, bekleriz", ret: true }, r: { l: "Kapı orada", ret: true, res: "‘Gidiyorum. Şimdilik.’" } };
+    return { t: `${final ? "Yedinci sabah. " : ""}Ajan Eflatun karşına oturuyor, önünde ince bir dosya. ‘${n} sorum var. Dürüst olun. Ya da en azından inandırıcı.’`,
+      bf: "Dosyada: " + s.sorgu.map(k => IZ_NAME[k]).join(", "),
+      l: { l: "Sorun", next: "sorgu_q" }, r: { l: "Çabuk olun", next: "sorgu_q" } };
+  } });
+
+card("sorgu_q", { who: "eflatun", type: "pick", t: "",
+  dyn: s => {
+    const key = s.sorgu[0], Q = QS[key];
+    return { t: Q.q, bf: `Soru ${s.sorguN - s.sorgu.length + 1} / ${s.sorguN}`, opts: st => {
+      const list = Q.o.map(o => {
+        const ok = o.pass === "itiraf" ? (has(st, "karan_dost") || has(st, "karan_zindan")) : !!o.pass;
+        const res = o.pass === "itiraf" && !ok ? "‘Vezir o gün sizinle görüşmedi, Naip. Kayıtlara baktım.’" : o.res;
+        return { l: o.l, res, sorgu: true, clear: ok ? key : null };
+      });
+      if (has(st, "lal_sevgili")) list.push({ l: "Lâl: ‘O gece Naip benimleydi.’", sorgu: true, clear: key, res: "Eflatun Lâl'e uzun uzun baktı. ‘Bir ajanın sözü… geçerli.’ Satırı çizdi. Lâl'in eli titriyordu." });
+      else if (has(st, "hizir_dost") && !has(st, "hizir_tanik")) list.push({ l: "Hızır'ı tanık göster", sorgu: true, clear: key, set: ["hizir_tanik"], res: "Hızır kapıda belirdi. ‘Naip o saatte benimleydi.’ Eflatun dişlerini sıktı ama satırı çizdi." });
+      return list;
+    } };
+  } });
+
+card("sorgu_son", { who: "eflatun", t: "", l: { l: "" }, r: { l: "" },
+  dyn: s => {
+    const open = s.izler.length;
+    if (s.round !== 2) return {
+      t: open ? `Eflatun defterini kapatıyor. ‘Dosyanızda ${open} iz kaldı. Yedinci sabah yine konuşacağız. O sabah iki iz bile fazla gelir.’` : "Eflatun defterini kapatıyor. ‘Şimdilik temizsiniz. Şimdilik.’",
+      l: { l: "Kapıya kadar geçireyim", ret: true }, r: { l: "Hoşça kalın", ret: true } };
+    if (open >= 2) return {
+      t: `Eflatun defterini kapatıyor. ‘${open} iz. Yeterli.’ Pelerininin altından gümüş bir kelepçe çıkarıyor.`,
+      l: { l: "Teslim ol", end: "arrest" }, r: { l: "Kum saatine uzan", end: "arrest", res: "Eflatun kum saatini senden önce kaptı." } };
+    if (!open && s.yalan >= 3) return {
+      t: "Eflatun uzun süre sana bakıyor. ‘Bütün izleri sildiniz. Bu kadar iyi yalan söyleyen biri ya zindandadır ya da bizimle. Bize katılın.’",
+      bf: "Sorgularda bütün izleri sildiğin için",
+      l: { l: "Asla", ret: true, res: "‘O zaman sizi izlemeye devam edeceğim.’ Eflatun gitti." }, r: { l: "Katılıyorum", end: "guard" } };
+    return { t: open ? "Eflatun dudaklarını büzüyor. ‘Bir iz… yetmez. Bu sefer.’" : "Eflatun dosyasını yırtıyor. ‘Temizsiniz, Naip. Başka bir zamanda görüşürüz.’",
+      l: { l: "Elveda", ret: true }, r: { l: "Umarım görüşmeyiz", ret: true } };
   } });
 
 /* ---- Story order: 7 days × sabah / öğle / gece. First scene whose condition holds is played. ---- */
@@ -1208,11 +1271,11 @@ window.ZN_ART = artSVG;
 
 /* ================= STATE ================= */
 let S, R;
-function newWorld() { return { t: 0, card: "nur_intro", ret: [], flags: [], bond: 0 }; }
+function newWorld() { return { t: 0, card: "nur_intro", ret: [], flags: [], bond: 0, izler: [], sorgu: [], sorguN: 0, round: 0, yalan: 0 }; }
 function newRun() {
   S = newWorld();
   R = { para: 0, sand: 3, nodes: [{ id: 0, parent: null, label: null, end: null, snap: clone(S), kids: [] }],
-        cur: 0, sel: null, over: null, rewinds: 0, days: [], hunter: null, eflShown: false, teklifShown: false, echo: "" };
+        cur: 0, sel: null, over: null, rewinds: 0, days: [], echo: "" };
 }
 
 function pickScene() {
@@ -1252,31 +1315,6 @@ function jumpCost(id) {
 }
 const leafCount = () => R.nodes.filter(n => !n.kids.length).length;
 
-/* ================= THE HUNTER =================
-   The agent walks the tree. It always heads for the newest tear (the spot you jumped away from),
-   seals it, then the next. With no tears left it comes straight for you. */
-function sealTears() {
-  const H = R.hunter;
-  while (H.tears.length && H.tears[H.tears.length - 1] === H.node) { H.tears.pop(); toast("Muhafız bir yırtığı mühürledi", "hunt"); }
-}
-function hunterStep(n) {
-  const H = R.hunter; if (!H) return;
-  for (let i = 0; i < n; i++) {
-    sealTears();
-    const target = H.tears.length ? H.tears[H.tears.length - 1] : R.cur;
-    if (H.node === target) break;
-    H.node = stepToward(H.node, target);
-  }
-  sealTears();
-}
-function checkCaught() {
-  if (!R.hunter || R.hunter.node !== R.cur || S.card === "yakalandi") return false;
-  S.ret.push(S.card); S.card = "yakalandi";
-  node(R.cur).snap = clone(S);
-  flash("hunt"); SFX.caught(); buzz([80, 60, 160]);
-  return true;
-}
-
 /* ================= DECISIONS ================= */
 function decide(o) {
   const parent = R.cur;
@@ -1288,12 +1326,9 @@ function decide(o) {
   if (o.bond) S.bond = clamp(S.bond + o.bond, 0, 4);
   if (o.para) R.para = clamp(R.para + o.para, 0, 100);
   if (o.sand) { R.sand = clamp(R.sand + o.sand, 0, MAX_SAND); toast(`+${o.sand} kum`); }
-  if (o.spawn && !R.hunter) R.hunter = { node: 0, tears: [] };
-  if (o.hunterReset && R.hunter) { R.hunter.node = 0; R.hunter.tears = []; }
-  if (o.escape) {
-    if (R.sand >= 2) { R.sand -= 2; if (R.hunter) { R.hunter.node = 0; R.hunter.tears = []; } }
-    else { end = "arrest"; R.echo = "Kum yetmedi."; }
-  }
+  if (o.iz && !S.izler.includes(o.iz)) { S.izler.push(o.iz); setTimeout(() => toast("Zamanda bir iz bıraktın", "hunt"), 1100); }
+  if (o.clear) { S.izler = S.izler.filter(k => k !== o.clear); S.yalan++; }
+  if (o.dropIz && S.izler.length) S.izler.pop();
   const fresh = (o.mem || []).filter(k => !mem(k));
   fresh.forEach(k => META.mem.push(k));
   R.para = clamp(R.para - 2, 0, 100);
@@ -1301,6 +1336,7 @@ function decide(o) {
   if (!end) {
     let advanced = false;
     if (o.ret) S.card = S.ret.pop() || pickScene();
+    else if (o.sorgu) { S.sorgu.shift(); S.card = S.sorgu.length ? "sorgu_q" : "sorgu_son"; }
     else if (o.next) S.card = o.next;
     else {
       advanced = true;
@@ -1311,14 +1347,15 @@ function decide(o) {
       }
       S.card = pickScene();
     }
-    if (advanced && !R.eflShown && !R.hunter && R.para >= 20) { R.eflShown = true; S.ret.push(S.card); S.card = "eflatun_giris"; }
-    else if (advanced && R.hunter && !R.teklifShown && R.para >= 80) { R.teklifShown = true; S.ret.push(S.card); S.card = "eflatun_teklif"; }
+    if (advanced && S.t === EFLATUN_T) { S.ret.push(S.card); S.card = "eflatun_giris"; }
+    else if (advanced && SORGU_T.includes(S.t)) {
+      if (R.para >= 40 && !S.izler.includes("yirtik")) S.izler.push("yirtik");
+      S.round = SORGU_T.indexOf(S.t) + 1; S.sorgu = S.izler.slice(); S.sorguN = S.sorgu.length;
+      S.ret.push(S.card); S.card = "sorgu_giris";
+    }
   }
   if (!end && R.para >= 100) end = "arrest";
   addNode(parent, o.l, end);
-  if (o.ihbar) { if (!R.hunter) R.hunter = { node: 0, tears: [] }; R.eflShown = true; R.hunter.node = R.cur; R.hunter.tears = []; }
-  else hunterStep(R.para >= 50 ? 2 : 1);
-  if (!end) checkCaught();
   saveMeta();
   if (fresh.length) memAlert(fresh);
   if (end) finish(end);
@@ -1369,19 +1406,15 @@ function jumpTo(id) {
   R.sand--;
   R.para = clamp(R.para + cost, 0, 100);
   R.rewinds++; META.rewinds++; saveMeta();
-  if (R.hunter) R.hunter.tears.push(R.cur);
   R.cur = id; R.sel = null; R.over = null;
   R.echo = !rel.up ? "Terk ettiğin geleceğe döndün. Her şey bıraktığın gibi." : "Zaman geri aktı. Hatıraların seninle.";
   $("#end").hidden = true;
-  hunterStep(2);
   const fwd = !rel.up;
   const label = fwd ? "Terk ettiğin geleceğe" : rel.down ? "Başka bir dala atlıyorsun" : "Zaman geri akıyor";
   fwd ? SFX.forward() : SFX.rewind();
   warp(from, t.snap.t, label, fwd, () => {
     S = clone(t.snap);
-    if (S.card === "yakalandi" && !(R.hunter && R.hunter.node === R.cur)) S.card = S.ret.pop() || pickScene();
     if (R.para >= 100) { render(); finish("arrest"); return; }
-    checkCaught();
     render(true);
   });
   return true;
@@ -1407,15 +1440,11 @@ function render(enter) {
   $("#paraFill").style.width = R.para + "%";
   $("#sand").innerHTML = Array.from({ length: MAX_SAND }, (_, i) => ICON.glass.replace("<svg", `<svg class="${i < R.sand ? "" : "empty"}"`)).join("");
 
-  const hunt = $("#hunt");
-  if (!R.hunter) { hunt.className = "hunt"; $("#huntTxt").textContent = "Muhafız yok"; lastHeart = -1; }
-  else {
-    const d = dist(R.hunter.node, R.cur);
-    hunt.className = "hunt on" + (d <= 2 ? " near" : "");
-    $("#huntTxt").textContent = d === 0 ? "BURADA" : `${d} adım`;
-    if (d <= 2 && d !== lastHeart) SFX.heart();
-    lastHeart = d;
-  }
+  const hunt = $("#hunt"), nIz = S.izler.length;
+  hunt.className = "hunt" + (S.t >= EFLATUN_T ? " on" : "") + (nIz >= 2 ? " near" : "");
+  $("#huntTxt").textContent = nIz ? `Dosya · ${nIz} iz` : "Dosya temiz";
+  if (nIz >= 2 && nIz !== lastHeart && S.t >= EFLATUN_T) SFX.heart();
+  lastHeart = nIz;
 
   const anc = ancestors();
   let th = "";
@@ -1706,7 +1735,6 @@ function drawTree() {
     g += main ? `<path d="${d}" fill="none" stroke="#d4a853" stroke-width="6" opacity=".18"/><path d="${d}" fill="none" stroke="#d4a853" stroke-width="2.4"/>`
               : `<path d="${d}" fill="none" stroke="#8d9ba2" stroke-width="1.4" stroke-dasharray="4 3" opacity=".55"/>`;
   }
-  const tears = R.hunter ? R.hunter.tears : [];
   for (const n of R.nodes) {
     const p = TP[n.id], main = onPath.has(n.id);
     let inner = "";
@@ -1720,9 +1748,7 @@ function drawTree() {
       inner += `<rect x="${p.X - 9}" y="${p.Y - 11}" width="18" height="22" rx="3" fill="${w.c}" stroke="${main ? "#f0d58c" : "#0d1922"}" stroke-width="1.6" opacity="${main ? 1 : .55}"/>` +
         `<text x="${p.X}" y="${p.Y + 3.5}" text-anchor="middle" font-family="Fraunces, Georgia, serif" font-weight="900" font-size="${w.rank.length > 1 ? 7 : 10}" fill="#f6efe2" opacity="${main ? 1 : .7}">${w.rank}</text>`;
     }
-    if (tears.includes(n.id)) inner += `<path d="M${p.X + 10} ${p.Y - 14}l4 4-4 4 4 4" fill="none" stroke="#e2617f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`;
     if (n.id === treeSel && n.id !== R.cur) inner += `<rect x="${p.X - 13}" y="${p.Y - 15}" width="26" height="30" rx="5" fill="none" stroke="#ebe4d4" stroke-width="1.4" stroke-dasharray="3 2"/>`;
-    if (R.hunter && R.hunter.node === n.id) inner += `<g class="pulse"><circle cx="${p.X - 20}" cy="${p.Y}" r="8" fill="#52d3e2"/><path d="M${p.X - 26} ${p.Y}q6-5 12 0q-6 5-12 0z" fill="#0d1922"/><circle cx="${p.X - 20}" cy="${p.Y}" r="2" fill="#52d3e2"/></g>`;
     g += `<g class="tn" data-id="${n.id}"><rect x="${p.X - 15}" y="${p.Y - 16}" width="30" height="32" fill="transparent"/>${inner}</g>`;
   }
   const svg = $("#treeSvg");
@@ -1730,8 +1756,7 @@ function drawTree() {
   svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
   svg.innerHTML = g;
   const ends = R.nodes.filter(n => n.end).length;
-  const hd = R.hunter ? ` · Muhafız ${dist(R.hunter.node, R.cur)} adım` : "";
-  $("#treeSum").textContent = `${leafCount()} dal · ${R.nodes.length - 1} karar · ${ends} son · ${R.sand} kum${hd}`;
+  $("#treeSum").textContent = `${leafCount()} dal · ${R.nodes.length - 1} karar · ${ends} son · ${R.sand} kum`;
   treeInfo();
 }
 
@@ -1758,14 +1783,15 @@ function treeInfo() {
     const a = n.snap.flags, b = node(R.cur).snap.flags;
     const plus = a.filter(f => !b.includes(f) && FLAG_TEXT[f]).map(f => `<span class="p">+ ${FLAG_TEXT[f]}</span>`);
     const minus = b.filter(f => !a.includes(f) && FLAG_TEXT[f]).map(f => `<span class="m">− ${FLAG_TEXT[f]}</span>`);
+    const ni = n.snap.izler.length, ci = node(R.cur).snap.izler.length;
+    if (ni !== ci) plus.push(`<span class="${ni < ci ? "p" : "m"}">Eflatun'un dosyası: ${ci} → ${ni} iz</span>`);
     const nb = n.snap.bond, cb = node(R.cur).snap.bond;
     if (nb !== cb) plus.push(`<span class="${nb > cb ? "p" : "m"}">Lâl'in kalbi: ${cb} → ${nb}</span>`);
     if (plus.length || minus.length) h += `<div class="ti-diff"><span class="h">${ICON.wing}Bu dalda farklı olanlar</span>${plus.join("")}${minus.join("")}</div>`;
   }
   if (n.id !== R.cur && !n.end) {
     const ok = canTravel();
-    const near = R.hunter && R.hunter.node === n.id;
-    h += `<button class="cta ${rel.up && rel.down ? "rose" : ""}" id="btnJump" ${ok ? "" : "disabled"}>${ok ? `Buraya atla · 1 kum · Paradoks +${jumpCost(n.id)}${near ? " · Muhafız orada!" : ""}` : travelBlock()}</button>`;
+    h += `<button class="cta ${rel.up && rel.down ? "rose" : ""}" id="btnJump" ${ok ? "" : "disabled"}>${ok ? `Buraya atla · 1 kum · Paradoks +${jumpCost(n.id)}` : travelBlock()}</button>`;
   }
   $("#treeInfo").innerHTML = h;
 }

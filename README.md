@@ -9,7 +9,7 @@ Hikâye 7 gün × 4 vakit (sabah, öğle, akşam, gece) = 28 sahneden oluşuyor.
 - **Lâl**: Saray ozanı tahmin oyunları oynatır. Bilemezsen cevabı söyler, sen de geri sarıp bilmiş gibi yaparsın. Onun da bir sırrı var.
 - **Bekçi Hızır**: "Zaman yolcusu musun?" diye sorar ve gizli kelimesini ister. Kelimeyi sen yazarsın. Kelime her oyuncuda farklıdır ve günlüğe yazılmaz.
 - **Zaman ağacı**: Her geri sarış yeni bir dal açar. Ağaç dikey: zaman yukarıdan aşağı akar, günler bantlara ayrılır. Geçmişe, terk ettiğin bir geleceğe ya da başka bir dala atlayabilirsin. Dallar arasındaki farklar (kelebek etkisi) gösterilir.
-- **Muhafız**: Paradoks 20'yi geçince Ajan Eflatun ağaçta seni avlamaya başlar. Geri sardığın yerde bir yırtık kalır ve Muhafız önce oraya gider. Yırtıkları uzağa bırakarak onu oyalayabilirsin.
+- **Muhafız**: Bilmemen gereken bir şeyi her kullandığında Ajan Eflatun'un dosyasına bir iz düşer. Eflatun 3. gece gelir, 4. ve 7. sabah seni sorgular. İzleri inandırıcı cevaplarla silersin; yanlış cevabın ardından söylediği şey doğrusunun ipucudur. 7. sabah 2 iz kalırsa tutuklanırsın.
 - 12 son var: 2 zafer, 4 gizli, 6 ölüm.
 
 Oynamak için `index.html` dosyasını bir tarayıcıda (tercihen telefonda) aç. Klavyede ← → ↑ ile seçim, R ile geri sarma, T ile ağaç, G ile günlük açılır.
