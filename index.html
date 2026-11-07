@@ -610,7 +610,19 @@ const WHO = {
 /* ================= ENDINGS ================= */
 const ENDS = {
   safak:  { t: "Şafak", k: "w", x: "Doğu ordusu iki yerden birden tuzağa düştü. Tolun zincirlerle Han'a geri gönderildi. Karan, Ece'nin elini tutup şafağı izledi. Aras hiç yanmadı. Kimse nedenini bilmeyecek.", hint: "En iyi son. Herkesi kurtardın." },
-  kizil:  { t: "Kırmızı Şafak", k: "w", x: "Şehir ayakta kaldı. Ama sabah meydanda bir darağacı vardı. Karan'ın son sözü kızının adıydı.", hint: "Şehri kurtardın. Herkesi kurtarmanın bir yolu olmalı…" },
+  /* The ending text follows what happened to Karan in this timeline */
+  kizil:  { t: "Kırmızı Şafak", k: "w",
+    x: s => has(s, "karan_dost") && has(s, "ece_kurtuldu")
+      ? "Şehir ayakta kaldı. Karan kızına sarıldı. Ama kapı hiç açılmadığı için Tolun ve ordusunun yarısı gecenin içinde kaçtı. Han, Aras'ı unutmayacak."
+      : has(s, "karan_dost")
+      ? "Şehir ayakta kaldı. Karan sözünü tuttu, kapıya gitmedi. Ama kızını bir daha göremedi."
+      : has(s, "karan_zindan")
+      ? "Şehir ayakta kaldı. Ama sabah meydanda bir darağacı vardı. Zindandan çıkarılan Karan'ın son sözü kızının adıydı."
+      : "Şehir ayakta kaldı. Karan kapıyı açmaya çalışırken yakalandı. Sabah meydanda bir darağacı vardı; son sözü kızının adıydı.",
+    hint: s => has(s, "karan_dost") && has(s, "ece_kurtuldu")
+      ? "Şehri ve Ece'yi kurtardın. Karan'ın planına güvenseydin, Tolun da kaçamazdı."
+      : has(s, "karan_dost") ? "Ece'yi kurtarmanın yolu Tolun'dan geçiyor."
+      : "Şehri kurtardın. Herkesi kurtarmanın bir yolu olmalı…" },
   ask:    { t: "Zamansız Aşk", k: "s", x: "Lâl'in elini tuttun ve kum saatini ters çevirdin. İkiniz de zamanın dışına düştünüz: ne geçmiş, ne gelecek. Aras'a ne oldu? Bunu hiç öğrenmeyeceksin. Umurunda da değil.", hint: "Gizli son." },
   dongu:  { t: "Döngü", k: "s", x: "Kum saatini aldın ve geriye, çok geriye gittin. Yıllar sonra bir taç giyme gününde genç bir naibin karşısına çıktın. ‘Yedi gün sonra Kızıl Gece gelecek,’ dedin. Sesin Nûr'un sesiydi.", hint: "Gizli son." },
   kirik:  { t: "Kırık Saat", k: "s", x: "Kum saatini taş zemine bıraktın. Muhafızlar seni unuttu. Ertesi gece Kızıl Gece geldi ve bu kez geri saramadın.", hint: "Gizli son. Ama acı." },
@@ -1733,7 +1745,7 @@ function treeInfo() {
   let h = `<div class="ti-kind ${kcls}">${kind}</div>`;
   if (n.end) {
     const e = ENDS[n.end];
-    h += `<div class="ti-title">${e.t}</div><div class="ti-text">${e.x}</div>`;
+    h += `<div class="ti-title">${e.t}</div><div class="ti-text">${typeof e.x === "function" ? e.x(n.snap) : e.x}</div>`;
   } else {
     const c = resolve(n.snap.card, n.snap), w = WHO[c.who];
     h += `<div class="ti-title">${when(n.snap.t)} · ${w.n}</div><div class="ti-text">${c.t}</div>`;
@@ -1794,8 +1806,8 @@ function showEnd(id) {
   const e = ENDS[id];
   $("#endEyebrow").textContent = e.k === "w" ? "Zafer" : e.k === "s" ? "Gizli son" : `Son · ${when(S.t)}`;
   $("#endTitle").textContent = e.t;
-  $("#endText").textContent = e.x;
-  $("#endHint").textContent = e.hint;
+  $("#endText").textContent = typeof e.x === "function" ? e.x(S) : e.x;
+  $("#endHint").textContent = typeof e.hint === "function" ? e.hint(S) : e.hint;
   $("#endMeta").innerHTML = `<span>Geri sarma <b>${R.rewinds}</b></span><span>Dal <b>${leafCount()}</b></span><span>Paradoks <b>${R.para}</b></span><span>Kum <b>${R.sand}</b></span>`;
   $("#endCount").textContent = `${META.endings.length}/${END_ORDER.length}`;
   $("#endEndings").innerHTML = endingsHtml();
