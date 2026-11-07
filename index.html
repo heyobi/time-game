@@ -644,6 +644,7 @@ const MEMS = {
   lal_ajan:   ["Lâl'in sırrı", "Lâl, Zaman Muhafızları'nın ajanı. Seni izlemek için gönderilmiş."],
   nur_sen:    ["Nûr kim?", "Nûr ‘olacağın kişi’ olduğunu ima etti. Saatçinin yüzü… tanıdık."],
   hizir_duydu:["Hızır'ın kelimesi", "Hızır sana gizli kelimesini fısıldadı. Günlüğe yazmadın. Zaman yolcuları kendi hafızasına güvenir.", true],
+  izler:      ["Çizme izleri", "Su kemerinin çamurunda şehre doğru giden taze çizme izleri vardı."],
   harita:     ["Casusun haritası", "Doğulu casusun haritasında su kemeri işaretliydi. Ne anlama geldiğini çözemedin."],
   lal_sarki:  ["Lâl'in şarkısı", () => `O gece çaldığı şarkı: ${META.sec.sarki}.`],
   lal_cicek:  ["Lâl'in çiçeği", () => `En sevdiği çiçek: ${META.sec.cicek}.`],
@@ -657,7 +658,7 @@ const FLAG_TEXT = {
   karan_dost: "Karan seninle", karan_zindan: "Karan zindanda", karan_izle: "Karan izleniyor", karan_tuzak: "Karan tuzak kuracak",
   oyala: "Tolun oyalandı", savas: "Tolun'a meydan okudun", ece_kurtarma: "Ece için birlik gönderildi", ece_kurtuldu: "Ece kurtuldu",
   ece_kayip: "Ece kurtarılamadı", hizir_dost: "Hızır dostun", hizir_soyledi: "Hızır kelimesini sana söyledi", lal_soyledi: "Lâl'e sırrını açtın", lal_sevgili: "Lâl seninle",
-  lal_uzak: "Lâl senden uzak", tahliye: "Halk tahliye ediliyor", hazir: "Askerler gerçeği biliyor", dongu_bilgi: "Nûr'un sırrını biliyorsun"
+  lal_uzak: "Lâl senden uzak", lal_yuzlesti: "Lâl sırrını açıkladı", lal_ihbar: "Lâl seni ihbar etti", mektup_okundu: "Lâl'in mektubunu okudun", tahliye: "Halk tahliye ediliyor", hazir: "Askerler gerçeği biliyor", dongu_bilgi: "Nûr'un sırrını biliyorsun"
 };
 
 const has = (s, f) => s.flags.includes(f);
@@ -703,8 +704,9 @@ card("aybike_sur", { who: "aybike",
 
 card("hizir_meet", { who: "hizir",
   t: "Saat kulesinin bekçisi Hızır sana uzun uzun bakıyor. ‘Sende bir tuhaflık var. Gölgen bir saniye geç geliyor. Sen… zaman yolcusu musun?’",
-  l: { l: "Ne saçmalık", res: "‘Hıh. Hepsi böyle der.’ Hızır kuleye geri döndü." },
-  r: { l: "Evet, öyleyim", next: "hizir_test" } });
+  l: { l: "Ne saçmalık", set: ["hizir_tanisti"], res: "‘Hıh. Hepsi böyle der.’ Hızır kuleye geri döndü." },
+  r: { l: "Evet, öyleyim", set: ["hizir_tanisti"], next: "hizir_test" },
+  dyn: s => has(s, "hizir_tanisti") ? { t: "Hızır yine kulenin kapısında. ‘Geçen sefer saçmalık dedin. Gölgen hâlâ geç geliyor ama. Soruyorum yine: zaman yolcusu musun?’" } : {} });
 
 card("hizir_test", { who: "hizir", type: "say",
   t: "‘Kanıtla öyleyse. Gerçek bir yolcu benim gizli kelimemi bilir. Onu kimseye söylemedim. Henüz.’",
@@ -772,7 +774,8 @@ card("karan_fisilti", { who: "sen",
 
 /* ---- Day 4 ---- */
 card("nur_yasli", { who: "nur",
-  t: "Nûr dün olduğundan daha yaşlı görünüyor. ‘Kum saatini kaç kez çevirdin? Her çevirişinde ben biraz daha yaşlanıyorum. Fark ettin mi?’",
+  t: "Nûr taç gecesinden bu yana yıllar geçmiş gibi yaşlanmış. ‘Kum saatini kaç kez çevirdin? Her çevirişinde ben biraz daha yaşlanıyorum. Fark ettin mi?’",
+  dyn: () => R.rewinds === 0 ? { t: "Nûr seni süzüyor. ‘Kum saatini hiç çevirmedin, değil mi? Cesur. Ya da aptalca. Çevirdiğinde bana ne olduğunu göreceksin.’" } : {},
   l: { l: "Bu ne demek?", res: "‘Sonra anlarsın. Belki de anlamazsın. Bazı döngüler kısadır.’" },
   r: { l: "Kimsin sen?", mem: ["nur_sen"], res: "‘Ben, vazgeçmeyen halinim. Ya da olacağın kişi.’ Nûr'un gözleri… senin gözlerin." } });
 
@@ -791,10 +794,10 @@ card("lal_balkon", { who: "lal",
   t: "Lâl balkonda yıldızlara bakıyor. ‘Naibim… sizce bir insan aynı geceyi iki kez yaşayabilir mi?’",
   l: { l: "Saçmalık", res: "Lâl'in yüzündeki ışık söndü. ‘Haklısınız. Saçmalık.’" },
   r: { l: "Ben yaşadım", bond: 1, para: 5, set: ["lal_soyledi"], res: "Lâl sana uzun uzun baktı. ‘Biliyordum,’ diye fısıldadı. Neyi bildiğini sormadın." },
-  u: { need: () => mem("lal_ajan"), l: "Sen bir Muhafızsın, Lâl", para: 3, next: "lal_itiraf", res: "Lâl'in nefesi kesildi." } });
+  u: { need: s => mem("lal_ajan") && !has(s, "lal_yuzlesti"), l: "Sen bir Muhafızsın, Lâl", para: 3, set: ["lal_sordun"], next: "lal_itiraf", res: "Lâl'in nefesi kesildi." } });
 
 /* ---- Day 5 ---- */
-card("lal_dusunce", { who: "lal", type: "pick", c: s => s.bond >= 2,
+card("lal_dusunce", { who: "lal", type: "pick", c: s => s.bond >= 2 && !has(s, "lal_uzak") && !has(s, "lal_ihbar"),
   t: "Lâl yüzüne yaklaşıyor. ‘Son bir tahmin. Şu an ne düşünüyorum?’",
   bf: () => "Lâl'in tahminlerini bildiğin için",
   opts: guess("dusunce", DUSUNCE, "Lâl güldü ve seni öptü. ‘Hile yapıyorsunuz, biliyorum. Umurumda değil.’",
@@ -805,23 +808,40 @@ card("kule_gece", { who: "sen",
   l: { l: "Ateşleri say", res: "Otuz bir ateş. Ama hiçbiri ana kapının karşısında değil. Hepsi nehrin yukarısında. Garip." },
   r: { l: "Uyumaya git", res: "Rüyanda su sesi duydun. Suyun içinde kılıç sesleri." } });
 
-card("lal_mektup", { who: "sen", c: s => s.bond >= 1 && !mem("lal_ajan"),
-  t: "Lâl'in odasında, masada mühürlü bir mektup. Mührün üstünde bir kum saati amblemi var.",
+card("sur_gece", { who: "aybike",
+  t: "Surlarda gece nöbeti. Aybike fenerini kaldırıyor. ‘Askerler su kemerinden garip sesler geldiğini söylüyor. Ben rüzgâr diyorum.’",
+  l: { l: "Rüzgârdır", res: "Aybike omuz silkti. Fener söndü." },
+  r: { l: "Kemere bir devriye yollayın", mem: ["izler"], res: "Devriye boş döndü. Ama çamurda taze çizme izleri vardı. Şehrin dışına değil, içine doğru." } });
+
+card("lal_mektup", { who: "sen", c: s => s.bond >= 1 && !has(s, "lal_yuzlesti"),
+  t: "Lâl sazını senin odanda unutmuş. Sazın tellerinin arasına sıkıştırılmış mühürlü bir mektup var. Mührün üstünde bir kum saati amblemi.",
   l: { l: "Dokunma", res: "Mektubu bıraktın. Bazı sırlar beklemeyi sever." },
-  r: { l: "Aç", mem: ["lal_ajan"], res: "‘Muhafızlık Merkezine: Naip bir zaman yolcusu. Henüz bildirmedim. Neden bilmiyorum. — L.’" } });
+  r: { l: "Aç", set: ["mektup_okundu"], mem: ["lal_ajan"], res: "‘Muhafızlık Merkezine: Naip bir zaman yolcusu. Henüz bildirmedim. Neden bilmiyorum. — L.’" } });
 
 card("tolun_casus", { who: "aybike",
   t: "Aybike bir adamı yaka paça getiriyor. ‘Tolun'un adamı. Sarayda dolaşıyordu. Üzerinde bir harita var.’",
   l: { l: "Haritayı yakın", res: "Harita alevlerde kıvrıldı. İçinde bir şey işaretliydi; görmedin bile." },
   r: { l: "Haritayı getirin", mem: ["harita"], res: "Haritada tek bir yer işaretli: su kemerinin şehre girdiği yer. Neden orası?" } });
 
-card("lal_itiraf", { who: "lal", c: () => mem("lal_ajan"),
-  t: "Lâl kapıyı kapatıyor. ‘Evet. Zaman Muhafızlarındanım. Seni yakalamam için gönderildim. Ama…’ Sesi titriyor.",
-  l: { l: "Beni ihbar et, bitsin", ihbar: true, res: "Lâl ağlayarak çıktı. Az sonra koridorda gri pelerinler belirdi." },
-  r: { l: "Benimle kal" },
-  dyn: s => s.bond >= 3
-    ? { bf: "Lâl'in kalbini kazandığın için", r: { l: "Benimle kal", set: ["lal_sevgili"], para: -15, res: "Lâl raporu mumun alevine tuttu. ‘Bu gece seninleyim. Zaman ne derse desin.’" } }
-    : { r: { l: "Benimle kal", set: ["lal_uzak"], res: "‘Seni yeterince tanımıyorum,’ dedi Lâl, ve gitti. Tahminleri hatırlasaydın…" } } });
+/* Lâl confesses once per timeline: because you asked (balcony), because you read her letter,
+   or of her own will once she loves you. Never twice, never out of nowhere. */
+card("lal_itiraf", { who: "lal",
+  c: s => !has(s, "lal_yuzlesti") && (has(s, "lal_sordun") || has(s, "mektup_okundu") || s.bond >= 3),
+  t: "", l: { l: "" }, r: { l: "" },
+  dyn: s => {
+    const done = ["lal_yuzlesti"];
+    const t = has(s, "lal_sordun")
+      ? "Lâl kapıyı kapatıyor. ‘Nereden bildin? …Evet. Zaman Muhafızlarındanım. Seni yakalamam için gönderildim. Ama…’ Sesi titriyor."
+      : has(s, "mektup_okundu")
+      ? "Lâl odana geliyor, elinde açılmış mühürlü mektup. ‘Okudun. O zaman saklamanın anlamı yok. Zaman Muhafızlarındanım. Seni yakalamam için gönderildim. Ama…’"
+      : "Lâl gece yarısı kapını çalıyor. ‘Sana yalan söyledim. Ben ozan değilim. Zaman Muhafızlarındanım, seni izlemem için gönderildim. Ama…’ Sesi titriyor.";
+    const bf = has(s, "lal_sordun") ? "Sırrını başka bir zamandan bildiğin için" : has(s, "mektup_okundu") ? "Mektubu açtığın için" : "Lâl'in kalbini kazandığın için";
+    return { t, bf,
+      l: { l: "Beni ihbar et, bitsin", ihbar: true, set: done.concat("lal_ihbar"), mem: ["lal_ajan"], res: "Lâl ağlayarak çıktı. Az sonra koridorda gri pelerinler belirdi." },
+      r: s.bond >= 3
+        ? { l: "Benimle kal", set: done.concat("lal_sevgili"), mem: ["lal_ajan"], para: -15, res: "Lâl raporu mumun alevine tuttu. ‘Bu gece seninleyim. Zaman ne derse desin.’" }
+        : { l: "Benimle kal", set: done.concat("lal_uzak"), mem: ["lal_ajan"], res: "‘Seni yeterince tanımıyorum,’ dedi Lâl, ve gitti. Onu daha iyi tanısaydın…" } };
+  } });
 
 /* ---- Day 6 ---- */
 card("ece_sonuc", { who: "aybike", c: s => has(s, "ece_kurtarma"),
@@ -849,7 +869,7 @@ card("nur_son", { who: "nur",
   t: "Nûr artık çok yaşlı. ‘Yarın gece her şey belli olacak. İstersen kum saatini kır. Muhafızlar seni unutur, sen de geri sarmayı.’",
   l: { l: "Sonuna kadar gideceğim", res: "‘Ben de öyle demiştim,’ dedi Nûr." },
   r: { l: "Kır", end: "kirik" },
-  u: { need: () => mem("nur_sen"), l: "Sen yaşlı benim, değil mi?", para: 3, set: ["dongu_bilgi"], res: "Nûr uzun süre sustu. ‘Evet. Ve bir gün, sen de ben olacaksın.’" } });
+  u: { need: s => mem("nur_sen") && !has(s, "dongu_bilgi"), l: "Sen yaşlı benim, değil mi?", para: 3, set: ["dongu_bilgi"], res: "Nûr uzun süre sustu. ‘Evet. Ve bir gün, sen de ben olacaksın.’" } });
 
 /* ---- Day 7 ---- */
 card("aybike_son", { who: "aybike",
@@ -933,7 +953,7 @@ const SLOTS = [
   ["aybike_sur"], ["hizir_meet"], ["sulen_dost", "sulen"],
   ["lal_cicek"], ["tolun"], ["karan_itiraf", "karan_fisilti"],
   ["nur_yasli"], ["aybike_kurtar", "aybike_tatbikat"], ["lal_balkon"],
-  ["lal_dusunce", "kule_gece"], ["lal_mektup", "tolun_casus"], ["lal_itiraf", "kule_gece"],
+  ["lal_dusunce", "kule_gece"], ["lal_mektup", "tolun_casus"], ["lal_itiraf", "sur_gece"],
   ["ece_sonuc", "tolun_son"], ["hizir_saat", "hizir_ikinci", "hizir_meet"], ["nur_son"],
   ["aybike_son"], ["karan_son"], ["kizilgece"]
 ];
@@ -1142,9 +1162,11 @@ function decide(o) {
   R.para = clamp(R.para - 2, 0, 100);
 
   if (!end) {
+    let advanced = false;
     if (o.ret) S.card = S.ret.pop() || pickScene();
     else if (o.next) S.card = o.next;
     else {
+      advanced = true;
       S.t++;
       if (S.t % 3 === 0 && !R.days.includes(S.t)) {
         R.days.push(S.t);
@@ -1152,12 +1174,12 @@ function decide(o) {
       }
       S.card = pickScene();
     }
-    if (!R.eflShown && R.para >= 20 && !o.spawn) { R.eflShown = true; S.ret.push(S.card); S.card = "eflatun_giris"; }
-    else if (R.hunter && !R.teklifShown && R.para >= 80) { R.teklifShown = true; S.ret.push(S.card); S.card = "eflatun_teklif"; }
+    if (advanced && !R.eflShown && !R.hunter && R.para >= 20) { R.eflShown = true; S.ret.push(S.card); S.card = "eflatun_giris"; }
+    else if (advanced && R.hunter && !R.teklifShown && R.para >= 80) { R.teklifShown = true; S.ret.push(S.card); S.card = "eflatun_teklif"; }
   }
   if (!end && R.para >= 100) end = "arrest";
   addNode(parent, o.l, end);
-  if (o.ihbar) { if (!R.hunter) R.hunter = { node: 0, tears: [] }; R.hunter.node = R.cur; R.hunter.tears = []; }
+  if (o.ihbar) { if (!R.hunter) R.hunter = { node: 0, tears: [] }; R.eflShown = true; R.hunter.node = R.cur; R.hunter.tears = []; }
   else hunterStep(R.para >= 50 ? 2 : 1);
   if (!end) checkCaught();
   saveMeta();
