@@ -381,13 +381,13 @@ body::after {
 
 /* ---------- Time tree ---------- */
 .tree-ov { z-index: 35; }
-.tree-panel { max-width: 760px; height: 100%; padding: 16px; gap: 10px; }
+.tree-panel { max-width: 520px; height: 100%; padding: 16px; gap: 10px; }
 .tree-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
 .tree-head h2 { font-size: 24px; margin-top: 4px; }
 .tree-sum { font: 500 11px/1.3 var(--f-mono); letter-spacing: .06em; color: var(--muted); margin-top: 6px; }
 .xbtn { appearance: none; flex-shrink: 0; border: 1px solid var(--brass-dim); background: transparent; color: var(--fg); width: 38px; height: 38px; border-radius: 50%; font: 600 16px/1 var(--f-mono); cursor: pointer; }
 .xbtn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
-.tree-scroll { flex: 1; min-height: 170px; overflow: auto; border-radius: 10px; background: var(--ink); border: 1px solid var(--ink-3); -webkit-overflow-scrolling: touch; }
+.tree-scroll { flex: 1; min-height: 220px; overflow: auto; border-radius: 10px; background: var(--ink); border: 1px solid var(--ink-3); -webkit-overflow-scrolling: touch; }
 .tree-scroll svg { display: block; }
 .tn { cursor: pointer; }
 .pulse { animation: ring 1.6s infinite; }
@@ -583,10 +583,10 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const pickOne = a => a[Math.floor(Math.random() * a.length)];
 
 /* ================= TIME ================= */
-const PARTS = ["Sabah", "Öğle", "Gece"];
-const LAST_T = 20, MAX_SAND = 6;
-const dayOf = t => Math.floor(t / 3) + 1;
-const when = t => `Gün ${dayOf(t)} · ${PARTS[t % 3]}`;
+const PARTS = ["Sabah", "Öğle", "Akşam", "Gece"];
+const LAST_T = 27, MAX_SAND = 6;
+const dayOf = t => Math.floor(t / 4) + 1;
+const when = t => `Gün ${dayOf(t)} · ${PARTS[t % 4]}`;
 
 /* ================= ICONS ================= */
 const ICON = {
@@ -654,7 +654,7 @@ const MEMS = {
 /* Flags in the current world, in words, for the tree's butterfly diff */
 const FLAG_TEXT = {
   kapi: "Ana kapı tutuldu", sur: "Askerler surlara yayıldı", kemer_tutuldu: "Su kemerinde pusu var",
-  karan_sarsildi: "Karan, Ece'yi bildiğini öğrendi", zehir_red: "Şölende kadehi reddettin", karan_ifsa: "Karan'ın zehri açığa çıktı",
+  karan_sarsildi: "Karan, Ece'yi bildiğini öğrendi", karan_sikisti: "Karan köşeye sıkıştı", zehir_red: "Şölende kadehi reddettin", karan_ifsa: "Karan'ın zehri açığa çıktı",
   karan_dost: "Karan seninle", karan_zindan: "Karan zindanda", karan_izle: "Karan izleniyor", karan_tuzak: "Karan tuzak kuracak",
   oyala: "Tolun oyalandı", savas: "Tolun'a meydan okudun", ece_kurtarma: "Ece için birlik gönderildi", ece_kurtuldu: "Ece kurtuldu",
   ece_kayip: "Ece kurtarılamadı", hizir_dost: "Hızır dostun", hizir_soyledi: "Hızır kelimesini sana söyledi", lal_soyledi: "Lâl'e sırrını açtın", lal_sevgili: "Lâl seninle",
@@ -679,19 +679,19 @@ const card = (id, o) => { o.id = id; C[id] = o; };
 
 /* ---- Day 1 ---- */
 card("nur_intro", { who: "nur",
-  t: "Taç giyme gecesi. Yaşlı saatçi Nûr elinde bir kum saatiyle bekliyor. ‘Yedi gün sonra Kızıl Gece gelecek, Naip. Şehir yanacak, sen de onunla. Ters çevir, zaman geri akar.’",
+  t: "Taç giyme sabahı. Yaşlı saatçi Nûr elinde bir kum saatiyle bekliyor. ‘Yedi gün sonra Kızıl Gece gelecek, Naip. Şehir yanacak, sen de onunla. Ters çevir, zaman geri akar.’",
   l: { l: "Bu bir masal", res: "Nûr gülümsedi: ‘Herkes önce böyle der.’" },
   r: { l: "Neden ben?", res: "‘Çünkü bunu zaten yaptın,’ dedi Nûr. Ne demek istediğini anlamadın." },
   u: { need: () => mem("nur_sen"), l: "Sen bensin, değil mi?", para: 3, set: ["dongu_bilgi"], res: "Nûr'un gözleri doldu. ‘Bu sefer erken anladın.’" } });
 
 card("karan_elci", { who: "karan",
-  t: "Vezir Karan eğiliyor. ‘Doğu Hanlığı'ndan elçi Tolun geldi Naibim. Barış istiyorlar. İzin verin onu ben ağırlayayım, siz yorulmayın.’",
+  t: "Vezir Karan eğiliyor. Bileğinde ince, çocukça bir boncuk bileklik var. ‘Doğu Hanlığı'ndan elçi Tolun geldi Naibim. Barış istiyorlar. İzin verin onu ben ağırlayayım.’",
   l: { l: "Elçiyle ben görüşürüm", res: "Karan'ın gülümsemesi bir an gerildi." },
   r: { l: "Sen ilgilen Vezir", res: "Karan memnun ayrıldı. Fazla memnun." },
-  u: { need: () => mem("ece"), l: "Ece nasıl, Karan?", para: 3, set: ["karan_sarsildi"], res: "Karan'ın elindeki mühür yere düştü. ‘Kızımın adını… nereden biliyorsunuz?’" } });
+  u: { need: () => mem("ece"), l: "Bilekliğin… Ece mi yaptı?", para: 3, set: ["karan_sarsildi"], res: "Karan bileğini yeninin içine sakladı. ‘Bu adı kimden duydunuz?’ Sesi buz gibiydi. Artık sana sarayın her köşesinde casusu olan biri gibi bakıyor." } });
 
 card("lal_sarki", { who: "lal", type: "pick",
-  t: "Saray ozanı Lâl sazını akort ediyor. ‘Bu gece size bir şarkı çalacağım Naibim. Ama önce tahmin edin: hangisi?’",
+  t: "Saray ozanı Lâl sazını akort ediyor. Sazın sapında pirinç bir pusula var; iğnesi kuzeyi değil, seni gösteriyor. ‘Size bir şarkı çalacağım. Ama önce tahmin edin: hangisi?’",
   opts: guess("sarki", SARKI, "Lâl'in gözleri parladı. ‘Aklımı mı okuyorsunuz?’ Şarkıyı yalnızca senin için çaldı.",
     a => `‘Yok!’ diye güldü Lâl. ‘${a} çalacaktım. Belki bir dahaki sefere.’`, "lal_sarki") });
 
@@ -703,7 +703,7 @@ card("aybike_sur", { who: "aybike",
   u: { need: () => mem("kemer"), l: "Su kemerini tutun", para: 3, set: ["kemer_tutuldu"], res: "Aybike kaşını kaldırdı: ‘Su kemeri mi? Oradan kim girer ki?’ Yine de emri uyguladı." } });
 
 card("hizir_meet", { who: "hizir",
-  t: "Saat kulesinin bekçisi Hızır sana uzun uzun bakıyor. ‘Sende bir tuhaflık var. Gölgen bir saniye geç geliyor. Sen… zaman yolcusu musun?’",
+  t: "Saat kulesinin bekçisi Hızır sana uzun uzun bakıyor. ‘Gölgen bir saniye geç geliyor. Bunu yalnızca bir kez gördüm: yıllar önce, kendi gölgemde. Sen… zaman yolcusu musun?’",
   l: { l: "Ne saçmalık", set: ["hizir_tanisti"], res: "‘Hıh. Hepsi böyle der.’ Hızır kuleye geri döndü." },
   r: { l: "Evet, öyleyim", set: ["hizir_tanisti"], next: "hizir_test" },
   dyn: s => has(s, "hizir_tanisti") ? { t: "Hızır yine kulenin kapısında. ‘Geçen sefer saçmalık dedin. Gölgen hâlâ geç geliyor ama. Soruyorum yine: zaman yolcusu musun?’" } : {} });
@@ -730,7 +730,7 @@ card("hizir_ikinci", { who: "hizir", c: s => has(s, "hizir_soyledi"),
   r: { l: "Belki de yolcu değilim", res: "‘Belki. Ya da kum saatini henüz doğru kullanmadın.’" } });
 
 card("hizir_dost_k", { who: "hizir",
-  t: "‘Madem yolcusun, iki öğüt. Bir: Muhafızlar yırttığın zamanın kokusunu alır. Geri sardığında ayrıldığın yerde bir yırtık kalır, önce oraya giderler. İki: Kızıl Gece'de kapılara değil, sulara bak.’",
+  t: "‘Ben de bir zamanlar o kum saatini taşıdım. Bana da yaşlı bir kadın vermişti. Madem yolcusun, iki öğüt. Bir: Muhafızlar yırttığın zamanın kokusunu alır. Geri sardığında ayrıldığın yerde bir yırtık kalır, önce oraya giderler. İki: Kızıl Gece'de kapılara değil, sulara bak.’",
   l: { l: "Sulara mı?", mem: ["kemer"], res: "‘Su kemeri, evlat. Sular şehre nereden giriyorsa ölüm de oradan girer.’" },
   r: { l: "Teşekkürler Hızır", mem: ["kemer"], res: "Hızır göz kırptı. ‘Su kemeri. Unutma.’" } });
 
@@ -741,10 +741,10 @@ card("sulen", { who: "karan",
   u: { need: () => mem("zehir"), l: "Kadehleri değiştir", para: 3, set: ["karan_ifsa"], res: "Kadehini Karan'ınkiyle değiştirdin. Karan kadehe baktı, sana baktı. İçmedi. Artık biliyorsun. O da bildiğini biliyor." } });
 
 card("sulen_dost", { who: "karan", c: s => has(s, "karan_sarsildi"),
-  t: "Şölen. Karan kadehini doldururken elleri titriyor. Sonra şişeyi yere bırakıyor. ‘Bu şaraptan içmeyin Naibim,’ diye fısıldıyor.",
-  bf: () => "Ece'nin adını andığın için",
-  l: { l: "Neden?", set: ["karan_ifsa"], res: "‘Bu gece değil. Yarın gece… her şeyi anlatacağım.’" },
-  r: { l: "Teşekkür ederim", set: ["karan_ifsa"], res: "Karan başını eğdi. Gözleri dolmuştu." } });
+  t: "Şölen. Karan kadehini doldururken duraksıyor, şişeyi masaya bırakıyor. Eğilip fısıldıyor: ‘Casuslarınız her şeyi biliyorsa bunu da bilsinler. Bu şaraptan içmeyin.’",
+  bf: () => "Bilekliği sorduğun için",
+  l: { l: "Neden?", set: ["karan_ifsa"], res: "‘Burada değil,’ dedi Karan. Gözleri kapıdaki muhafızlardaydı." },
+  r: { l: "Teşekkür ederim", set: ["karan_ifsa"], res: "Karan başını eğdi. Kadehini de içmeden bıraktı." } });
 
 /* ---- Day 3 ---- */
 card("lal_cicek", { who: "lal", type: "pick",
@@ -758,23 +758,38 @@ card("tolun", { who: "tolun",
   r: { l: "Düşünmem lazım, zaman ver", set: ["oyala"], res: "Tolun memnun ayrıldı. Kampına yolladığı mesajı gördün: ‘Acele yok. Naip korkuyor.’" },
   u: { need: () => mem("ece"), l: "Ece'yi serbest bırakın", para: 3, set: ["savas"], res: "Tolun'un yüzü gerildi. ‘Demek biliyorsunuz. O zaman pazarlık bitti.’" } });
 
-card("karan_itiraf", { who: "karan", c: s => has(s, "karan_ifsa"),
-  t: "Karan gece yarısı odana geliyor, gözleri kızarmış. ‘Biliyorsunuz. Kızım Ece Doğu Hanı'nın elinde. Yedinci gece kapıyı açmazsam onu öldürecekler.’",
-  bf: s => has(s, "karan_sarsildi") ? "Ece'nin adını andığın için" : "Şölende kadehi değiştirdiğin için",
+card("karan_itiraf", { who: "karan", c: s => has(s, "karan_sikisti"),
+  t: "Karan sabah erkenden geliyor, gözleri uykusuzluktan kızarmış. ‘Bütün gece düşündüm. Casusunuz iyi iş çıkarmış. Evet… kızım Ece Doğu Hanı'nın elinde. Yedinci gece kapıyı açmazsam onu öldürecekler.’",
+  bf: s => has(s, "karan_sarsildi") ? "Notuna uyup ona gittiğin için" : "Dün gece kapısını çaldığın için",
   l: { l: "Hainlerin yeri zindan", set: ["karan_zindan"], mem: ["ece"], res: "Muhafızlar Karan'ı götürdü. Koridordan bağırdı: ‘Ece'yi öldürecekler!’" },
   r: { l: "Ece'yi birlikte kurtaracağız", set: ["karan_dost"], mem: ["ece"], res: "Karan dizlerinin üstüne çöktü. Yıllardır ilk kez biri ona yardım teklif ediyordu." } });
 
-card("karan_fisilti", { who: "sen",
-  t: "Gece. Vezir Karan'ın odasından fısıltılar geliyor. Biri ağlıyor mu?",
-  l: { l: "Uyumaya git", res: "Rüyanda bir kız çocuğu adını söylüyordu. Uyanınca hatırlamadın." },
-  r: { l: "Kapıyı dinle" },
-  dyn: s => has(s, "zehir_red")
-    ? { r: { l: "Kapıyı dinle", end: "hancer", mem: ["ece"] } }
-    : { r: { l: "Kapıyı dinle", mem: ["ece"], res: "‘…Ece'ye dokunmayın… yedinci gece kapıyı açacağım…’ Karan'ın sesi titriyordu. Fark edilmeden uzaklaştın." } } });
+card("karan_gece", { who: "sen", t: "", l: { l: "" }, r: { l: "" },
+  dyn: s => {
+    if (has(s, "karan_sarsildi")) return {
+      t: "Odana döndüğünde yastığının üstünde katlanmış bir not buluyorsun: ‘Yarın sabah, divandan önce. Yalnız gelin. — K.’",
+      bf: "Bilekliği sorduğun için",
+      l: { l: "Gitme", res: "Sabah Karan divanda bir köşeye çekildi. Bir daha göz göze gelmedi." },
+      r: { l: "Gideceğim", set: ["karan_sikisti"], res: "Notu mumun alevinde yaktın. Sabahı zor ettin." } };
+    if (has(s, "karan_ifsa")) return {
+      t: "Gece yarısı. Karan'ın odasında ışık yanıyor, kapısında iki muhafız bekliyor. Şölende kadehe bakışı aklından çıkmıyor.",
+      bf: "Şölende kadehleri değiştirdiğin için",
+      l: { l: "Bırak, korksun", res: "Karan'ın odasındaki ışık sabaha kadar sönmedi." },
+      r: { l: "Kapısını çal", set: ["karan_sikisti"], res: "Karan kapıyı araladı, beti benzi atmış. ‘Kim söyledi size? Hangi casusunuz?’ Cevap vermedin. Kapı kapandı, ama elleri titriyordu." } };
+    return {
+      t: "Gece. Vezir Karan'ın odasından fısıltılar geliyor. Biri ağlıyor mu?",
+      l: { l: "Uyumaya git", res: "Rüyanda bir kız çocuğu adını söylüyordu. Uyanınca hatırlamadın." },
+      r: { l: "Kapıyı dinle", end: "hancer", mem: ["ece"] } };
+  } });
+
+card("divan", { who: "aybike",
+  t: "Aybike sesini alçaltıyor. ‘Vezir bu sabah divana gelmedi. Adamlarım onu şafakta Doğu elçisinin çadırından çıkarken görmüş.’",
+  l: { l: "Görmezden gel", res: "Aybike dudaklarını büzdü ama sustu." },
+  r: { l: "Peşine adam takın", set: ["karan_izle"], res: "Artık Karan'ın gölgesini başka gölgeler izliyor." } });
 
 /* ---- Day 4 ---- */
 card("nur_yasli", { who: "nur",
-  t: "Nûr taç gecesinden bu yana yıllar geçmiş gibi yaşlanmış. ‘Kum saatini kaç kez çevirdin? Her çevirişinde ben biraz daha yaşlanıyorum. Fark ettin mi?’",
+  t: "Nûr taç gününden bu yana yıllar geçmiş gibi yaşlanmış. ‘Kum saatini kaç kez çevirdin? Her çevirişinde ben biraz daha yaşlanıyorum. Fark ettin mi?’",
   dyn: () => R.rewinds === 0 ? { t: "Nûr seni süzüyor. ‘Kum saatini hiç çevirmedin, değil mi? Cesur. Ya da aptalca. Çevirdiğinde bana ne olduğunu göreceksin.’" } : {},
   l: { l: "Bu ne demek?", res: "‘Sonra anlarsın. Belki de anlamazsın. Bazı döngüler kısadır.’" },
   r: { l: "Kimsin sen?", mem: ["nur_sen"], res: "‘Ben, vazgeçmeyen halinim. Ya da olacağın kişi.’ Nûr'un gözleri… senin gözlerin." } });
@@ -791,7 +806,7 @@ card("aybike_tatbikat", { who: "aybike",
   r: { l: "Gerçeği anlat", set: ["hazir"], res: "Kışlada sessizlik. Sonra biri kılıcını bilemeye başladı." } });
 
 card("lal_balkon", { who: "lal",
-  t: "Lâl balkonda yıldızlara bakıyor. ‘Naibim… sizce bir insan aynı geceyi iki kez yaşayabilir mi?’",
+  t: "Lâl balkonda, avucundaki pusulaya bakıyor. İğne deli gibi dönüyor. ‘Naibim… sizce bir insan aynı geceyi iki kez yaşayabilir mi?’",
   l: { l: "Saçmalık", res: "Lâl'in yüzündeki ışık söndü. ‘Haklısınız. Saçmalık.’" },
   r: { l: "Ben yaşadım", bond: 1, para: 5, set: ["lal_soyledi"], res: "Lâl sana uzun uzun baktı. ‘Biliyordum,’ diye fısıldadı. Neyi bildiğini sormadın." },
   u: { need: s => mem("lal_ajan") && !has(s, "lal_yuzlesti"), l: "Sen bir Muhafızsın, Lâl", para: 3, bond: 1, set: ["lal_sordun"], next: "lal_itiraf", res: "Lâl'in nefesi kesildi. Bunu ancak başka bir zamanı yaşamış biri bilebilirdi. Yani sen de…" } });
@@ -809,7 +824,7 @@ card("kule_gece", { who: "sen",
   r: { l: "Uyumaya git", res: "Rüyanda su sesi duydun. Suyun içinde kılıç sesleri." } });
 
 card("sur_gece", { who: "aybike",
-  t: "Surlarda gece nöbeti. Aybike fenerini kaldırıyor. ‘Askerler su kemerinden garip sesler geldiğini söylüyor. Ben rüzgâr diyorum.’",
+  t: "Surlarda öğle devriyesi. Aybike kaşlarını çatıyor. ‘Nöbetçiler geceleri su kemerinden garip sesler geldiğini söylüyor. Ben rüzgâr diyorum.’",
   l: { l: "Rüzgârdır", res: "Aybike omuz silkti. Fener söndü." },
   r: { l: "Kemere bir devriye yollayın", mem: ["izler"], res: "Devriye boş döndü. Ama çamurda taze çizme izleri vardı. Şehrin dışına değil, içine doğru." } });
 
@@ -909,7 +924,7 @@ card("kizilgece", { who: "kehanet", t: "", l: { l: "" }, r: { l: "" },
       t: "Kızıl Gece. Karan ana kapıyı açıyor. Doğu ordusu içeri dalıyor… ve tuzağa. Su kemerinden gelen ikinci kol Aybike'nin pususuna çarpıyor.",
       bf: "Ece'yi kurtardığın, Karan'ı kazandığın, su kemerini tuttuğun için",
       l: { l: "Ateş!", end: "safak" }, r: { l: "Tolun'u canlı yakalayın", end: "safak" } };
-    else if (k && (has(s, "karan_zindan") || has(s, "karan_izle") || has(s, "kapi"))) o = {
+    else if (k && (has(s, "karan_zindan") || has(s, "karan_izle") || has(s, "kapi") || has(s, "hazir"))) o = {
       t: "Kızıl Gece. Su kemerinden sızan Doğu askerleri Aybike'nin pususuna düşüyor. Ana kapı kapalı kalıyor.",
       bf: "Su kemerini tuttuğun ve kapıyı koruduğun için",
       l: { l: "Sonuna kadar savaş", end: "kizil" }, r: { l: "Surlara çık", end: "kizil" } };
@@ -922,6 +937,55 @@ card("kizilgece", { who: "kehanet", t: "", l: { l: "" }, r: { l: "" },
       l: { l: "Son nefesine kadar savaş", end: fall, mem: ["kemer"] }, r: { l: "Kum saatine sarıl", end: fall, mem: ["kemer"] } };
     if (u) o.u = u;
     return o;
+  } });
+
+
+/* ---- Scenes added in the four-part day ---- */
+card("lal_pusula", { who: "lal",
+  t: "Lâl'in sazından pirinç pusula düşüyor. Eğilip alıyorsun. İğne avucunda dönüp duruyor, sonra sana kilitleniyor.",
+  l: { l: "Geri ver", res: "Lâl pusulayı kaptı. ‘Babamdan kalma. Bozuk.’ Yalan söylediği belliydi." },
+  r: { l: "Bu neyi gösteriyor?", res: "‘Fırtınaları,’ dedi Lâl. ‘Bazen insanların içindeki fırtınaları.’ Gözlerini kaçırdı." },
+  u: { need: s => mem("lal_ajan") && !has(s, "lal_yuzlesti"), l: "Muhafız pusulası bu, değil mi?", para: 3, bond: 1, set: ["lal_sordun"], next: "lal_itiraf", res: "Lâl'in yüzü bembeyaz oldu." } });
+
+card("lal_balkon_sonra", { who: "lal", c: s => has(s, "lal_yuzlesti"), t: "", l: { l: "" }, r: { l: "" },
+  dyn: s => has(s, "lal_sevgili")
+    ? { t: "Lâl balkonda, başını omzuna yaslıyor. ‘Raporu yaktım. Artık ikimiz de zamandan kaçağız.’",
+        l: { l: "Pişman mısın?", res: "‘Hayır,’ dedi. ‘Sadece korkuyorum.’" }, r: { l: "Yıldızlara bak", res: "Bir yıldız kaydı. Lâl bir dilek tuttu, söylemedi." } }
+    : { who: "sen", t: "Balkon boş. Lâl'in sazı da yok. Sadece rüzgâr.",
+        l: { l: "İçeri gir", res: "Kapıyı kapattın." }, r: { l: "Biraz daha bekle", res: "Kimse gelmedi." } } });
+
+card("nur_atolye", { who: "sen",
+  t: "Nûr'un atölyesi boş. Raflarda yüzlerce kum saati, hepsi seninkinin aynısı. Tezgâhta senin el yazınla bir not duruyor.",
+  l: { l: "Dokunma", res: "Çıkarken arkandaki raflardan bir kum saatinin kendiliğinden döndüğünü duydun." },
+  r: { l: "Notu oku", mem: ["nur_sen"], res: "‘Bu sefer erken anla.’ Yazı senin yazın. Mürekkebi yıllanmış." } });
+
+card("sessiz_aksam", { who: "sen",
+  t: "Akşam. Kum saatini ilk kez yakından inceliyorsun. Camın içine, kumun arasına ince bir yazı kazınmış: VII.",
+  l: { l: "Kumu say", res: "Kalan kum, kalan günlerden fazla. Bu iyi bir işaret mi?" },
+  r: { l: "Camı ışığa tut", res: "Yazının altında daha küçük bir yazı: ‘N.’ Ve onun altında senin adının baş harfi." } });
+
+card("ruya", { who: "sen",
+  t: "Rüyanda Aras'ı kuşbakışı görüyorsun. Nehir, kapılar, su kemeri. Bir yerden kırmızı bir ışık sızıyor.",
+  dyn: () => mem("kemer") ? { t: "Rüyanda su kemeri kana boyanıyor. Artık nereden geleceklerini biliyorsun. Peki bu sefer ne yapacaksın?" } : {},
+  l: { l: "Kapılara bak", res: "Kapılar sağlam. Işık başka yerden geliyor." },
+  r: { l: "Işığın peşine düş", res: "Işık suyun içinden geliyordu. Uyandığında elin ıslaktı." } });
+
+card("halk_meydan", { who: "aybike",
+  t: "Meydan kalabalık. Kızıl Gece söylentisi herkesin dilinde. Biri bağırıyor: ‘Naip bizi kurtaracak mı, kaçacak mı?’",
+  l: { l: "Kimse şehri terk etmeyecek", set: ["hazir"], res: "Kalabalık dağıldı. Bir kısmı kapılara yürüdü, nöbete." },
+  r: { l: "Kadınlar ve çocuklar dağlara", set: ["tahliye"], res: "Gece boyunca dağ yoluna fenerler dizildi." } });
+
+card("son_aksam", { who: "aybike", t: "", l: { l: "" }, r: { l: "" },
+  dyn: s => {
+    if (has(s, "lal_sevgili")) return { who: "lal",
+      t: "Lâl sazını bırakıyor. ‘Bu gece ne olursa olsun yanındayım. Zamanın içinde ya da dışında.’",
+      l: { l: "Yanımda kal", res: "Lâl elini avucuna bıraktı." }, r: { l: "Sen kaç, kurtul", res: "‘Hayır,’ dedi Lâl. ‘Bu sefer kaçmıyorum.’" } };
+    if (has(s, "hizir_dost")) return { who: "hizir",
+      t: "Hızır kulenin tepesinden sesleniyor. ‘Gece yarısı çanı çalacağım. O an Muhafızlar sağır olur.’",
+      l: { l: "Gerek yok", res: "‘Sen bilirsin yolcu.’" }, r: { l: "Çal", hunterReset: true, para: -10, res: "Çan sesi şehrin üstüne yayıldı. Zaman bir an nefes aldı." } };
+    return {
+      t: "Aybike askerleri meydana dizmiş. ‘Bir söz söyleyin onlara, Naibim.’",
+      l: { l: "Şehir için", res: "Mızraklar göğe kalktı." }, r: { l: "Birbiriniz için", set: ["hazir"], res: "Askerler birbirine baktı. Sonra tek ses: ‘Birbirimiz için!’" } };
   } });
 
 /* ---- Inserted: the Time Police ---- */
@@ -949,13 +1013,13 @@ card("yakalandi", { who: "eflatun", t: "", l: { l: "" }, r: { l: "" },
 
 /* ---- Story order: 7 days × sabah / öğle / gece. First scene whose condition holds is played. ---- */
 const SLOTS = [
-  ["nur_intro"], ["karan_elci"], ["lal_sarki"],
-  ["aybike_sur"], ["hizir_meet"], ["sulen_dost", "sulen"],
-  ["lal_cicek"], ["tolun"], ["karan_itiraf", "karan_fisilti"],
-  ["nur_yasli"], ["aybike_kurtar", "aybike_tatbikat"], ["lal_balkon"],
-  ["lal_dusunce", "kule_gece"], ["lal_mektup", "tolun_casus"], ["lal_itiraf", "sur_gece"],
-  ["ece_sonuc", "tolun_son"], ["hizir_saat", "hizir_ikinci", "hizir_meet"], ["nur_son"],
-  ["aybike_son"], ["karan_son"], ["kizilgece"]
+  /* Gün 1 */ ["nur_intro"], ["karan_elci"], ["aybike_sur"], ["lal_sarki"],
+  /* Gün 2 */ ["aybike_tatbikat"], ["hizir_meet"], ["sulen_dost", "sulen"], ["karan_gece"],
+  /* Gün 3 */ ["lal_cicek"], ["karan_itiraf", "divan"], ["tolun"], ["kule_gece"],
+  /* Gün 4 */ ["nur_yasli"], ["aybike_kurtar", "tolun_casus"], ["lal_pusula"], ["lal_balkon_sonra", "lal_balkon"],
+  /* Gün 5 */ ["nur_atolye"], ["lal_dusunce", "sur_gece"], ["lal_mektup", "sessiz_aksam"], ["lal_itiraf", "ruya"],
+  /* Gün 6 */ ["ece_sonuc", "tolun_son"], ["hizir_saat", "hizir_ikinci", "hizir_meet"], ["halk_meydan"], ["nur_son"],
+  /* Gün 7 */ ["aybike_son"], ["karan_son"], ["son_aksam"], ["kizilgece"]
 ];
 
 
@@ -1229,7 +1293,7 @@ function decide(o) {
     else {
       advanced = true;
       S.t++;
-      if (S.t % 3 === 0 && !R.days.includes(S.t)) {
+      if (S.t % 4 === 0 && !R.days.includes(S.t)) {
         R.days.push(S.t);
         if (R.sand < MAX_SAND) { R.sand++; const tt = S.t; setTimeout(() => toast(`${when(tt)} · +1 kum`), 900); }
       }
@@ -1346,7 +1410,7 @@ function render(enter) {
   for (let t = 0; t <= LAST_T; t++) {
     const past = t < S.t && anc.some(n => n.snap.t === t);
     const cls = ["tick"];
-    if (t % 3 === 0) cls.push("dstart");
+    if (t % 4 === 0) cls.push("dstart");
     if (t === S.t) cls.push("now"); else if (past) cls.push("past");
     if (R.sel === t) cls.push("sel");
     if (t === LAST_T) cls.push("kg");
@@ -1594,52 +1658,60 @@ function warp(from, to, label, fwd, cb) {
 
 /* ================= TIME TREE ================= */
 let TP = {}, treeSel = 0;
-const TX = d => 30 + d * 44, TY = l => 40 + l * 46;
+/* Vertical tree: time runs top to bottom in day bands, each branch is a lane, each state a small card. */
+const T_LEFT = 76, T_LANE = 30, T_TOP = 40, T_ROW = 72, T_SUB = 22;
 function drawTree() {
   const onPath = new Set(pathIds(R.cur));
   let lane = 0; TP = {};
-  const walk = (id, d) => {
+  const walk = id => {
     const n = node(id);
-    if (!n.kids.length) TP[id] = { l: lane++ };
-    else {
-      const kids = n.kids.slice().sort((a, b) => onPath.has(b) - onPath.has(a));
-      kids.forEach(k => walk(k, d + 1));
-      TP[id] = { l: TP[kids[0]].l };
-    }
-    TP[id].X = TX(d); TP[id].Y = TY(TP[id].l); TP[id].d = d;
+    if (!n.kids.length) { TP[id] = { l: lane++ }; return; }
+    const kids = n.kids.slice().sort((a, b) => onPath.has(b) - onPath.has(a));
+    kids.forEach(walk);
+    TP[id] = { l: TP[kids[0]].l };
   };
-  walk(0, 0);
-  const maxD = Math.max(...Object.values(TP).map(p => p.d));
-  const W = TX(maxD) + 170, H = TY(lane - 1) + 36;
-  let g = "";
-  for (const id of onPath) {
-    const n = node(id), p = TP[id];
-    const prev = n.parent != null ? node(n.parent).snap.t : -1;
-    if (dayOf(n.snap.t) !== dayOf(prev) && !n.end) g += `<text x="${p.X}" y="16" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="${n.snap.t >= 18 ? "#ec6d5c" : "#8d9ba2"}">G${dayOf(n.snap.t)}</text>`;
+  walk(0);
+  for (const n of R.nodes) {
+    let k = 0, p = n.parent;
+    while (p != null && node(p).snap.t === n.snap.t) { k++; p = node(p).parent; }
+    TP[n.id].X = T_LEFT + TP[n.id].l * T_LANE;
+    TP[n.id].Y = T_TOP + n.snap.t * T_ROW + k * T_SUB;
   }
+  const W = Math.max(T_LEFT + lane * T_LANE + 160, 330), H = T_TOP + (LAST_T + 1) * T_ROW;
+  const mono = 'font-family="JetBrains Mono, monospace"';
+  let g = "";
+  for (let d = 0; d < 7; d++) {
+    const y0 = T_TOP + d * 4 * T_ROW - 26;
+    g += `<rect x="0" y="${y0}" width="${W}" height="${4 * T_ROW}" fill="${d % 2 ? "#13262f" : "#0f1f29"}"/>`;
+    g += `<text x="10" y="${y0 + 14}" ${mono} font-size="10" font-weight="700" letter-spacing="1.2" fill="${d === 6 ? "#ec6d5c" : "#d4a853"}">GÜN ${d + 1}</text>`;
+    for (let q = 0; q < 4; q++) g += `<text x="10" y="${T_TOP + (d * 4 + q) * T_ROW + 4}" ${mono} font-size="9" fill="#5f7480">${PARTS[q].toLocaleUpperCase("tr")}</text>`;
+  }
+  // edges
   for (const n of R.nodes) {
     if (n.parent == null) continue;
     const a = TP[n.parent], b = TP[n.id], main = onPath.has(n.id);
-    const d = a.Y === b.Y ? `M${a.X} ${a.Y}L${b.X} ${b.Y}` : `M${a.X} ${a.Y}C${a.X + 26} ${a.Y} ${b.X - 26} ${b.Y} ${b.X} ${b.Y}`;
-    g += `<path d="${d}" fill="none" stroke="${main ? "#d4a853" : "#8d9ba2"}" stroke-width="${main ? 2.6 : 1.5}" ${main ? "" : 'stroke-dasharray="4 3" opacity=".6"'}/>`;
+    const d = a.X === b.X ? `M${a.X} ${a.Y + 11}L${b.X} ${b.Y - 11}` : `M${a.X} ${a.Y + 11}C${a.X} ${a.Y + 34} ${b.X} ${b.Y - 34} ${b.X} ${b.Y - 11}`;
+    g += main ? `<path d="${d}" fill="none" stroke="#d4a853" stroke-width="6" opacity=".18"/><path d="${d}" fill="none" stroke="#d4a853" stroke-width="2.4"/>`
+              : `<path d="${d}" fill="none" stroke="#8d9ba2" stroke-width="1.4" stroke-dasharray="4 3" opacity=".55"/>`;
   }
   const tears = R.hunter ? R.hunter.tears : [];
   for (const n of R.nodes) {
     const p = TP[n.id], main = onPath.has(n.id);
-    let inner;
+    let inner = "";
     if (n.end) {
       const e = ENDS[n.end], col = e.k === "w" ? "#9ad27f" : e.k === "s" ? "#c4a0ff" : "#ec6d5c";
-      inner = `<rect x="${p.X - 7}" y="${p.Y - 7}" width="14" height="14" transform="rotate(45 ${p.X} ${p.Y})" fill="${col}"/>` +
-        `<text x="${p.X + 14}" y="${p.Y + 4}" font-family="Fraunces, Georgia, serif" font-weight="700" font-size="12.5" fill="${col}">${e.t}</text>`;
+      inner = `<rect x="${p.X - 8}" y="${p.Y - 8}" width="16" height="16" transform="rotate(45 ${p.X} ${p.Y})" fill="${col}" stroke="#0d1922" stroke-width="2"/>` +
+        `<text x="${p.X + 16}" y="${p.Y + 4}" font-family="Fraunces, Georgia, serif" font-weight="700" font-size="12.5" fill="${col}">${e.t}</text>`;
     } else {
-      const w = WHO[C[n.snap.card].who];
-      inner = `<circle cx="${p.X}" cy="${p.Y}" r="8.5" fill="${w.c}" stroke="${main ? "#d4a853" : "#0d1922"}" stroke-width="2" opacity="${main ? 1 : .6}"/>`;
+      const w = WHO[resolve(n.snap.card, n.snap).who];
+      if (n.id === R.cur) inner += `<rect class="pulse" x="${p.X - 14}" y="${p.Y - 16}" width="28" height="32" rx="6" fill="none" stroke="#d4a853" stroke-width="2"/>`;
+      inner += `<rect x="${p.X - 9}" y="${p.Y - 11}" width="18" height="22" rx="3" fill="${w.c}" stroke="${main ? "#f0d58c" : "#0d1922"}" stroke-width="1.6" opacity="${main ? 1 : .55}"/>` +
+        `<text x="${p.X}" y="${p.Y + 3.5}" text-anchor="middle" font-family="Fraunces, Georgia, serif" font-weight="900" font-size="${w.rank.length > 1 ? 7 : 10}" fill="#f6efe2" opacity="${main ? 1 : .7}">${w.rank}</text>`;
     }
-    if (tears.includes(n.id)) inner += `<path d="M${p.X - 6} ${p.Y - 18}l12 12M${p.X + 6} ${p.Y - 18}l-12 12" stroke="#e2617f" stroke-width="2.5" stroke-linecap="round"/>`;
-    if (n.id === R.cur) inner = `<circle class="pulse" cx="${p.X}" cy="${p.Y}" r="15" fill="none" stroke="#d4a853" stroke-width="2"/>` + inner;
-    if (n.id === treeSel) inner += `<circle cx="${p.X}" cy="${p.Y}" r="12.5" fill="none" stroke="#ebe4d4" stroke-width="1.5" stroke-dasharray="2 2"/>`;
-    if (R.hunter && R.hunter.node === n.id) inner += `<g class="pulse"><circle cx="${p.X}" cy="${p.Y + 19}" r="8" fill="#52d3e2"/><circle cx="${p.X}" cy="${p.Y + 19}" r="3" fill="#0d1922"/></g>`;
-    g += `<g class="tn" data-id="${n.id}"><circle cx="${p.X}" cy="${p.Y}" r="20" fill="transparent"/>${inner}</g>`;
+    if (tears.includes(n.id)) inner += `<path d="M${p.X + 10} ${p.Y - 14}l4 4-4 4 4 4" fill="none" stroke="#e2617f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>`;
+    if (n.id === treeSel && n.id !== R.cur) inner += `<rect x="${p.X - 13}" y="${p.Y - 15}" width="26" height="30" rx="5" fill="none" stroke="#ebe4d4" stroke-width="1.4" stroke-dasharray="3 2"/>`;
+    if (R.hunter && R.hunter.node === n.id) inner += `<g class="pulse"><circle cx="${p.X - 20}" cy="${p.Y}" r="8" fill="#52d3e2"/><path d="M${p.X - 26} ${p.Y}q6-5 12 0q-6 5-12 0z" fill="#0d1922"/><circle cx="${p.X - 20}" cy="${p.Y}" r="2" fill="#52d3e2"/></g>`;
+    g += `<g class="tn" data-id="${n.id}"><rect x="${p.X - 15}" y="${p.Y - 16}" width="30" height="32" fill="transparent"/>${inner}</g>`;
   }
   const svg = $("#treeSvg");
   svg.setAttribute("width", W); svg.setAttribute("height", H);
@@ -1692,8 +1764,8 @@ function openTree() {
   $("#tree").hidden = false;
   drawTree();
   const sc = $("#treeScroll"), p = TP[R.cur];
-  sc.scrollLeft = p.X - sc.clientWidth * 0.6;
-  sc.scrollTop = p.Y - sc.clientHeight / 2;
+  sc.scrollLeft = Math.max(0, p.X - sc.clientWidth / 2);
+  sc.scrollTop = Math.max(0, p.Y - sc.clientHeight / 2);
 }
 
 /* ================= JOURNAL ================= */
