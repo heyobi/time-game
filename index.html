@@ -225,7 +225,9 @@ body::after {
 .tl-legend .kgl { color: var(--down); }
 .tl-legend .gl { color: var(--up); }
 
-.controls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.controls { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; }
+.btn.tr { color: var(--cyan); flex-direction: column; gap: 2px; padding: 7px 12px; }
+.btn.tr b { font: 700 10px/1 var(--f-mono); color: var(--fg); letter-spacing: .04em; }
 .btn {
   appearance: none; border: 1px solid var(--brass-dim);
   background: linear-gradient(180deg, var(--ink-3), var(--ink-2));
@@ -346,6 +348,39 @@ body::after {
 }
 #toast.on { opacity: 1; transform: translate(-50%, 0); }
 
+/* ---------- Time tree ---------- */
+.tree-ov { z-index: 35; }
+.tree-panel { max-width: 760px; height: 100%; padding: 16px; gap: 10px; }
+.tree-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.tree-head h2 { font-size: 24px; margin-top: 4px; }
+.tree-sum { font: 500 11px/1.3 var(--f-mono); letter-spacing: .06em; color: var(--muted); margin-top: 6px; }
+.xbtn { appearance: none; flex-shrink: 0; border: 1px solid var(--brass-dim); background: transparent; color: var(--fg); width: 38px; height: 38px; border-radius: 50%; font: 600 16px/1 var(--f-mono); cursor: pointer; }
+.xbtn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.tree-scroll { flex: 1; min-height: 170px; overflow: auto; border-radius: 10px; background: var(--ink); border: 1px solid var(--ink-3); -webkit-overflow-scrolling: touch; }
+.tree-scroll svg { display: block; }
+.tn { cursor: pointer; }
+.tn .pulse { animation: ring 1.6s infinite; }
+@keyframes ring { 50% { opacity: .25; } }
+.tree-info { display: flex; flex-direction: column; gap: 7px; font-size: 14px; line-height: 1.45; }
+.ti-kind { font: 500 10px/1 var(--f-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--brass); }
+.ti-kind.branch { color: var(--rose); }
+.ti-kind.future { color: var(--cyan); }
+.ti-title { font: 700 19px/1.15 var(--f-display); }
+.ti-text { opacity: .85; }
+.ti-row { display: flex; flex-wrap: wrap; gap: 6px 14px; font: 500 11.5px/1.3 var(--f-mono); color: var(--muted); }
+.ti-row span { display: inline-flex; align-items: center; gap: 4px; }
+.ti-row svg { width: 13px; height: 13px; fill: var(--brass); }
+.ti-row b { color: var(--fg); }
+.ti-facts { font-size: 13px; color: var(--muted); }
+.ti-facts b { color: var(--fg); }
+.tree-info .cta { padding: 12px; font-size: 15px; }
+.tree-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font: 500 9.5px/1.2 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.tree-legend i { display: inline-block; width: 14px; height: 0; border-top: 2px solid var(--brass); vertical-align: middle; margin-right: 4px; }
+.tree-legend i.d { border-top: 2px dashed var(--muted); }
+#warp.fwd { background: radial-gradient(circle, rgba(82,211,226,.22), rgba(13,25,34,.92) 70%); }
+#warp.fwd .warp-lbl { color: var(--cyan); }
+#warp.fwd.on .h1, #warp.fwd.on .h2 { animation-direction: normal; }
+
 @media (max-height: 640px) {
   .story { min-height: 4.6em; font-size: 15px; }
   .meter, .meter svg { width: 28px; height: 28px; }
@@ -399,6 +434,10 @@ body::after {
         <svg viewBox="0 0 24 24"><path d="M11 6v12L2.5 12zM21.5 6v12L13 12z"/></svg>
         <span><span id="rwLbl">Geri Sar</span><small id="rwSub">1 kum · 1 yıl</small></span>
       </button>
+      <button class="btn tr" id="btnTree" aria-label="Zaman ağacı">
+        <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2.6"/><circle cx="19" cy="5" r="2.6"/><circle cx="19" cy="12" r="2.6"/><circle cx="19" cy="19" r="2.6"/><path d="M5 11h3.2c1.6 0 2.3-1 3-2.6.9-2.1 1.9-3.4 4.3-3.4H19v1.6h-3.5c-1.4 0-2 .8-2.7 2.4-.5 1.1-1 2.1-1.8 2.8V11H19v2h-7.8v.2c.8.7 1.3 1.7 1.8 2.8.7 1.6 1.3 2.4 2.7 2.4H19V20h-3.5c-2.4 0-3.4-1.3-4.3-3.4-.7-1.6-1.4-2.6-3-2.6H5z"/></svg>
+        <b id="treeN">AĞAÇ</b>
+      </button>
       <button class="btn ff" id="btnFf">
         <span><span>İleri Sar</span><small id="ffSub">Sonucu gör</small></span>
         <svg viewBox="0 0 24 24"><path d="M13 6v12l8.5-6zM2.5 6v12L11 12z"/></svg>
@@ -424,6 +463,7 @@ body::after {
       <li><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z" opacity=".3"/><path d="M2 11l4-4v3h12V7l4 4-4 4v-3H6v3z"/></svg><span><b>Kaydır.</b> Kartı sola ya da sağa kaydırarak karar ver. Halk, hazine, ordu ve bilim dengede kalmalı. Biri sıfıra düşer ya da taşarsa saltanatın biter.</span></li>
       <li class="r"><svg viewBox="0 0 24 24"><path d="M11 6v12L2.5 12zM21.5 6v12L13 12z"/></svg><span><b>Geri sar.</b> Bir kum harcayıp geçmiş bir karara dön. Zaman çizgisinden bir yıla dokunarak daha da geriye gidebilirsin. Dünya geri döner, <b>hatıraların kalır</b>.</span></li>
       <li><svg viewBox="0 0 24 24"><path d="M13 6v12l8.5-6zM2.5 6v12L11 12z"/></svg><span><b>İleri sar.</b> Bir kararın sonucunu önceden gör. Bedava değil, zamanın dokusunu yırtar.</span></li>
+      <li><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2.6"/><circle cx="19" cy="5" r="2.6"/><circle cx="19" cy="19" r="2.6"/><path d="M5 11h4l6-6h4v2h-3.2l-5 5 5 5H19v2h-4l-6-6H5z"/></svg><span><b>Zaman ağacı.</b> Her geri sarış yeni bir dal açar. Ağaçtan terk ettiğin bir geleceğe ya da başka bir dala atlayabilirsin, ama bu paradoksu daha çok artırır.</span></li>
       <li class="p"><svg viewBox="0 0 24 24"><path d="M12 2.5l8 3v6c0 5-3.4 8.6-8 10-4.6-1.4-8-5-8-10v-6z"/></svg><span><b>Paradoks.</b> Her zaman oyunu paradoksu artırır. Fazla artarsa <b>Zaman Muhafızları</b> kapını çalar.</span></li>
     </ul>
     <div>
@@ -447,8 +487,21 @@ body::after {
     </div>
     <div class="btns">
       <button class="cta rose" id="btnEndRw">Geri sar</button>
+      <button class="cta ghost" id="btnEndTree">Zaman ağacına bak</button>
       <button class="cta ghost" id="btnRestart">Yeni bir hayat</button>
     </div>
+  </div>
+</div>
+
+<div class="overlay tree-ov" id="tree" hidden>
+  <div class="panel tree-panel">
+    <div class="tree-head">
+      <div><div class="eyebrow">Bu hayatın bütün zaman çizgileri</div><h2>Zaman Ağacı</h2><div class="tree-sum" id="treeSum"></div></div>
+      <button class="xbtn" id="btnTreeClose" aria-label="Kapat">✕</button>
+    </div>
+    <div class="tree-legend"><span><i></i>Şu anki çizgin</span><span><i class="d"></i>Terk edilen dallar</span><span>◆ Son</span></div>
+    <div class="tree-scroll" id="treeScroll"><svg id="treeSvg"></svg></div>
+    <div class="tree-info" id="treeInfo"></div>
   </div>
 </div>
 
@@ -752,7 +805,8 @@ function newWorld() {
 }
 function newRun() {
   S = newWorld();
-  R = { para: 0, sand: 3, hist: [], peeked: false, sandYears: [], sel: null, over: null, rewinds: 0 };
+  R = { para: 0, sand: 3, nodes: [{ id: 0, parent: null, side: null, label: null, end: null, snap: clone(S), kids: [] }],
+        cur: 0, peeked: false, sandYears: [], sel: null, over: null, rewinds: 0 };
 }
 const clone = o => JSON.parse(JSON.stringify(o));
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -800,10 +854,25 @@ function revealed(card, side) {
 }
 
 /* ================= ACTIONS ================= */
+/* Every state is a node in a tree. A choice adds a child; rewinding moves R.cur back to an
+   ancestor, so the next choice opens a new branch. Old branches stay and can be jumped to. */
+const node = id => R.nodes[id];
+function pathIds(id) { const p = []; while (id != null) { p.unshift(id); id = node(id).parent; } return p; }
+function ancestors() { return pathIds(R.cur).slice(0, -1).map(node); }
+function relation(id) {
+  const cur = pathIds(R.cur), tgt = pathIds(id);
+  let i = 0; while (i < cur.length && i < tgt.length && cur[i] === tgt[i]) i++;
+  return { up: cur.length - i, down: tgt.length - i };
+}
+function jumpCost(id) {
+  const { up, down } = relation(id);
+  return down ? Math.min(40, 12 + 2 * (up + down)) : Math.min(50, 8 + 4 * up);
+}
+
 function choose(side) {
   const card = resolve(S.card);
   const o = card[side];
-  R.hist.push(clone(S));
+  const parent = R.cur;
   R.sel = null;
 
   if (!card.dyn) {
@@ -829,51 +898,76 @@ function choose(side) {
   R.para = clamp(R.para - 1, 0, 100);
   saveMeta();
 
-  if (o.end) return finish(o.end);
-  if (R.para >= 100) return finish("arrest");
-  for (const k of STATS) {
-    if (S.st[k] <= 0) return finish(k + "0");
-    if (S.st[k] >= 100) return finish(k + "100");
+  let end = null;
+  if (o.end) end = o.end;
+  else if (R.para >= 100) end = "arrest";
+  else {
+    for (const k of STATS) {
+      if (S.st[k] <= 0) { end = k + "0"; break; }
+      if (S.st[k] >= 100) { end = k + "100"; break; }
+    }
+    if (!end && S.year >= GOAL_YEAR) end = R.rewinds === 0 ? "clean" : "win";
   }
-  if (S.year >= GOAL_YEAR) return finish(R.rewinds === 0 ? "clean" : "win");
+  if (!end) {
+    if (S.year % 5 === 0 && !R.sandYears.includes(S.year) && !has(S, "saatsiz")) {
+      R.sandYears.push(S.year);
+      if (R.sand < MAX_SAND) { R.sand++; toast("Kum saati doldu · +1 kum"); }
+    }
+    S.card = nextCard();
+  }
+  addNode(parent, side, o.l, end);
+  if (end) finish(end);
+}
 
-  if (S.year % 5 === 0 && !R.sandYears.includes(S.year) && !has(S, "saatsiz")) {
-    R.sandYears.push(S.year);
-    if (R.sand < MAX_SAND) { R.sand++; toast("Kum saati doldu · +1 kum"); }
-  }
-  S.card = nextCard();
+function addNode(parent, side, label, end) {
+  const snap = clone(S), key = JSON.stringify(snap), p = node(parent);
+  const same = p.kids.map(node).find(k => k.side === side && k.end === end && JSON.stringify(k.snap) === key);
+  if (same) { R.cur = same.id; return; }
+  const n = { id: R.nodes.length, parent, side, label, end, snap, kids: [] };
+  R.nodes.push(n);
+  if (p.kids.length) toast("Yeni bir zaman dalı açıldı");
+  p.kids.push(n.id);
+  R.cur = n.id;
 }
 
 function addMem(m) { if (!META.mem.includes(m)) META.mem.push(m); }
 
-function rewindSteps() {
-  if (R.sel == null) return 1;
-  const idx = R.hist.findIndex(h => h.year === R.sel);
-  return idx < 0 ? 1 : R.hist.length - idx;
+function rewindTarget() {
+  const anc = ancestors();
+  if (!anc.length) return null;
+  if (R.sel != null) { const t = anc.find(n => n.snap.year === R.sel); if (t) return t; }
+  return anc[anc.length - 1];
 }
-function rewindCost(steps) { return 8 + 4 * steps; }
-function canRewind() { return R.sand >= 1 && R.hist.length > 0 && !has(S, "saatsiz"); }
+function canTravel() { return R.sand >= 1 && !has(S, "saatsiz"); }
+function canRewind() { return canTravel() && node(R.cur).parent != null; }
+function travelBlock() { return has(S, "saatsiz") ? "Kum saati Muhafızlarda" : R.sand < 1 ? "Kum kalmadı" : "Geri saracak geçmiş yok"; }
 
-function doRewind(steps, after) {
-  if (!canRewind()) { nudge(); toast(has(S, "saatsiz") ? "Kum saati Muhafızlarda" : R.sand < 1 ? "Kum kalmadı" : "Geri saracak geçmiş yok"); return; }
-  steps = Math.min(steps, R.hist.length);
-  const from = S.year;
-  const target = R.hist[R.hist.length - steps];
+function doRewind() {
+  const t = rewindTarget();
+  if (!t || !canRewind()) { nudge(); toast(travelBlock()); return; }
+  jumpTo(t.id);
+}
+
+function jumpTo(id) {
+  const t = node(id);
+  if (!canTravel() || id === R.cur || t.end || busy) { nudge(); toast(travelBlock()); return false; }
+  const rel = relation(id), cost = jumpCost(id), from = S.year;
   R.sand--;
-  R.para = clamp(R.para + rewindCost(steps), 0, 100);
+  R.para = clamp(R.para + cost, 0, 100);
   R.rewinds++; META.rewinds++; saveMeta();
-  R.hist.length = R.hist.length - steps;
-  R.sel = null; R.peeked = false;
-  warp(from, target.year, () => {
-    S = clone(target);
+  R.cur = id; R.sel = null; R.peeked = false; R.over = null;
+  $("#end").hidden = true;
+  const label = !rel.up ? "Terk ettiğin geleceğe" : rel.down ? "Başka bir dala atlıyorsun" : "Zaman geri akıyor";
+  warp(from, t.snap.year, label, !rel.up, () => {
+    S = clone(t.snap);
     if (R.para >= 100) { render(); finish("arrest"); return; }
     render(true);
-    if (after) after();
   });
+  return true;
 }
 
 function doPeek() {
-  if (R.peeked || busy) return;
+  if (R.peeked || busy || R.over) return;
   R.peeked = true;
   R.para = clamp(R.para + 6, 0, 100);
   render();
@@ -887,6 +981,108 @@ function finish(id) {
   render();
   setTimeout(() => showEnd(id), 350);
 }
+
+/* ================= TIME TREE ================= */
+let TP = {}, treeSel = 0;
+const TX = y => 34 + y * 46, TY = l => 46 + l * 46;
+function leafCount() { return R.nodes.filter(n => !n.kids.length).length; }
+
+function drawTree() {
+  let lane = 0; TP = {};
+  const walk = id => {
+    const n = node(id);
+    if (!n.kids.length) TP[id] = { l: lane++ };
+    else {
+      // keep the current line on top, so the main story reads as one straight row
+      const kids = n.kids.slice().sort((a, b) => onPath.has(b) - onPath.has(a));
+      kids.forEach(walk);
+      TP[id] = { l: TP[kids[0]].l };
+    }
+    TP[id].X = TX(n.snap.year); TP[id].Y = TY(TP[id].l);
+  };
+  const onPath = new Set(pathIds(R.cur));
+  walk(0);
+  const W = TX(GOAL_YEAR) + 150, H = TY(lane - 1) + 36;
+  let g = "";
+  for (let y = 0; y <= GOAL_YEAR; y++) {
+    const x = TX(y);
+    g += `<line x1="${x}" y1="26" x2="${x}" y2="${H}" stroke="rgba(141,155,162,.08)"/>`;
+    if (y % 2 === 0 || y === KG_YEAR) g += `<text x="${x}" y="16" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="${y === KG_YEAR ? "#ec6d5c" : "#8d9ba2"}">${y}</text>`;
+  }
+  g += `<line x1="${TX(KG_YEAR)}" y1="24" x2="${TX(KG_YEAR)}" y2="${H}" stroke="#ec6d5c" stroke-width="1.2" stroke-dasharray="3 4" opacity=".7"/>`;
+  g += `<line x1="${TX(GOAL_YEAR)}" y1="24" x2="${TX(GOAL_YEAR)}" y2="${H}" stroke="#9ad27f" stroke-width="1.2" stroke-dasharray="3 4" opacity=".7"/>`;
+  // edges
+  for (const n of R.nodes) {
+    if (n.parent == null) continue;
+    const a = TP[n.parent], b = TP[n.id];
+    const main = onPath.has(n.id);
+    const d = a.Y === b.Y ? `M${a.X} ${a.Y}L${b.X} ${b.Y}` : `M${a.X} ${a.Y}C${a.X + 26} ${a.Y} ${b.X - 26} ${b.Y} ${b.X} ${b.Y}`;
+    g += `<path d="${d}" fill="none" stroke="${main ? "#d4a853" : "#8d9ba2"}" stroke-width="${main ? 2.6 : 1.5}" ${main ? "" : 'stroke-dasharray="4 3" opacity=".6"'}/>`;
+  }
+  // nodes
+  for (const n of R.nodes) {
+    const p = TP[n.id], main = onPath.has(n.id);
+    let inner;
+    if (n.end) {
+      const e = ENDS[n.end];
+      const col = e.k === "w" ? "#9ad27f" : e.k === "s" ? "#52d3e2" : "#ec6d5c";
+      inner = `<rect x="${p.X - 7}" y="${p.Y - 7}" width="14" height="14" transform="rotate(45 ${p.X} ${p.Y})" fill="${col}"/>` +
+        `<text x="${p.X + 14}" y="${p.Y + 4}" font-family="Fraunces, Georgia, serif" font-weight="700" font-size="12.5" fill="${col}">${e.t}</text>`;
+    } else {
+      const w = WHO[CARDS[n.snap.card].who];
+      inner = `<circle cx="${p.X}" cy="${p.Y}" r="8.5" fill="${w.c}" stroke="${main ? "#d4a853" : "#0d1922"}" stroke-width="2" opacity="${main ? 1 : .6}"/>`;
+    }
+    if (n.id === R.cur) inner = `<circle class="pulse" cx="${p.X}" cy="${p.Y}" r="15" fill="none" stroke="#d4a853" stroke-width="2"/>` + inner;
+    if (n.id === treeSel) inner += `<circle cx="${p.X}" cy="${p.Y}" r="12.5" fill="none" stroke="#52d3e2" stroke-width="2"/>`;
+    g += `<g class="tn" data-id="${n.id}"><circle cx="${p.X}" cy="${p.Y}" r="20" fill="transparent"/>${inner}</g>`;
+  }
+  const svg = $("#treeSvg");
+  svg.setAttribute("width", W); svg.setAttribute("height", H);
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.innerHTML = g;
+
+  const ends = R.nodes.filter(n => n.end).length;
+  $("#treeSum").textContent = `${leafCount()} dal · ${R.nodes.length - 1} karar · ${ends} son · ${R.sand} kum`;
+  treeInfo();
+}
+
+function treeInfo() {
+  const n = node(treeSel), rel = relation(n.id);
+  let kind, kcls = "";
+  if (n.id === R.cur) kind = "Şu an buradasın";
+  else if (!rel.down) kind = `Geçmişin · ${rel.up} karar önce`;
+  else if (!rel.up) { kind = "Terk ettiğin gelecek"; kcls = "future"; }
+  else { kind = "Başka bir zaman dalı"; kcls = "branch"; }
+  let h = `<div class="ti-kind ${kcls}">${kind}</div>`;
+  if (n.end) {
+    const e = ENDS[n.end];
+    h += `<div class="ti-title">${e.t}</div><div class="ti-text">${e.x}</div>`;
+  } else {
+    const c = CARDS[n.snap.card], w = WHO[c.who];
+    h += `<div class="ti-title">Yıl ${n.snap.year} · ${w.n}</div><div class="ti-text">${c.dyn ? c.dyn(n.snap).t : c.t}</div>`;
+  }
+  h += `<div class="ti-row">${STATS.map(k => `<span>${ICON[k]}<b>${n.snap.st[k]}</b></span>`).join("")}</div>`;
+  const facts = [];
+  if (n.label) facts.push(`Buraya <b>“${n.label}”</b> diyerek geldin.`);
+  if (n.kids.length) facts.push("Buradan: " + n.kids.map(k => `<b>${node(k).side === "l" ? "←" : "→"} ${node(k).label}</b>`).join(" · "));
+  if (facts.length) h += `<div class="ti-facts">${facts.join("<br>")}</div>`;
+  if (n.id !== R.cur && !n.end) {
+    const ok = canTravel();
+    h += `<button class="cta ${rel.up && rel.down ? "rose" : ""}" id="btnJump" ${ok ? "" : "disabled"}>${ok ? `Buraya atla · 1 kum · Paradoks +${jumpCost(n.id)}` : travelBlock()}</button>`;
+  }
+  $("#treeInfo").innerHTML = h;
+}
+
+function openTree() {
+  if (busy) return;
+  treeSel = R.cur;
+  $("#tree").hidden = false;
+  drawTree();
+  const sc = $("#treeScroll"), p = TP[R.cur];
+  sc.scrollLeft = p.X - sc.clientWidth * 0.6;
+  sc.scrollTop = p.Y - sc.clientHeight / 2;
+}
+function closeTree() { $("#tree").hidden = true; }
 
 /* ================= RENDER ================= */
 const $ = s => document.querySelector(s);
@@ -936,8 +1132,9 @@ function render(enter) {
   // timeline
   const tl = $("#timeline");
   let th = "";
+  const anc = ancestors();
   for (let y = 0; y <= GOAL_YEAR; y++) {
-    const inHist = R.hist.some(h => h.year === y);
+    const inHist = anc.some(h => h.snap.year === y);
     const cls = ["tick"];
     if (y === S.year) cls.push("now"); else if (inHist) cls.push("past");
     if (R.sel === y) cls.push("sel");
@@ -948,9 +1145,11 @@ function render(enter) {
   tl.innerHTML = th;
 
   // controls
-  const steps = rewindSteps();
-  $("#rwLbl").textContent = R.sel != null ? `${steps} yıl geri` : "Geri Sar";
-  $("#rwSub").textContent = has(S, "saatsiz") ? "Saat Muhafızlarda" : `1 kum · P+${rewindCost(steps)}`;
+  const rt = rewindTarget();
+  $("#rwLbl").textContent = rt && R.sel != null ? `${S.year - rt.snap.year} yıl geri` : "Geri Sar";
+  $("#rwSub").textContent = has(S, "saatsiz") ? "Saat Muhafızlarda" : `1 kum · P+${rt ? jumpCost(rt.id) : 12}`;
+  const lc = leafCount();
+  $("#treeN").textContent = lc > 1 ? `${lc} DAL` : "AĞAÇ";
   $("#btnRw").disabled = !canRewind() || !!R.over;
   $("#btnFf").disabled = R.peeked || !!R.over;
   $("#ffSub").textContent = R.peeked ? "Görüldü" : "Sonucu gör · P+6";
@@ -1065,18 +1264,34 @@ function nudge() { cardEl.classList.remove("nudge"); void cardEl.offsetWidth; ca
 $("#timeline").addEventListener("click", e => {
   const b = e.target.closest(".tick"); if (!b || R.over || busy) return;
   const y = +b.dataset.y;
-  if (y === S.year || !R.hist.some(h => h.year === y)) { R.sel = null; render(); return; }
+  if (y === S.year || !ancestors().some(h => h.snap.year === y)) { R.sel = null; render(); return; }
   R.sel = R.sel === y ? null : y;
   render();
 });
-$("#btnRw").addEventListener("click", () => { if (!busy && !R.over) doRewind(rewindSteps()); });
+$("#btnRw").addEventListener("click", () => { if (!busy && !R.over) doRewind(); });
 $("#btnFf").addEventListener("click", doPeek);
+$("#btnTree").addEventListener("click", openTree);
+$("#btnEndTree").addEventListener("click", openTree);
+$("#btnTreeClose").addEventListener("click", closeTree);
+$("#tree").addEventListener("click", e => { if (e.target.id === "tree") closeTree(); });
+$("#treeSvg").addEventListener("click", e => {
+  const g = e.target.closest(".tn"); if (!g) return;
+  treeSel = +g.dataset.id; drawTree();
+});
+$("#treeInfo").addEventListener("click", e => {
+  if (e.target.id !== "btnJump") return;
+  closeTree();
+  jumpTo(treeSel);
+});
 
 document.addEventListener("keydown", e => {
-  if (!$("#intro").hidden || !$("#end").hidden || busy) return;
+  if (!$("#tree").hidden) { if (e.key === "Escape" || e.key === "t" || e.key === "T") closeTree(); return; }
+  if (!$("#intro").hidden || busy) return;
+  if (e.key === "t" || e.key === "T") { openTree(); return; }
+  if (!$("#end").hidden) return;
   if (e.key === "ArrowLeft") commit("l");
   else if (e.key === "ArrowRight") commit("r");
-  else if (e.key === "r" || e.key === "R") doRewind(rewindSteps());
+  else if (e.key === "r" || e.key === "R") doRewind();
   else if (e.key === "f" || e.key === "F") doPeek();
 });
 
@@ -1088,9 +1303,11 @@ function toast(msg) {
   clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("on"), 1800);
 }
 
-function warp(from, to, cb) {
+function warp(from, to, label, fwd, cb) {
   busy = true;
   const w = $("#warp"), y = $("#warpYear");
+  w.querySelector(".warp-lbl").textContent = label;
+  w.classList.toggle("fwd", fwd);
   w.classList.add("on"); app.classList.add("warping");
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const dur = reduce ? 150 : 1000;
@@ -1133,9 +1350,7 @@ function showEnd(id) {
 }
 $("#btnEndRw").addEventListener("click", () => {
   if (!canRewind()) return;
-  $("#end").hidden = true;
-  R.over = null;
-  doRewind(1);
+  doRewind();
 });
 $("#btnRestart").addEventListener("click", () => {
   $("#end").hidden = true;
