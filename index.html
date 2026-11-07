@@ -553,7 +553,7 @@ body::after {
     </div>
     <h3>Hatıralar</h3>
     <ul class="mems" id="mems"></ul>
-    <h3>Lâl'in kalbi · bu zaman çizgisinde · 3 kalp yeter</h3>
+    <h3>Lâl'in kalbi · bu zaman çizgisinde</h3>
     <div class="hearts" id="hearts"></div>
     <h3>Bu hayat</h3>
     <div class="end-meta" id="lifeMeta"></div>
@@ -840,7 +840,7 @@ card("lal_itiraf", { who: "lal",
       l: { l: "Beni ihbar et, bitsin", ihbar: true, set: done.concat("lal_ihbar"), mem: ["lal_ajan"], res: "Lâl ağlayarak çıktı. Az sonra koridorda gri pelerinler belirdi." },
       r: s.bond >= 3
         ? { l: "Benimle kal", set: done.concat("lal_sevgili"), mem: ["lal_ajan"], para: -15, res: "Lâl raporu mumun alevine tuttu. ‘Bu gece seninleyim. Zaman ne derse desin.’" }
-        : { l: "Benimle kal", set: done.concat("lal_uzak"), mem: ["lal_ajan"], res: `‘Seni yeterince tanımıyorum,’ dedi Lâl, ve gitti. (Lâl'in kalbi ${s.bond}/3: onu daha iyi tanı, ona dürüst ol.)` } };
+        : { l: "Benimle kal", set: done.concat("lal_uzak"), mem: ["lal_ajan"], res: "‘Seni yeterince tanımıyorum,’ dedi Lâl, ve gitti." } };
   } });
 
 /* ---- Day 6 ---- */
@@ -1148,10 +1148,7 @@ function decide(o) {
   R.echo = o.res ? (typeof o.res === "function" ? o.res(S) : o.res) : "";
   (o.set || []).forEach(f => { if (!S.flags.includes(f)) S.flags.push(f); });
   (o.unset || []).forEach(f => { S.flags = S.flags.filter(x => x !== f); });
-  if (o.bond) {
-    S.bond = clamp(S.bond + o.bond, 0, 4);
-    const b = S.bond; setTimeout(() => toast(`Lâl'in kalbi ${"♥".repeat(b)}${"♡".repeat(4 - b)}`, "mem"), 700);
-  }
+  if (o.bond) S.bond = clamp(S.bond + o.bond, 0, 4);
   if (o.para) R.para = clamp(R.para + o.para, 0, 100);
   if (o.sand) { R.sand = clamp(R.sand + o.sand, 0, MAX_SAND); toast(`+${o.sand} kum`); }
   if (o.spawn && !R.hunter) R.hunter = { node: 0, tears: [] };
