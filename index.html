@@ -979,15 +979,27 @@ const SUIT = {
 const suitSVG = k => `<svg viewBox="0 0 24 24"><path d="${SUIT[k].d}"/></svg>`;
 const suitAt = (k, x, y, s, f) => `<g transform="translate(${x - 12 * s} ${y - 12 * s}) scale(${s})"><path d="${SUIT[k].d}" fill="${f}" stroke="${INK}" stroke-width="${1.6 / s}"/></g>`;
 
+/* Engraving pass: robes get a shaded gradient, a brocade weave and hatched shadow; faces get
+   modelled skin, a cast shadow, a nose and lit eyes. Colours resolve to gradients in artSVG. */
+let ART_CTX = null;
+const ROBE = "M36 140C40 110 62 95 100 93C138 95 160 110 164 140Z";
 function body(robe, trim, skin) {
-  const dots = [[58, 128], [70, 117], [130, 117], [142, 128], [52, 137], [148, 137], [76, 131], [124, 131]]
-    .map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.6" fill="${trim}" stroke="${INK}" stroke-width="1"/>`).join("");
-  return P("M93 70h14v26H93z", skin) +
-    P("M36 140C40 110 62 95 100 93C138 95 160 110 164 140Z", robe) +
-    P("M91 94L109 94L114 140L86 140Z", trim) + dots + L("M78 98Q100 114 122 98");
+  ART_CTX = { robe, trim, skin };
+  const rosettes = [[58, 128], [72, 116], [128, 116], [142, 128], [50, 137], [150, 137], [78, 131], [122, 131]]
+    .map(([x, y]) => `<g transform="translate(${x} ${y})"><circle r="3.2" fill="url(#goldG)" stroke="${INK}" stroke-width=".9"/><circle r="1.1" fill="${INK}"/></g>`).join("");
+  return P("M93 70h14v26H93z", skin) + `<path d="M93 72h14v8c-4 3-10 3-14 0z" fill="${INK}" opacity=".18"/>` +
+    P(ROBE, "url(#robeG)") + `<path d="${ROBE}" fill="url(#brocade)" opacity=".55"/>` +
+    `<path d="M124 97C146 102 160 116 163 140H130C130 122 128 108 124 97Z" fill="url(#hatch)" opacity=".5"/>` +
+    `<path d="M76 98C62 104 50 118 44 140H52C56 122 64 110 76 98Z" fill="#fff" opacity=".12"/>` +
+    L("M62 112q-4 12-6 28M138 112q4 12 6 28", 1, INK) +
+    P("M91 94L109 94L114 140L86 140Z", trim) + `<path d="M104 94L109 94L114 140L107 140Z" fill="${INK}" opacity=".15"/>` +
+    L("M100 98v40", .8, INK) + rosettes + P("M78 97Q100 116 122 97Q100 108 78 97Z", "url(#goldG)", 'stroke-width="1.4"');
 }
-const eyes = (y = 58, c = INK) => `<circle cx="94" cy="${y}" r="1.9" fill="${c}"/><circle cx="106" cy="${y}" r="1.9" fill="${c}"/>`;
-const head = (skin, y = 60) => O(100, y, 16, skin);
+const eyes = (y = 58, c = INK) => `<circle cx="94" cy="${y}" r="2" fill="${c}"/><circle cx="106" cy="${y}" r="2" fill="${c}"/>` +
+  `<circle cx="94.7" cy="${y - .7}" r=".7" fill="#fff"/><circle cx="106.7" cy="${y - .7}" r=".7" fill="#fff"/>` + L(`M90.5 ${y - 3.2}q3.5-1.6 7 0M102.5 ${y - 3.2}q3.5-1.6 7 0`, 1);
+const head = (skin, y = 60) => O(100, y, 16, skin) +
+  `<path d="M104 ${y - 15.5}A16 16 0 0 1 104 ${y + 15.5}A13 16 0 0 0 104 ${y - 15.5}Z" fill="${INK}" opacity=".16"/>` +
+  L(`M100 ${y - 1}q-2.6 5 .6 6.2`, 1.1) + `<ellipse cx="95" cy="${y - 7}" rx="5" ry="2.4" fill="#fff" opacity=".22"/>`;
 
 const HALF = {
   nur: () => { const sk = "#ecd0b0"; return P("M70 98C66 54 80 26 100 26C120 26 134 54 130 98Z", "#6b4a26") +
@@ -1051,20 +1063,69 @@ const HALF = {
     P("M6 140V106h18V94h14v12h12V82h10V66l8-10 8 10v16h12V98h16V88h14v18h16V92h20v12h20v36Z", "#1d1a17")
 };
 
+function shade(hex, k) {
+  const n = parseInt(hex.slice(1), 16), t = k > 0 ? 255 : 0, m = Math.abs(k);
+  const ch = i => Math.round(((n >> i) & 255) * (1 - m) + t * m);
+  return "#" + [16, 8, 0].map(i => ch(i).toString(16).padStart(2, "0")).join("");
+}
+function artDefs(w) {
+  const c = ART_CTX || { robe: w.c, trim: "#d9a441", skin: "#e8c4a0" };
+  return `<defs>
+    <linearGradient id="goldG" x1="0" y1="0" x2=".3" y2="1"><stop offset="0" stop-color="#fbeab0"/><stop offset=".45" stop-color="#dcae4c"/><stop offset=".55" stop-color="#c8952f"/><stop offset="1" stop-color="#8f6420"/></linearGradient>
+    <linearGradient id="steelG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4f7f8"/><stop offset=".5" stop-color="#b9c2c7"/><stop offset="1" stop-color="#77828a"/></linearGradient>
+    <radialGradient id="robeG" cx=".38" cy=".2" r=".95"><stop offset="0" stop-color="${shade(c.robe, .35)}"/><stop offset=".55" stop-color="${c.robe}"/><stop offset="1" stop-color="${shade(c.robe, -.45)}"/></radialGradient>
+    <radialGradient id="skinG" cx=".38" cy=".32" r=".8"><stop offset="0" stop-color="${shade(c.skin, .25)}"/><stop offset=".65" stop-color="${c.skin}"/><stop offset="1" stop-color="${shade(c.skin, -.25)}"/></radialGradient>
+    <radialGradient id="bgG" cx=".5" cy=".38" r=".75"><stop offset="0" stop-color="${shade(w.c, .82)}"/><stop offset="1" stop-color="${shade(w.c, .45)}"/></radialGradient>
+    <pattern id="hatch" width="3.2" height="3.2" patternUnits="userSpaceOnUse" patternTransform="rotate(38)"><path d="M0 0V3.2" stroke="${INK}" stroke-width=".9"/></pattern>
+    <pattern id="brocade" width="12" height="12" patternUnits="userSpaceOnUse"><path d="M6 1.5l1.6 3 3 1.5-3 1.5L6 10.5 4.4 7.5l-3-1.5 3-1.5z" fill="${shade(c.robe, .45)}"/><circle cx="0" cy="0" r="1" fill="${shade(c.robe, .45)}"/><circle cx="12" cy="12" r="1" fill="${shade(c.robe, .45)}"/></pattern>
+    <filter id="grain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .17 0 0 0 0 .15 0 0 0 0 .12 0 0 0 .6 0"/></filter>
+    <clipPath id="hc"><rect x="6" y="6" width="188" height="134"/></clipPath>
+    <clipPath id="fc"><rect x="6" y="6" width="188" height="268" rx="5"/></clipPath>
+  </defs>`;
+}
+const GOLDS = ["#d9a441", "#d4a853"], STEELS = ["#bfc7cb", "#a7b0b5", "#e6eaec", "#cfd6da"];
+function engrave(str) {
+  GOLDS.forEach(g => { str = str.split(`fill="${g}"`).join('fill="url(#goldG)"'); });
+  STEELS.forEach(g => { str = str.split(`fill="${g}"`).join('fill="url(#steelG)"'); });
+  if (ART_CTX) str = str.split(`fill="${ART_CTX.skin}"`).join('fill="url(#skinG)"');
+  return str;
+}
+function frameSVG(h) {
+  const corner = (x, y, r) => `<g transform="translate(${x} ${y}) rotate(${r})"><path d="M0 14V4a4 4 0 0 1 4-4h10" fill="none" stroke="url(#goldG)" stroke-width="2.4"/><circle cx="4.5" cy="4.5" r="2" fill="url(#goldG)" stroke="${INK}" stroke-width=".7"/></g>`;
+  return `<rect x="6" y="6" width="188" height="${h}" rx="5" fill="none" stroke="${INK}" stroke-width="1.8"/>` +
+    `<rect x="10" y="10" width="180" height="${h - 8}" rx="3" fill="none" stroke="url(#goldG)" stroke-width="1.4"/>` +
+    corner(13, 13, 0) + corner(187, 13, 90) + corner(187, h - 1, 180) + corner(13, h - 1, 270);
+}
+function halo(w) {
+  let r = "";
+  for (let i = 0; i < 24; i++) {
+    const a1 = (i * 15 - 3) * Math.PI / 180, a2 = (i * 15 + 3) * Math.PI / 180;
+    r += `M100 58L${(100 + 130 * Math.cos(a1)).toFixed(1)} ${(58 + 130 * Math.sin(a1)).toFixed(1)}L${(100 + 130 * Math.cos(a2)).toFixed(1)} ${(58 + 130 * Math.sin(a2)).toFixed(1)}Z`;
+  }
+  return `<path d="${r}" fill="${w.c}" opacity=".13"/><circle cx="100" cy="58" r="30" fill="#fff" opacity=".18"/>`;
+}
+
 const ART_CACHE = {};
 function artSVG(who, halfOnly) {
   const key = who + (halfOnly ? ":h" : "");
   if (ART_CACHE[key]) return ART_CACHE[key];
   const w = WHO[who];
-  const bg = `<rect x="6" y="6" width="188" height="134" fill="${w.c}" fill-opacity=".14"/>`;
-  const half = bg + HALF[who]();
-  const frame = '<rect x="6" y="6" width="188" height="%H%" rx="5" fill="none" stroke="#2b2620" stroke-width="1.6"/>';
+  ART_CTX = null;
+  const fig = HALF[who]();
+  const isScene = who === "kehanet";
+  const half = engrave(`<rect x="0" y="0" width="200" height="140" fill="url(#bgG)"/>` + (isScene ? "" : halo(w)) + fig);
+  const defs = artDefs(w);
+  const grain = h => `<rect x="6" y="6" width="188" height="${h}" filter="url(#grain)" opacity=".5" style="mix-blend-mode:multiply"/>`;
   let svg;
-  if (halfOnly) svg = `<svg viewBox="0 0 200 146" preserveAspectRatio="xMidYMid meet"><clipPath id="hc"><rect x="6" y="6" width="188" height="134" rx="5"/></clipPath><g clip-path="url(#hc)">${half}</g>${frame.replace("%H%", 134)}</svg>`;
-  else if (who === "kehanet") svg = `<svg viewBox="0 0 200 280" preserveAspectRatio="xMidYMid meet"><clipPath id="fc"><rect x="6" y="6" width="188" height="268" rx="5"/></clipPath><g clip-path="url(#fc)"><rect x="0" y="0" width="200" height="280" fill="#e5ddcf"/><g transform="translate(-100 -6) scale(2)">${half}</g></g>${frame.replace("%H%", 268)}</svg>`;
-  else svg = `<svg viewBox="0 0 200 280" preserveAspectRatio="xMidYMid meet"><clipPath id="fc"><rect x="6" y="6" width="188" height="268" rx="5"/></clipPath><g clip-path="url(#fc)">${half}<g transform="rotate(180 100 140)">${half}</g></g>` +
-    `<path d="M6 140H194" stroke="#8a7448" stroke-width="1.5"/>` + `<circle cx="100" cy="140" r="11" fill="#e5ddcf" stroke="#8a7448" stroke-width="1.5"/>` +
-    suitAt(w.suit, 100, 140, .5, SUIT[w.suit].red ? "#b8312f" : "#2b2620") + frame.replace("%H%", 268) + `</svg>`;
+  if (halfOnly) svg = `<svg viewBox="0 0 200 146" preserveAspectRatio="xMidYMid meet">${defs}<g clip-path="url(#hc)">${half}</g>${grain(134)}${frameSVG(134)}</svg>`;
+  else if (isScene) svg = `<svg viewBox="0 0 200 280" preserveAspectRatio="xMidYMid meet">${defs}<g clip-path="url(#fc)"><rect width="200" height="280" fill="#e5ddcf"/><g transform="translate(-100 -6) scale(2)">${half}</g></g>${grain(268)}${frameSVG(268)}</svg>`;
+  else svg = `<svg viewBox="0 0 200 280" preserveAspectRatio="xMidYMid meet">${defs}<g clip-path="url(#fc)"><g clip-path="url(#hc)">${half}</g><g transform="rotate(180 100 140)"><g clip-path="url(#hc)">${half}</g></g></g>` +
+    grain(268) +
+    `<rect x="6" y="135.5" width="188" height="9" fill="url(#goldG)" stroke="${INK}" stroke-width="1.2"/>` +
+    `<circle cx="100" cy="140" r="13.5" fill="url(#goldG)" stroke="${INK}" stroke-width="1.4"/><circle cx="100" cy="140" r="10" fill="#efe6d4" stroke="${INK}" stroke-width=".8"/>` +
+    suitAt(w.suit, 100, 140, .5, SUIT[w.suit].red ? "#b8312f" : "#2b2620") + frameSVG(268) + `</svg>`;
+  const sfx = "_" + who + (halfOnly ? "h" : "");
+  svg = svg.replace(/(id="|url\(#)([A-Za-z]+)/g, `$1$2${sfx}`);
   return ART_CACHE[key] = svg;
 }
 window.ZN_ART = artSVG;
