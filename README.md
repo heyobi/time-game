@@ -13,3 +13,13 @@ Hikâye 7 gün × 4 vakit (sabah, öğle, akşam, gece) = 28 sahneden oluşuyor.
 - 12 son var: 2 zafer, 4 gizli, 6 ölüm.
 
 Oynamak için `index.html` dosyasını bir tarayıcıda (tercihen telefonda) aç. Klavyede ← → ↑ ile seçim, R ile geri sarma, T ile ağaç, G ile günlük açılır.
+
+## Kemerin Altında (`kemer.html`)
+
+Aynı hikâyenin karanlık bir hayatta kalma versiyonu. Kızıl Gece gelmiş, Aras yanıyor. Naip kum saatiyle su kemerine düşmüş ve kaynağa inmesi gerekiyor.
+
+- Üç kat: Kemer Ağzı, Boğulmuş Sarnıç, Kaynak. Haritalar her hayatta yeniden oluşur.
+- Can, açlık, akıl ve fener yağı takip edilir. Karanlıkta akıl gider.
+- Dövüşte düşmanın bir uzvunu seçersin: kolunu kesersen zayıf vurur, bacağını kesersen kaçabilirsin. Senin uzuvların da kopabilir.
+- Kum saati son 3 hamleyi geri alır. Ölünce son kum mührüne dönersin. Daha önce dövüştüğün düşmanların isabet oranlarını hatırlarsın.
+- Karan, Lâl, Ece, Eflatun ve Hızır'la karşılaşmalar; 7 son.

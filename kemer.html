@@ -1,0 +1,953 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<!--ARTIFACT-START-->
+<title>Kemerin Altında</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Spectral:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: one portrait screen. Survival stats on top, the lantern-lit tunnel grid in the middle
+   (combat and encounters take over that space), a three-line log and the hourglass controls below.
+   Single deliberate world: wet stone under a burning city, tallow light, dried blood. */
+:root {
+  --ink: #0c0a09;
+  --stone: #191512;
+  --stone-2: #241f1a;
+  --stone-3: #332b24;
+  --bone: #ddd2bf;
+  --mute: #8c8174;
+  --tallow: #e0ae4c;
+  --blood: #8f1d17;
+  --blood-2: #c4392c;
+  --rot: #7f8a55;
+  --mind: #9a7cc0;
+  --f-display: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+  --f-body: "Spectral", Georgia, "Times New Roman", serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--ink); color: var(--bone);
+  font-family: var(--f-body); overflow: hidden; overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none;
+}
+#app {
+  height: 100%; max-width: 460px; margin: 0 auto; box-sizing: border-box;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 10px 8px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+#app.hurt { animation: hurt .35s; }
+@keyframes hurt { 25% { transform: translateX(-5px); } 60% { transform: translateX(4px); } }
+
+/* ---------- top ---------- */
+.top { display: flex; align-items: baseline; gap: 10px; }
+.floor { flex: 1; min-width: 0; }
+.floor small { display: block; font: 500 9.5px/1.2 var(--f-mono); letter-spacing: .18em; text-transform: uppercase; color: var(--mute); }
+.floor b { font: 700 21px/1.05 var(--f-display); letter-spacing: .01em; }
+.sand { display: flex; gap: 2px; color: var(--tallow); }
+.sand svg { width: 15px; height: 15px; fill: currentColor; }
+.sand svg.empty { fill: none; stroke: var(--stone-3); stroke-width: 1.5; }
+
+.stats { display: grid; grid-template-columns: 1fr 1fr 46px; gap: 6px 12px; align-items: center; }
+.bar { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.bar .lbl { display: flex; justify-content: space-between; font: 500 9.5px/1 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--mute); }
+.bar .lbl b { color: var(--bone); font-weight: 600; font-variant-numeric: tabular-nums; }
+.bar .tr { height: 6px; background: var(--stone-2); border-radius: 1px; overflow: hidden; }
+.bar .fl { height: 100%; transition: width .4s; }
+.bar.hp .fl { background: var(--blood-2); }
+.bar.hu .fl { background: var(--rot); }
+.bar.sa .fl { background: var(--mind); }
+.bar.oi .fl { background: var(--tallow); }
+.bar.low .lbl b { color: var(--blood-2); animation: blink 1s infinite; }
+@keyframes blink { 50% { opacity: .35; } }
+.body-fig { grid-row: span 2; width: 46px; height: 58px; }
+.body-fig svg { width: 100%; height: 100%; }
+
+/* ---------- stage ---------- */
+.stage { flex: 1; min-height: 0; position: relative; display: flex; align-items: center; justify-content: center; }
+#map { display: grid; gap: 2px; touch-action: none; }
+.t { position: relative; background: var(--ink); border-radius: 2px; display: flex; align-items: center; justify-content: center; font: 700 15px/1 var(--f-mono); }
+.t.seen.floor { background: #2a221b; }
+.t.seen.wall { background: repeating-linear-gradient(135deg, #100d0b 0 3px, #0c0a09 3px 6px); }
+.t.lit.floor { background: radial-gradient(circle at 50% 45%, #5a4a39, #3d3227); }
+.t.lit.wall { background: repeating-linear-gradient(135deg, #1b1612 0 3px, #14110e 3px 6px); box-shadow: inset 0 -3px 0 rgba(0,0,0,.4); }
+.t.step { cursor: pointer; box-shadow: inset 0 0 0 1px rgba(224,174,76,.35); }
+.t.step:hover { box-shadow: inset 0 0 0 1.5px rgba(224,174,76,.8); }
+.t .g { pointer-events: none; }
+.g.foe { color: var(--blood-2); text-shadow: 0 0 8px rgba(196,57,44,.8); animation: pulse 1.4s infinite; }
+.g.boss { font-size: 18px; }
+.g.fake { color: var(--blood-2); opacity: .55; animation: flick .3s steps(2) infinite; }
+.g.item { color: var(--bone); font-size: 12px; }
+.g.npc { color: var(--tallow); font-family: var(--f-display); font-size: 19px; }
+.g.stairs { color: var(--bone); font-size: 13px; }
+.g.seal svg { width: 15px; height: 15px; fill: var(--tallow); opacity: .9; }
+.g.me { width: 72%; height: 72%; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #f3d68f, var(--tallow) 60%, #9c6f22); color: var(--ink); display: flex; align-items: center; justify-content: center; font: 700 14px/1 var(--f-display); box-shadow: 0 0 18px rgba(224,174,76,.55); }
+.dark .g.me { box-shadow: none; filter: grayscale(.6); }
+@keyframes pulse { 50% { opacity: .5; } }
+@keyframes flick { 50% { opacity: .1; } }
+
+/* combat & encounter panels take over the stage */
+.panel {
+  position: absolute; inset: 0; z-index: 5;
+  background: linear-gradient(180deg, rgba(12,10,9,.97), rgba(25,21,18,.97));
+  border: 1px solid var(--stone-3); border-radius: 6px;
+  display: flex; flex-direction: column; gap: 10px; padding: 14px; box-sizing: border-box;
+  overflow-y: auto;
+}
+.p-eyebrow { font: 500 9.5px/1.2 var(--f-mono); letter-spacing: .2em; text-transform: uppercase; color: var(--mute); }
+.p-title { font: 700 25px/1 var(--f-display); }
+.p-text { font-size: 15px; line-height: 1.5; text-wrap: pretty; }
+.p-desc { font-size: 13.5px; line-height: 1.45; color: var(--mute); font-style: italic; }
+.opts { display: grid; gap: 7px; margin-top: auto; }
+.opt {
+  appearance: none; text-align: left; cursor: pointer;
+  background: var(--stone-2); color: var(--bone); border: 1px solid var(--stone-3); border-radius: 4px;
+  padding: 11px 12px; font: 600 15px/1.25 var(--f-body);
+}
+.opt small { display: block; font: 500 10px/1.3 var(--f-mono); letter-spacing: .06em; color: var(--mute); margin-top: 3px; }
+.opt:not(:disabled):hover { border-color: var(--tallow); }
+.opt:disabled { opacity: .4; cursor: not-allowed; }
+.opt:focus-visible, .btn:focus-visible, .part:focus-visible, .t:focus-visible { outline: 2px solid var(--tallow); outline-offset: 2px; }
+
+.fight { display: grid; grid-template-columns: 38% 1fr; gap: 10px; align-items: center; min-height: 0; }
+.foe-art svg { width: 100%; height: auto; display: block; }
+.foe-art .pt { cursor: pointer; transition: opacity .3s; }
+.parts { display: grid; gap: 6px; }
+.part {
+  appearance: none; cursor: pointer; text-align: left;
+  display: grid; grid-template-columns: 1fr auto; gap: 3px 8px; align-items: center;
+  background: var(--stone-2); border: 1px solid var(--stone-3); border-radius: 4px; color: var(--bone);
+  padding: 7px 9px; font: 600 14px/1.1 var(--f-body);
+}
+.part .pc { font: 600 12px/1 var(--f-mono); color: var(--tallow); font-variant-numeric: tabular-nums; }
+.part .ph { grid-column: 1 / -1; height: 4px; background: var(--ink); border-radius: 1px; overflow: hidden; }
+.part .ph i { display: block; height: 100%; background: var(--blood-2); }
+.part.gone { opacity: .35; cursor: not-allowed; text-decoration: line-through; }
+.part:not(.gone):hover { border-color: var(--blood-2); }
+.cacts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: auto; }
+.cacts .opt { text-align: center; padding: 10px 6px; font-size: 14px; }
+.flash-part { animation: fp .4s; }
+@keyframes fp { 0% { filter: brightness(3) saturate(0); } }
+
+/* ---------- log & controls ---------- */
+.log { min-height: 4.2em; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; font-size: 13.5px; line-height: 1.35; }
+.log p { margin: 0; color: var(--mute); }
+.log p:last-child { color: var(--bone); animation: rise .35s ease-out; }
+.log p.bad { color: var(--blood-2); }
+.log p.mind { color: var(--mind); font-style: italic; }
+@keyframes rise { from { opacity: 0; transform: translateY(4px); } }
+.acts { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.btn {
+  appearance: none; cursor: pointer;
+  background: var(--stone); color: var(--bone); border: 1px solid var(--stone-3); border-radius: 4px;
+  padding: 9px 6px; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  font: 700 15px/1 var(--f-display);
+}
+.btn small { font: 500 9px/1.2 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
+.btn.on { border-color: var(--tallow); color: var(--tallow); }
+.btn.rw { color: var(--mind); }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ---------- overlays ---------- */
+.overlay {
+  position: fixed; inset: 0; z-index: 30; background: rgba(6,5,4,.9);
+  display: flex; align-items: center; justify-content: center; box-sizing: border-box;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-bottom, 0px));
+}
+.sheet {
+  width: 100%; max-width: 400px; max-height: 100%; overflow-y: auto; box-sizing: border-box;
+  background: linear-gradient(180deg, var(--stone), var(--ink)); border: 1px solid var(--stone-3); border-radius: 6px;
+  padding: 22px 18px 18px; display: flex; flex-direction: column; gap: 13px;
+}
+.sheet h1 { margin: 0; font: 700 clamp(40px, 13vw, 54px)/.9 var(--f-display); letter-spacing: -.01em; text-wrap: balance; }
+.sheet h1 em { font-style: italic; color: var(--blood-2); }
+.sheet h2 { margin: 0; font: 700 31px/1 var(--f-display); }
+.sheet p { margin: 0; font-size: 15px; line-height: 1.5; }
+.sheet p.hint { font-size: 13.5px; color: var(--mute); font-style: italic; }
+.rules { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; font-size: 14px; line-height: 1.4; }
+.rules li { padding-left: 14px; border-left: 2px solid var(--stone-3); }
+.rules b { font-family: var(--f-display); font-size: 16px; }
+.cta { appearance: none; border: 0; border-radius: 4px; cursor: pointer; padding: 14px; font: 700 18px/1 var(--f-display); background: var(--tallow); color: var(--ink); }
+.cta.ghost { background: transparent; color: var(--bone); border: 1px solid var(--stone-3); }
+.cta.blood { background: var(--blood); color: var(--bone); }
+.cta:disabled { opacity: .4; cursor: not-allowed; }
+.ends { display: grid; grid-template-columns: repeat(auto-fill, minmax(98px, 1fr)); gap: 5px; }
+.ends span { font: 500 10px/1.25 var(--f-mono); padding: 6px 7px; border-radius: 3px; background: var(--stone-2); color: var(--mute); }
+.ends span.got { background: var(--blood); color: var(--bone); }
+.ends span.got.w { background: var(--tallow); color: var(--ink); }
+.ends span.got.s { background: var(--mind); color: var(--ink); }
+.meta { display: flex; flex-wrap: wrap; gap: 12px; font: 500 10.5px/1 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--mute); }
+.meta b { color: var(--bone); }
+.warn { font: 500 10px/1.4 var(--f-mono); letter-spacing: .08em; color: var(--mute); text-transform: uppercase; }
+
+.bag-list { display: grid; gap: 6px; }
+.bag-row { display: grid; grid-template-columns: 1fr auto auto; gap: 6px; align-items: center; background: var(--stone-2); border: 1px solid var(--stone-3); border-radius: 4px; padding: 8px 10px; }
+.bag-row b { font: 600 15px/1.2 var(--f-body); display: block; }
+.bag-row small { font-size: 12px; color: var(--mute); }
+.bag-row .opt { padding: 7px 10px; font-size: 13px; text-align: center; }
+
+#warp { position: fixed; inset: 0; z-index: 25; pointer-events: none; opacity: 0; transition: opacity .2s; background: radial-gradient(circle, rgba(154,124,192,.28), rgba(6,5,4,.92) 70%); display: flex; align-items: center; justify-content: center; font: 700 26px/1 var(--f-display); color: var(--mind); letter-spacing: .1em; }
+#warp.on { opacity: 1; }
+#app.warping { filter: saturate(.3) blur(1.5px) hue-rotate(40deg); }
+#toast { position: fixed; left: 50%; top: 58%; z-index: 26; transform: translate(-50%, -8px); background: var(--stone-2); border: 1px solid var(--stone-3); color: var(--bone); font: 600 12.5px/1.2 var(--f-mono); padding: 8px 12px; border-radius: 4px; opacity: 0; pointer-events: none; transition: .25s; white-space: nowrap; }
+#toast.on { opacity: 1; transform: translate(-50%, 0); }
+#vignette { position: fixed; inset: 0; pointer-events: none; z-index: 4; transition: box-shadow .6s; }
+
+@media (max-height: 680px) {
+  .log { min-height: 2.8em; font-size: 12.5px; }
+  .log p:nth-last-child(3) { display: none; }
+  .btn small { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
+</style>
+</head>
+<body>
+<div id="vignette"></div>
+<div id="app">
+  <div class="top">
+    <div class="floor"><small id="floorNo">Kat 1</small><b id="floorName">Kemer Ağzı</b></div>
+    <div class="sand" id="sand" title="Kum"></div>
+  </div>
+  <div class="stats">
+    <div class="bar hp" id="bHp"><div class="lbl"><span>Can</span><b>40</b></div><div class="tr"><div class="fl"></div></div></div>
+    <div class="bar hu" id="bHu"><div class="lbl"><span>Açlık</span><b>80</b></div><div class="tr"><div class="fl"></div></div></div>
+    <div class="body-fig" id="bodyFig" title="Uzuvların"></div>
+    <div class="bar sa" id="bSa"><div class="lbl"><span>Akıl</span><b>80</b></div><div class="tr"><div class="fl"></div></div></div>
+    <div class="bar oi" id="bOi"><div class="lbl"><span>Yağ</span><b>60</b></div><div class="tr"><div class="fl"></div></div></div>
+  </div>
+  <div class="stage" id="stage">
+    <div id="map" aria-label="Kemer haritası"></div>
+    <div class="panel" id="combat" hidden></div>
+    <div class="panel" id="event" hidden></div>
+  </div>
+  <div class="log" id="log" aria-live="polite"></div>
+  <div class="acts">
+    <button class="btn on" id="btnLamp"><span>Fener</span><small id="lampSub">Yanıyor</small></button>
+    <button class="btn" id="btnBag"><span>Çanta</span><small id="bagSub">2 / 6</small></button>
+    <button class="btn rw" id="btnRw"><span>Geri Sar</span><small id="rwSub">1 kum · 3 hamle</small></button>
+  </div>
+</div>
+
+<div id="warp">ZAMAN GERİ AKIYOR</div>
+<div id="toast" role="status"></div>
+
+<div class="overlay" id="intro">
+  <div class="sheet">
+    <div class="warn">Zaman Naibi · karanlık bir hikâye · kan ve dehşet içerir</div>
+    <h1>Kemerin <em>Altında</em></h1>
+    <p>Kızıl Gece geldi. Aras yanıyor. Kum saatine sarılıp su kemerine düştün. Karanlıktan Nûr'un sesi geliyor: <i>‘Kaynağa in. Kumu suya dök. Gece hiç olmamış olsun.’</i></p>
+    <ul class="rules">
+      <li><b>Yürü.</b> Yanındaki bir kareye dokun ya da kaydır. Her adım seni acıktırır, fener yağını yakar.</li>
+      <li><b>Karanlık.</b> Yağ biterse ya da feneri söndürürsen az görürsün ve aklını yitirmeye başlarsın.</li>
+      <li><b>Dövüş.</b> Düşmanın bir uzvunu seç. Kolunu kesersen zayıf vurur, bacağını kesersen kaçabilirsin. Seninkiler de kopabilir.</li>
+      <li><b>Kum saati.</b> Son 3 hamleyi geri alırsın. Ölürsen son kum mührüne dönersin. Daha önce dövüştüğün düşmanın zayıf yerlerini hatırlarsın.</li>
+    </ul>
+    <div>
+      <div class="warn" style="margin-bottom:7px">Bulunan sonlar · <span id="introCount"></span></div>
+      <div class="ends" id="introEnds"></div>
+    </div>
+    <button class="cta" id="btnStart">Karanlığa in</button>
+  </div>
+</div>
+
+<div class="overlay" id="end" hidden>
+  <div class="sheet">
+    <div class="warn" id="endEyebrow">Son</div>
+    <h2 id="endTitle"></h2>
+    <p id="endText"></p>
+    <p class="hint" id="endHint"></p>
+    <div class="meta" id="endMeta"></div>
+    <div>
+      <div class="warn" style="margin-bottom:7px">Bulunan sonlar · <span id="endCount"></span></div>
+      <div class="ends" id="endEnds"></div>
+    </div>
+    <button class="cta blood" id="btnSeal">Mühüre dön</button>
+    <button class="cta ghost" id="btnNew">Yeni bir hayat</button>
+  </div>
+</div>
+
+<div class="overlay" id="bag" hidden>
+  <div class="sheet">
+    <div class="warn">Çanta · <span id="bagCount"></span></div>
+    <h2>Çanta</h2>
+    <p class="hint" id="bagWeapon"></p>
+    <div class="bag-list" id="bagList"></div>
+    <button class="cta ghost" id="btnBagClose">Kapat</button>
+  </div>
+</div>
+
+<script>
+(() => {
+"use strict";
+const $ = s => document.querySelector(s);
+const clone = o => JSON.parse(JSON.stringify(o));
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const W = 7, H = 9, MAX_SAND = 5, INV_MAX = 6, START = 3;
+const DIRS = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+
+/* ================= DATA ================= */
+const PART = { bas: "Baş", govde: "Gövde", sol: "Sol kol", sag: "Sağ kol", bacak: "Bacaklar", tac: "Taç" };
+const ME_PART = { bas: "başına", govde: "göğsüne", sol: "sol koluna", sag: "sağ koluna", bacak: "bacaklarına" };
+const HIT = { bas: .45, govde: .85, sol: .7, sag: .7, bacak: .75, tac: .5 };
+const KILL = ["bas", "tac", "govde"];
+
+const WEAPONS = {
+  pas:   { n: "Paslı kılıç", dmg: [4, 7] },
+  kilic: { n: "Doğu kılıcı", dmg: [5, 9] },
+  bicak: { n: "Kemik bıçak", dmg: [2, 5], crit: .25 }
+};
+const ITEMS = {
+  ekmek:    { n: "Kuru ekmek", d: "Taş gibi. Açlık +30." },
+  et:       { n: "Şüpheli et", d: "Neyin eti olduğunu sorma. Açlık +40, akıl −8." },
+  sarap:    { n: "Ekşi şarap", d: "Titremeyi durdurur. Akıl +20, açlık +5." },
+  yag:      { n: "Kandil yağı", d: "Fenere. Yağ +50." },
+  sargi:    { n: "Sargı bezi", d: "Kanamayı durdurur. Can +12." },
+  kilic:    { n: "Doğu kılıcı", d: "Tolun'un muhafızının kılıcı. Hasar 5–9.", weapon: true },
+  bicak:    { n: "Kemik bıçak", d: "Hafif, sinsi. Hasar 2–5, kritik şansı yüksek.", weapon: true },
+  bileklik: { n: "Boncuk bileklik", d: "Karan'ın bileğinden çekildi. Çocuk işi." }
+};
+const FOES = {
+  asker:    { n: "Doğu Askeri", d: "Yüzü isle kararmış. Mızrağının ucunda kurumuş kan.", parts: { bas: 5, govde: 11, sol: 6, sag: 7, bacak: 8 }, atk: [3, 6], fear: 3, loot: ["ekmek", "sargi", "bicak"] },
+  fare:     { n: "Fare Sürüsü", d: "Yüzlerce göz. Tek bir açlık.", parts: { govde: 12 }, atk: [2, 4], fear: 2, loot: ["et"] },
+  bogulmus: { n: "Boğulmuş", d: "Şişmiş, morarmış. Ağzından su değil, kum akıyor.", parts: { bas: 7, govde: 15, sol: 6, sag: 6, bacak: 8 }, atk: [3, 7], fear: 8, loot: ["sarap", "yag"] },
+  yiyici:   { n: "Kemer Yiyici", d: "Kolları yere değiyor. Yüzünde göz yerine delikler.", parts: { bas: 8, govde: 17, sol: 9, sag: 9, bacak: 10 }, atk: [5, 9], fear: 10, loot: ["et", "sargi"] },
+  kul:      { n: "Kül Yürüyen", d: "Kızıl Gece'de yananlardan biri. Hâlâ için için yanıyor.", parts: { bas: 6, govde: 11, sol: 6, sag: 6, bacak: 7 }, atk: [5, 8], fear: 6, burn: true, loot: ["yag"] },
+  tolun:    { n: "Elçi Tolun", d: "Kemerin ağzında, ordusunun son kolunu bekliyor. Gülümsüyor.", parts: { bas: 9, govde: 19, sol: 9, sag: 10, bacak: 11 }, atk: [5, 9], fear: 4, boss: true, flee: .25, loot: ["kilic"] },
+  gece:     { n: "Kızıl Gece", d: "Şehrin yangını burada bir beden bulmuş. Tacı alevden, sesi bir kalabalığın çığlığı.", parts: { tac: 14, govde: 28, sol: 12, sag: 12 }, atk: [6, 11], fear: 14, boss: true, final: true, burn: true, flee: 0 }
+};
+const FLOORS = [
+  { name: "Kemer Ağzı", foes: ["asker", "fare", "asker"], items: ["ekmek", "ekmek", "sargi", "yag", "sarap"], npcs: ["karan"], boss: "tolun" },
+  { name: "Boğulmuş Sarnıç", foes: ["bogulmus", "fare", "bogulmus", "yiyici"], items: ["ekmek", "et", "sargi", "yag", "sarap", "yag"], npcs: ["lal", "ece", "eflatun"] },
+  { name: "Kaynak", foes: ["kul", "yiyici", "kul"], items: ["ekmek", "sargi", "yag", "et", "sarap"], npcs: ["hizir"], boss: "gece" }
+];
+const ENDS = {
+  safak:   { t: "Şafak", k: "w", x: "Kumu kaynağa döktün. Su geriye aktı, ateş geriye aktı, gece geriye aktı. Aras'ta bir sabah. Karan, Ece'nin elini tutuyor. Kimse kemerin altında ne olduğunu bilmeyecek.", hint: "En iyi son." },
+  yarim:   { t: "Yarım Şafak", k: "w", x: "Gece geri sarıldı. Ece bir sabaha uyandı. Babası o sabahta yoktu.", hint: "Karan'ı Ece'ye kavuşturmanın bir yolu vardı." },
+  kul:     { t: "Kül Şafak", k: "w", x: "Şehir geri döndü, taşıyla, kuyusuyla. Ama kaynak yalnızca taşları hatırlar. Sevdiklerin kemerin karanlığında kaldı.", hint: "Kaynak, kurtardıklarını geri getirir. Kimseyi kurtarmadın." },
+  dongu:   { t: "Döngü", k: "s", x: "Kum saatini bırakmadın. Kaynağın başına oturdun. Yıllar geçti, saçların ağardı. Bir gece kemere yaralı bir naip düştü. Karanlıktan seslendin: ‘Kaynağa in…’", hint: "Gizli son." },
+  parca:   { t: "Parçalandın", k: "d", x: "Kemerin taşları kanını içti. Kum saati elinden kaydı ve karanlıkta bir süre daha döndü.", hint: "Düşmanın kollarını kes, daha az vurur. Kum saati sana zayıf noktalarını hatırlatır." },
+  aclik:   { t: "Açlık", k: "d", x: "Kemerin taşlarını kemirmeye başladığında artık çok geçti.", hint: "Yolu ezberle, yiyecekleri boşa harcama." },
+  delilik: { t: "Delilik", k: "d", x: "Karanlık sana adını sordu. Hatırlayamadın. Sonra karanlığa kendi adını verdin.", hint: "Feneri yakık tut. Şarap ve iyilik aklını toparlar." }
+};
+const END_ORDER = ["safak", "yarim", "kul", "dongu", "parca", "aclik", "delilik"];
+const WHISPERS = ["‘Yine mi buradasın?’ diye fısıldıyor duvar.", "Arkanda ayak sesleri. Durunca onlar da duruyor.", "Nûr'un sesi: ‘Bu sefer erken anla.’", "Sudaki yansıman sana el sallıyor. Sen sallamadın.", "Bir yerde bir çocuk boncuk sayıyor.", "Kum saatinin içinde biri bağırıyor."];
+
+/* ================= META ================= */
+const KEY = "kemer-v1";
+let META = { endings: [], known: [], lives: 0 };
+try { const r = localStorage.getItem(KEY); if (r) META = Object.assign(META, JSON.parse(r)); } catch (e) {}
+const saveMeta = () => { try { localStorage.setItem(KEY, JSON.stringify(META)); } catch (e) {} };
+
+/* ================= STATE ================= */
+let S, R, busy = false;
+const has = f => S.flags.includes(f);
+const flag = f => { if (!has(f)) S.flags.push(f); };
+function rnd() {
+  S.rng = (S.rng + 0x6D2B79F5) >>> 0;
+  let t = S.rng; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
+const rint = (a, b) => a + Math.floor(rnd() * (b - a + 1));
+const idx = (x, y) => y * W + x;
+
+function genFloor(fi) {
+  const F = FLOORS[fi], g = Array(W * H).fill(1);
+  let x = START, y = 0, carved = 1, guard = 0;
+  g[START] = 0;
+  while (carved < 31 + fi * 3 && guard++ < 4000) {
+    const r = rnd();
+    const [dx, dy] = r < .13 ? [0, -1] : r < .5 ? [0, 1] : r < .75 ? [-1, 0] : [1, 0];
+    x = clamp(x + dx, 0, W - 1); y = clamp(y + dy, 0, H - 1);
+    if (g[idx(x, y)]) { g[idx(x, y)] = 0; carved++; }
+  }
+  const dist = Array(W * H).fill(-1), q = [START]; dist[START] = 0;
+  while (q.length) {
+    const i = q.shift(), cx = i % W, cy = (i / W) | 0;
+    for (const [dx, dy] of DIRS) {
+      const nx = cx + dx, ny = cy + dy; if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+      const j = idx(nx, ny); if (g[j] || dist[j] >= 0) continue; dist[j] = dist[i] + 1; q.push(j);
+    }
+  }
+  const open = [...Array(W * H).keys()].filter(i => !g[i] && dist[i] >= 0);
+  const maxd = Math.max(...open.map(i => dist[i]));
+  const end = open.filter(i => dist[i] === maxd).sort((a, b) => b - a)[0];
+  const tiles = Array.from({ length: W * H }, (_, i) => ({ w: !!g[i], c: null }));
+  tiles[START].c = { k: "seal" };
+  tiles[end].c = F.boss ? { k: "foe", id: F.boss, boss: true } : { k: "stairs" };
+  const take = pred => {
+    const cand = open.filter(i => i !== START && i !== end && !tiles[i].c && pred(i));
+    return cand.length ? cand[Math.floor(rnd() * cand.length)] : -1;
+  };
+  let i = take(j => dist[j] >= maxd * .4 && dist[j] <= maxd * .7);
+  if (i >= 0) tiles[i].c = { k: "seal" };
+  F.npcs.forEach((id, k) => {
+    const at = (k + 1) / (F.npcs.length + 1);
+    i = take(j => dist[j] >= 2 && Math.abs(dist[j] / maxd - at) < .22);
+    if (i < 0) i = take(j => dist[j] >= 1);
+    if (i >= 0) tiles[i].c = { k: "npc", id };
+  });
+  F.foes.forEach(id => { i = take(j => dist[j] >= 3); if (i < 0) i = take(j => dist[j] >= 2); if (i >= 0) tiles[i].c = { k: "foe", id }; });
+  F.items.forEach(id => { i = take(() => true); if (i >= 0) tiles[i].c = { k: "item", id }; });
+  return tiles;
+}
+
+function newGame() {
+  S = { floor: 0, rng: (Math.random() * 4294967296) >>> 0, px: START % W, py: 0, prev: null,
+        hp: 50, maxhp: 50, hunger: 85, sanity: 85, oil: 80, lantern: true,
+        limbs: { sol: 1, sag: 1, bacak: 1 }, bleed: false, inv: ["ekmek", "sargi"], weapon: "pas",
+        comp: null, flags: [], combat: null, event: null, log: [], steps: 0, compass: false, map: null };
+  S.map = genFloor(0);
+  R = { sand: 3, hist: [], seal: null, seen: {}, rewinds: 0, over: null };
+  reveal();
+  say("Su dizine kadar. Yukarıda şehir yanıyor; ışığı taşların arasından süzülüyor.");
+  say("Fener elinde titriyor. Kaynak aşağıda bir yerde.");
+  R.seal = clone(S);
+}
+
+/* ================= HELPERS ================= */
+function say(t, cls) { S.log.push({ t, c: cls || "" }); if (S.log.length > 12) S.log.shift(); }
+const tile = () => S.map[idx(S.px, S.py)];
+const lit = () => S.lantern && S.oil > 0;
+function seenArr() { return R.seen[S.floor] || (R.seen[S.floor] = Array(W * H).fill(false)); }
+function reveal() {
+  const seen = seenArr(), r = lit() ? 2 : 1;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++)
+    if (S.compass || Math.abs(x - S.px) + Math.abs(y - S.py) <= r) seen[idx(x, y)] = true;
+}
+function pushHist() { R.hist.push(clone(S)); if (R.hist.length > 40) R.hist.shift(); }
+function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("on"), 1900); }
+function hurtFx() { const a = $("#app"); a.classList.remove("hurt"); void a.offsetWidth; a.classList.add("hurt"); try { navigator.vibrate && navigator.vibrate(60); } catch (e) {} }
+
+/* ================= TURN ================= */
+function tick() {
+  S.steps++;
+  S.hunger -= S.limbs.bacak ? 1 : 2;
+  if (S.hunger <= 0) { S.hunger = 0; S.hp -= 3; say("Midene bir yumruk gibi açlık oturuyor.", "bad"); }
+  if (lit()) S.oil = Math.max(0, S.oil - 1);
+  else { S.sanity -= 1; if (S.lantern && S.oil <= 0 && !has("yagbitti")) { flag("yagbitti"); say("Fener söndü. Karanlık birden yakınlaştı.", "bad"); } }
+  if (S.bleed) { S.hp -= 2; if (rnd() < .3) say("Kan izin arkanda bir çizgi çiziyor.", "bad"); }
+  if (S.sanity < 35 && rnd() < .25) say(WHISPERS[Math.floor(rnd() * WHISPERS.length)], "mind");
+}
+
+function move(dx, dy) {
+  if (busy || R.over || S.combat || S.event) return;
+  const nx = S.px + dx, ny = S.py + dy;
+  if (nx < 0 || ny < 0 || nx >= W || ny >= H || S.map[idx(nx, ny)].w) return;
+  pushHist();
+  S.prev = [S.px, S.py]; S.px = nx; S.py = ny;
+  SFX.step(); tick(); reveal(); enter();
+  if (!checkDeath()) render();
+}
+
+function enter() {
+  const c = tile().c; if (!c) return;
+  if (c.k === "foe") startCombat(c.id);
+  else if (c.k === "item") {
+    if (S.inv.length >= INV_MAX) { say(`Burada ${ITEMS[c.id].n.toLocaleLowerCase("tr")} var ama çantan dolu.`); return; }
+    S.inv.push(c.id); tile().c = null; SFX.pick(); say(`${ITEMS[c.id].n} buldun.`);
+  }
+  else if (c.k === "npc") S.event = c.id;
+  else if (c.k === "stairs") S.event = "merdiven";
+  else if (c.k === "seal") {
+    const key = `muhur_${S.floor}_${idx(S.px, S.py)}`;
+    if (has(key)) say("Mühür hâlâ sıcak. Ölürsen buraya dönersin.");
+    else { S.hp += 10; S.sanity += 6; say("Taşa kazınmış bir kum saati. Elini koyup soluklandın. Ölürsen buraya döneceksin."); }
+    flag(key);
+    R.seal = clone(S); SFX.seal();
+  }
+}
+
+function checkDeath() {
+  if (R.over) return true;
+  if (S.hp <= 0) { finish(S.hunger <= 0 ? "aclik" : "parca"); return true; }
+  if (S.sanity <= 0) { finish("delilik"); return true; }
+  S.hp = Math.min(S.hp, S.maxhp); S.sanity = Math.min(100, S.sanity); S.hunger = Math.min(100, S.hunger); S.oil = Math.min(100, S.oil);
+  return false;
+}
+
+/* ================= COMBAT ================= */
+function startCombat(id) {
+  const f = FOES[id];
+  S.combat = { id, parts: clone(f.parts), max: clone(f.parts), defend: false, known: META.known.includes(id) };
+  if (!S.combat.known) { META.known.push(id); saveMeta(); }
+  S.sanity -= f.fear;
+  say(`${f.n} karanlıktan çıktı.`, "bad");
+  SFX.foe();
+}
+const C = () => S.combat;
+function hitChance(p) {
+  const c = C(); let ch = HIT[p];
+  if ("bacak" in c.parts && c.parts.bacak <= 0) ch += .1;
+  if (S.sanity < 30) ch -= .1;
+  return clamp(ch, .05, .95);
+}
+const foeDead = c => KILL.some(k => k in c.parts && c.parts[k] <= 0);
+const SEVER = { bas: "Kafası yana düştü.", govde: "Gövdesi ikiye açıldı.", sol: "Sol kolu yere düştü.", sag: "Sağ kolu yere düştü.", bacak: "Dizleri kırıldı, yere çöktü.", tac: "Alev tacı söndü." };
+
+function attack(p) {
+  if (busy || R.over || !C() || C().parts[p] <= 0) return;
+  pushHist();
+  const c = C(), w = WEAPONS[S.weapon], ch = hitChance(p), roll = rnd();
+  if (roll < ch) {
+    let dmg = rint(w.dmg[0], w.dmg[1]);
+    dmg = Math.max(1, Math.round(dmg * (S.limbs.sag ? 1 : S.limbs.sol ? .6 : .3)));
+    const crit = roll < ch * (w.crit || .15);
+    if (crit) dmg = Math.round(dmg * 1.7);
+    c.parts[p] = Math.max(0, c.parts[p] - dmg);
+    say(`${PART[p]}: ${dmg} hasar.${crit ? " Kemik çatırdadı." : ""}${c.parts[p] === 0 ? " " + SEVER[p] : ""}`);
+    SFX.hit(); flashPart = p;
+  } else { say(`${PART[p]} için savurdun. Iskaladın.`); SFX.miss(); }
+  afterPlayer();
+}
+function defend() { if (busy || R.over || !C()) return; pushHist(); C().defend = true; say("Kılıcını önünde tuttun, bekledin."); enemyTurn(); post(); }
+function flee() {
+  if (busy || R.over || !C()) return;
+  pushHist();
+  const c = C(), f = FOES[c.id];
+  let ch = S.limbs.bacak ? .55 : .2;
+  if ("bacak" in c.parts && c.parts.bacak <= 0) ch = 1;
+  if (f.flee !== undefined) ch = Math.min(ch, f.flee);
+  if (rnd() < ch) {
+    S.combat = null;
+    if (S.prev) { S.px = S.prev[0]; S.py = S.prev[1]; }
+    say("Arkana bakmadan koştun. Ayak sesleri uzaklaştı."); reveal(); post(); return;
+  }
+  say(f.flee === 0 ? "Kaçacak yer yok. Kaynak arkanda." : "Kaçamadın. Kaygan taşlarda tökezledin.", "bad");
+  enemyTurn(); post();
+}
+function afterPlayer() {
+  const c = C();
+  if (foeDead(c)) return win();
+  if (S.comp) {
+    if (rnd() < .7) {
+      const live = Object.keys(c.parts).filter(k => c.parts[k] > 0), p = live[Math.floor(rnd() * live.length)], d = rint(3, 6);
+      c.parts[p] = Math.max(0, c.parts[p] - d);
+      say(`Karan zincirini savurdu: ${PART[p].toLocaleLowerCase("tr")}, ${d} hasar.`);
+      if (foeDead(c)) return win();
+    } else say("Karan bir hamle yaptı, boşa gitti.");
+  }
+  enemyTurn(); post();
+}
+function enemyTurn() {
+  const c = C(), f = FOES[c.id];
+  const arms = ["sol", "sag"].filter(k => k in c.parts), gone = arms.filter(k => c.parts[k] <= 0).length;
+  const mult = arms.length && gone === arms.length ? .35 : gone ? .7 : 1;
+  if (S.comp && rnd() < .3) {
+    const d = Math.round(rint(f.atk[0], f.atk[1]) * mult);
+    S.comp.hp -= d;
+    if (S.comp.hp <= 0) { S.comp = null; flag("karan_oldu"); S.sanity -= 20; say(`${f.n} Karan'ı yere serdi. Kalkmadı.`, "bad"); }
+    else say(`${f.n} Karan'a saldırdı: ${d} hasar.`, "bad");
+    c.defend = false; return;
+  }
+  let dmg = Math.round(rint(f.atk[0], f.atk[1]) * mult * (c.defend ? .4 : 1));
+  c.defend = false;
+  const r = rnd(), tgt = r < .06 ? "bas" : r < .55 ? "govde" : r < .7 ? "sol" : r < .85 ? "sag" : "bacak";
+  S.hp -= dmg; hurtFx(); SFX.hurt();
+  let txt = `${f.n} ${ME_PART[tgt]} vurdu: ${dmg}.`;
+  if (tgt === "bas") { S.sanity -= 6; txt += " Kulakların çınlıyor."; }
+  if (tgt in S.limbs && S.limbs[tgt] && rnd() < (f.boss ? .12 : .07)) {
+    S.limbs[tgt] = 0; S.bleed = true; S.sanity -= 12; SFX.scream();
+    txt += tgt === "bacak" ? " Bacağın artık seni taşımıyor." : ` ${tgt === "sol" ? "Sol" : "Sağ"} kolun koptu.`;
+  }
+  if (f.burn && rnd() < .3) { S.bleed = true; txt += " Yanık açıldı, kanıyor."; }
+  say(txt, "bad");
+}
+function win() {
+  const c = C(), f = FOES[c.id];
+  say(`${f.n} yere yığıldı.`); SFX.win();
+  S.sanity += 3;
+  if (f.loot && (f.boss || rnd() < .5)) {
+    const it = f.loot[Math.floor(rnd() * f.loot.length)];
+    if (S.inv.length < INV_MAX) { S.inv.push(it); say(`Üstünden ${ITEMS[it].n.toLocaleLowerCase("tr")} aldın.`); }
+  }
+  tile().c = f.final ? { k: "npc", id: "kaynak" } : f.boss ? { k: "stairs" } : null;
+  S.combat = null;
+  if (f.final) S.event = "kaynak";
+  else if (f.boss) S.event = "merdiven";
+  post();
+}
+function post() { if (!checkDeath()) render(); }
+
+/* ================= ITEMS ================= */
+function useItem(i) {
+  const id = S.inv[i]; if (!id || busy || R.over) return;
+  pushHist();
+  const it = ITEMS[id];
+  if (it.weapon) {
+    const old = S.weapon; S.weapon = id; S.inv.splice(i, 1);
+    if (old !== "pas") S.inv.push(old);
+    say(`${WEAPONS[id].n} artık elinde.`);
+  } else {
+    S.inv.splice(i, 1);
+    if (id === "ekmek") { S.hunger += 30; say("Ekmeği suya batırıp yedin."); }
+    if (id === "et") { S.hunger += 40; S.sanity -= 8; say("Et tatlıydı. Bu seni korkuttu.", "mind"); }
+    if (id === "sarap") { S.sanity += 20; S.hunger += 5; say("Şarap boğazını yaktı. Elin titremeyi bıraktı."); }
+    if (id === "yag") { S.oil += 50; say("Fenerin alevi büyüdü."); }
+    if (id === "sargi") { S.hp += 12; S.bleed = false; say("Yarayı sıkıca sardın. Kan durdu."); }
+    if (id === "bileklik") { S.inv.splice(i, 0, id); R.hist.pop(); say("Boncukları saydın. Yedi tane. Birinin üstünde E harfi."); render(); return; }
+  }
+  SFX.pick();
+  if (C()) { enemyTurn(); }
+  closeBag(); post();
+}
+function dropItem(i) { if (busy) return; pushHist(); const id = S.inv.splice(i, 1)[0]; say(`${ITEMS[id].n} karanlıkta kaldı.`); openBag(); render(); }
+
+/* ================= ENCOUNTERS ================= */
+const EVENTS = {
+  merdiven: {
+    who: "Merdiven", t: () => S.floor === 0 ? "Kemerin daha derinine inen kaygan basamaklar. Aşağıdan su sesi ve bir şarkı mırıltısı geliyor." : "Basamaklar sıcak. Aşağıdan turuncu bir ışık vuruyor; su kaynamıyor ama kokusu yanık.",
+    opts: () => [{ l: "Aşağı in", sub: "Geri dönüş yok. Kum saatine bir avuç kum dolar.", run: descend }, { l: "Biraz daha dolaş", run: () => "Basamakların başında durdun. Henüz değil." }]
+  },
+  karan: {
+    who: "Vezir Karan", t: () => "Zincirlere vurulmuş bir adam. Vezir Karan. Bileğinde çocukça bir boncuk bileklik. ‘Naip… Ece aşağıda, sarnıçta. Beni çöz. Yemin ederim, bu sefer arkanda olacağım.’",
+    opts: () => [
+      { l: "Zincirini kır", sub: "Açlık −6. Karan seninle gelir.", run: () => { S.comp = { hp: 20 }; S.hunger -= 6; flag("karan_cozuldu"); return "Paslı kılıcın zinciri üçüncü vuruşta kırdı. Karan sallanarak kalktı. ‘Arkandayım.’"; } },
+      { l: "Bilekliğini al", sub: "Akıl −10", run: () => { if (S.inv.length < INV_MAX) S.inv.push("bileklik"); S.sanity -= 10; flag("karan_terk"); return "Bilekliği bileğinden çektin. Karan bir şey demedi. Sadece ağladı."; } },
+      { l: "Onu bırak", run: () => { flag("karan_terk"); return "Arkandan zincir sesi geldi. Sonra sessizlik."; } }]
+  },
+  lal: {
+    who: "Lâl", t: () => "Bir sütuna yaslanmış biri. Lâl. Karnında derin bir yara, avucunda pirinç bir pusula. İğne sana dönüyor. ‘Geleceğini biliyordum… Pusula hep seni gösterdi.’",
+    opts: () => [
+      { l: "Sargını ona sar", sub: "Sargı bezi gerekir", need: () => S.inv.includes("sargi"), run: () => { S.inv.splice(S.inv.indexOf("sargi"), 1); S.compass = true; flag("lal_yasar"); reveal(); return "Kan durdu. Lâl pusulayı avucuna bıraktı. ‘Kaynağa giden yolu gösterir. Git. Arkandan gelirim.’ Pusula karanlığı açtı."; } },
+      { l: "Pusulayı al", sub: "Akıl −15", run: () => { S.compass = true; S.sanity -= 15; flag("lal_olu"); reveal(); return "Pusulayı parmaklarından çözdün. Lâl'in gözleri seni izledi. Sonra izlemedi."; } },
+      { l: "Yanında kal", sub: "Akıl +15, açlık −10", run: () => { S.sanity += 15; S.hunger -= 10; flag("lal_veda"); return "Bir şarkı mırıldandı. Kayıp Gemi. Sonunu getiremedi."; } }]
+  },
+  ece: {
+    who: "Kafes", t: () => S.comp ? "Paslı bir kafes. İçinde bir kız. Karan bir çığlık atıp parmaklıklara sarılıyor: ‘Ece!’" : "Paslı bir kafes. İçinde titreyen bir kız. Bileğinde boncuk bir bileklik.",
+    opts: () => {
+      if (S.comp) return [{ l: "Kafesi birlikte kırın", sub: "Karan ve Ece yukarı çıkar", run: () => { flag("ece_kurtuldu"); flag("karan_yasar"); S.comp = null; S.sanity += 20; return "Ece babasının boynuna sarıldı. Karan sana döndü: ‘Onu yukarı götüreceğim. Sen kaynağa in. …Teşekkür ederim.’ Yalnız kaldın, ama ilk kez yalnız hissetmedin."; } }];
+      const o = [{ l: "Kafesi kır", sub: "Açlık −6", run: () => { flag("ece_kurtuldu"); S.hunger -= 6; return "Ece kafesten çıktı ve karanlığa, yukarıya doğru koştu. Arkasına bakmadı."; } }];
+      if (S.inv.includes("bileklik")) o.push({ l: "Bilekliği göster", run: () => { S.sanity -= 15; flag("ece_kacti"); return "Ece bilekliği görünce çığlık attı. ‘Babamın! Ona ne yaptın?’ Parmaklıkların arasından kayıp karanlığa kaçtı."; } });
+      o.push({ l: "Geç", sub: "Akıl −8", run: () => { S.sanity -= 8; return "Kafesin önünden geçtin. Arkandan ince bir ses: ‘Gitme…’"; } });
+      return o;
+    }
+  },
+  eflatun: {
+    who: "Ajan Eflatun", t: () => "Gri pelerinli bir kadın yolu kesiyor. Ajan Eflatun. Elindeki ölçer tıkırdıyor. ‘Kum saatini kaç kez çevirdin, Naip?’",
+    opts: () => [
+      { l: "Hiç", run: () => R.rewinds === 0 ? (S.sanity += 5, "Ölçere baktı. ‘Doğru. Garip.’ Yolu açtı.") : (R.sand = Math.max(0, R.sand - 1), "‘Yalan.’ Kum saatine dokundu; bir avuç kum parmaklarının arasından aktı gitti.") },
+      { l: `Doğruyu söyle: ${R.rewinds} kez`, run: () => R.rewinds <= 3 ? (S.inv.length < INV_MAX && S.inv.push("yag"), "‘Dürüst bir yolcu. Nadir.’ Pelerininin altından bir şişe kandil yağı çıkarıp verdi.") : (R.sand = Math.max(0, R.sand - 1), "‘Çok fazla.’ Bir avuç kumu aldı. ‘Kaynağa vardığında yeter mi bakalım.’") },
+      { l: "Yanından sıyrıl", sub: "Açlık −5", run: () => { S.hunger -= 5; return "Suya dalıp altından geçtin. Ölçerin tıkırtısı arkanda kaldı."; } }]
+  },
+  hizir: {
+    who: "Bir iskelet", t: () => "Bir iskelet, kemik parmaklarında hâlâ yanan bir fener. Yanında taşa kazınmış bir yazı: ‘Benden sonraki yolcuya: kaynağa varan kumu döker. Dökmeyen, kaynağın bekçisi olur.’ Altında tek bir harf: H.",
+    opts: () => [
+      { l: "Fenerini al", sub: "Yağ tamamen dolar", run: () => { S.oil = 100; flag("hizir_not"); return "Fener elinde ısındı. Hızır'ın feneri. Yağı hiç bitmemiş gibi."; } },
+      { l: "Başında dua et", sub: "Akıl +15", run: () => { S.sanity += 15; flag("hizir_not"); return "Kemikleri düzelttin. Bir an kulede çan sesi duyar gibi oldun."; } }]
+  },
+  kaynak: {
+    who: "Kaynak", t: () => "Kaynak. Simsiyah su, dipsiz. Kenarında Nûr oturuyor, çok yaşlı. Gözleri senin gözlerin. ‘Kumu dök. Gece hiç olmamış olur. Kurtardığın herkes de seninle döner.’",
+    opts: () => {
+      const o = [{ l: "Kumu kaynağa dök", run: () => ({ end: has("ece_kurtuldu") && has("karan_yasar") ? "safak" : has("ece_kurtuldu") ? "yarim" : "kul" }) }];
+      if (has("hizir_not")) o.push({ l: "Kum saatini kendin tut", sub: "Hızır'ın yazısını hatırlıyorsun", run: () => ({ end: "dongu" }) });
+      return o;
+    }
+  }
+};
+function descend() {
+  S.floor++; S.map = genFloor(S.floor); S.px = START % W; S.py = 0; S.prev = null;
+  R.sand = Math.min(MAX_SAND, R.sand + 1);
+  reveal(); R.seal = clone(S);
+  toast("Kum saatine bir avuç kum doldu");
+  return `Kat ${S.floor + 1}: ${FLOORS[S.floor].name}.`;
+}
+function chooseEvent(k) {
+  if (busy || R.over) return;
+  const ev = EVENTS[S.event], o = ev.opts()[k];
+  if (!o || (o.need && !o.need())) return;
+  pushHist();
+  const id = S.event;
+  S.event = null;
+  const res = o.run();
+  if (res && res.end) { render(); finish(res.end); return; }
+  if (id !== "merdiven" && id !== "kaynak") tile().c = null;
+  if (res) say(res);
+  post();
+}
+
+/* ================= TIME ================= */
+function rewind() {
+  if (busy || R.over || !R.hist.length || R.sand < 1) { toast(R.sand < 1 ? "Kum kalmadı" : "Geri saracak hamle yok"); return; }
+  const at = Math.max(0, R.hist.length - 3);
+  R.sand--; R.rewinds++;
+  const snap = R.hist[at]; R.hist.length = at;
+  warp(() => { S = clone(snap); say("Zaman geri aktı. Gördüklerini hatırlıyorsun.", "mind"); reveal(); render(); });
+}
+function toSeal() {
+  if (!R.seal || R.sand < 1) return;
+  R.sand--; R.rewinds++; R.over = null; R.hist = [];
+  $("#end").hidden = true;
+  warp(() => {
+    S = clone(R.seal);
+    // the sand mends a little, so a seal taken at death's door can't become a trap
+    S.hp = Math.max(S.hp, 25); S.sanity = Math.max(S.sanity, 35); S.hunger = Math.max(S.hunger, 30);
+    say("Kumu mühre döktün. Kum yaralarını biraz kapattı.", "mind"); reveal(); render();
+  });
+}
+function warp(cb) {
+  busy = true; SFX.rewind();
+  $("#warp").classList.add("on"); $("#app").classList.add("warping");
+  setTimeout(() => { $("#warp").classList.remove("on"); $("#app").classList.remove("warping"); busy = false; cb(); }, 850);
+}
+function finish(id) {
+  R.over = id;
+  if (!META.endings.includes(id)) META.endings.push(id);
+  saveMeta();
+  const e = ENDS[id];
+  e.k === "d" ? SFX.death() : SFX.win();
+  render();
+  setTimeout(() => {
+    $("#endEyebrow").textContent = e.k === "w" ? "Son · kaynağa ulaştın" : e.k === "s" ? "Gizli son" : `Son · Kat ${S.floor + 1}`;
+    $("#endTitle").textContent = e.t; $("#endText").textContent = e.x; $("#endHint").textContent = e.hint;
+    $("#endMeta").innerHTML = `<span>Adım <b>${S.steps}</b></span><span>Geri sarma <b>${R.rewinds}</b></span><span>Kum <b>${R.sand}</b></span>`;
+    $("#endCount").textContent = `${META.endings.length}/${END_ORDER.length}`;
+    $("#endEnds").innerHTML = endsHtml();
+    const b = $("#btnSeal");
+    b.hidden = e.k !== "d"; b.disabled = !(R.seal && R.sand > 0);
+    b.textContent = R.sand > 0 ? `Mühüre dön · 1 kum (kalan ${R.sand})` : "Kum kalmadı";
+    $("#end").hidden = false;
+  }, 500);
+}
+const endsHtml = () => END_ORDER.map(id => { const e = ENDS[id], g = META.endings.includes(id); return `<span class="${g ? "got " + e.k : ""}">${g ? e.t : "? ? ?"}</span>`; }).join("");
+
+/* ================= ART ================= */
+const HG = '<svg viewBox="0 0 24 24"><path d="M6 2h12v2.2c0 3.3-2.3 5.7-4.5 7.8 2.2 2.1 4.5 4.5 4.5 7.8V22H6v-2.2c0-3.3 2.3-5.7 4.5-7.8C8.3 9.9 6 7.5 6 4.2z"/></svg>';
+const LOOK = {
+  asker:    { body: "#5b4a3a", skin: "#86684f" },
+  fare:     { body: "#3b302a", skin: "#5a4a40" },
+  bogulmus: { body: "#5d6b69", skin: "#7d8f8b" },
+  yiyici:   { body: "#3f352f", skin: "#5c4c42" },
+  kul:      { body: "#221b18", skin: "#2d2420" },
+  tolun:    { body: "#4b3d6b", skin: "#9a7458" },
+  gece:     { body: "#3a120e", skin: "#5a1b12" }
+};
+function shape(id, p) {
+  const long = id === "yiyici", fat = id === "bogulmus";
+  const S_ = {
+    bas: `<circle cx="80" cy="${long ? 46 : 40}" r="${fat ? 25 : long ? 17 : 21}"/>`,
+    govde: fat ? `<path d="M44 66Q80 52 116 66L122 140Q80 156 38 140Z"/>` : `<path d="M54 66Q80 58 106 66L110 140Q80 150 50 140Z"/>`,
+    sol: long ? `<path d="M54 72L34 80L18 214L30 216L46 96Z"/>` : `<path d="M54 70L34 78L24 140L36 142L46 94Z"/>`,
+    sag: long ? `<path d="M106 72L126 80L142 214L130 216L114 96Z"/>` : `<path d="M106 70L126 78L136 140L124 142L114 94Z"/>`,
+    bacak: `<path d="M54 142L106 142L104 212L86 212L80 168L74 212L56 212Z"/>`,
+    tac: `<circle cx="80" cy="46" r="24"/>`
+  };
+  if (id === "gece") Object.assign(S_, {
+    govde: `<path d="M40 70Q80 54 120 70L132 214Q80 226 28 214Z"/>`,
+    sol: `<path d="M42 76L12 92L4 182L18 186L32 106Z"/>`, sag: `<path d="M118 76L148 92L156 182L142 186L128 106Z"/>`
+  });
+  return S_[p];
+}
+function extras(id, c) {
+  const alive = p => !(p in c.parts) || c.parts[p] > 0;
+  let s = "";
+  if (id === "asker" && alive("bas")) s += `<path d="M58 34L80 6L102 34Z" fill="#6d6a63" stroke="#0c0a09" stroke-width="2"/>`;
+  if (id === "asker" && alive("sag")) s += `<path d="M131 30L131 150" stroke="#8c7a5c" stroke-width="3"/><path d="M127 34L131 18L135 34Z" fill="#b8b2a6"/>`;
+  if (id === "tolun" && alive("bas")) s += `<path d="M60 30C60 12 100 12 100 30Z" fill="#5a3b1c" stroke="#0c0a09" stroke-width="2"/><path d="M70 50C76 47 84 47 90 50L92 60L88 60L86 53C82 53 78 53 74 53L72 60L68 60Z" fill="#1d1a17"/>`;
+  if (id === "bogulmus") s += `<path d="M66 150v14M92 148v18M78 152v10" stroke="#7d8f8b" stroke-width="2" opacity=".6"/>`;
+  if (id === "kul") s += `<path d="M62 80l10 14-6 10 12 14M98 76l-8 16 8 12" fill="none" stroke="#e8742a" stroke-width="2"/><circle cx="74" cy="40" r="2.5" fill="#f6a43a"/><circle cx="86" cy="40" r="2.5" fill="#f6a43a"/>`;
+  if (id === "yiyici" && alive("bas")) s += `<circle cx="74" cy="44" r="3" fill="#0c0a09"/><circle cx="86" cy="44" r="3" fill="#0c0a09"/><circle cx="80" cy="53" r="2.5" fill="#0c0a09"/>`;
+  if (id === "fare") { for (let i = 0; i < 22; i++) { const x = 40 + (i * 37) % 80, y = 70 + (i * 53) % 120; s += `<ellipse cx="${x}" cy="${y}" rx="9" ry="5" fill="#4a3c33" stroke="#0c0a09" stroke-width="1.2"/><circle cx="${x + 6}" cy="${y - 1}" r="1.3" fill="#c4392c"/>`; } }
+  if (id === "gece" && alive("tac")) s += `<path d="M54 30l6-26 8 18 12-22 12 22 8-18 6 26Z" fill="#e8742a" stroke="#0c0a09" stroke-width="1.5"/><path d="M66 28l4-12 6 10 4-14 4 14 6-10 4 12Z" fill="#f6c14a"/>`;
+  if (id !== "fare" && id !== "yiyici" && id !== "kul" && alive("bas") && "bas" in c.parts) s += `<circle cx="73" cy="38" r="2" fill="#0c0a09"/><circle cx="87" cy="38" r="2" fill="#0c0a09"/>`;
+  return s;
+}
+let flashPart = null;
+function foeSVG(c) {
+  const id = c.id, L = LOOK[id];
+  let g = "";
+  for (const p of Object.keys(c.parts)) {
+    if (id === "fare") break;
+    const frac = c.parts[p] / c.max[p], gone = c.parts[p] <= 0;
+    const fill = p === "bas" || p === "tac" ? L.skin : L.body;
+    g += `<g class="pt${flashPart === p ? " flash-part" : ""}" data-part="${p}" opacity="${gone ? .12 : 1}"><g fill="${fill}" stroke="#0c0a09" stroke-width="2">${shape(id, p)}</g>` +
+      (frac < 1 && !gone ? `<g fill="#c4392c" opacity="${((1 - frac) * .6).toFixed(2)}">${shape(id, p)}</g>` : "") + `</g>`;
+  }
+  return `<svg viewBox="0 0 160 228" role="img" aria-label="${FOES[id].n}">${g}${extras(id, c)}</svg>`;
+}
+function bodySVG() {
+  const L = S.limbs, col = ok => ok ? "#ddd2bf" : "#8f1d17";
+  const hp = S.hp / S.maxhp;
+  return `<svg viewBox="0 0 46 58"><circle cx="23" cy="8" r="6" fill="${col(true)}" opacity="${S.sanity < 35 ? .5 : 1}"/>` +
+    `<rect x="16" y="16" width="14" height="20" rx="3" fill="${hp < .35 ? "#c4392c" : "#ddd2bf"}"/>` +
+    `<rect x="8" y="17" width="6" height="18" rx="2.5" fill="${col(L.sol)}" opacity="${L.sol ? 1 : .5}"/>` +
+    `<rect x="32" y="17" width="6" height="18" rx="2.5" fill="${col(L.sag)}" opacity="${L.sag ? 1 : .5}"/>` +
+    `<rect x="16" y="38" width="14" height="19" rx="3" fill="${col(L.bacak)}" opacity="${L.bacak ? 1 : .5}"/>` +
+    (S.bleed ? `<circle cx="38" cy="50" r="5" fill="#c4392c"/>` : "") + `</svg>`;
+}
+
+/* ================= RENDER ================= */
+function render() {
+  $("#floorNo").textContent = `Kat ${S.floor + 1} / 3`;
+  $("#floorName").textContent = FLOORS[S.floor].name;
+  $("#sand").innerHTML = Array.from({ length: MAX_SAND }, (_, i) => HG.replace("<svg", `<svg class="${i < R.sand ? "" : "empty"}"`)).join("");
+  const bar = (id, v, max) => { const el = $(id); el.querySelector("b").textContent = Math.max(0, Math.round(v)); el.querySelector(".fl").style.width = clamp(v / max * 100, 0, 100) + "%"; el.classList.toggle("low", v / max < .25); };
+  bar("#bHp", S.hp, S.maxhp); bar("#bHu", S.hunger, 100); bar("#bSa", S.sanity, 100); bar("#bOi", S.oil, 100);
+  $("#bodyFig").innerHTML = bodySVG();
+  const dark = !lit();
+  $("#app").classList.toggle("dark", dark);
+  $("#vignette").style.boxShadow = `inset 0 0 ${dark ? 160 : 90}px ${dark ? 70 : 30}px rgba(0,0,0,${dark ? .92 : .7})${S.sanity < 35 ? ", inset 0 0 60px 10px rgba(154,124,192,.25)" : ""}`;
+  $("#btnLamp").classList.toggle("on", lit());
+  $("#lampSub").textContent = S.oil <= 0 ? "Yağ yok" : S.lantern ? "Yanıyor" : "Sönük";
+  $("#bagSub").textContent = `${S.inv.length} / ${INV_MAX}`;
+  $("#btnRw").disabled = !R.hist.length || R.sand < 1 || !!R.over;
+  $("#rwSub").textContent = R.sand < 1 ? "Kum yok" : "1 kum · 3 hamle";
+  $("#log").innerHTML = S.log.slice(-3).map(l => `<p class="${l.c}">${l.t}</p>`).join("");
+  renderMap(); renderCombat(); renderEvent();
+}
+function renderMap() {
+  const st = $("#stage"), ts = Math.floor(Math.min((st.clientWidth - 2 * (W - 1)) / W, (st.clientHeight - 2 * (H - 1)) / H));
+  const map = $("#map");
+  map.style.gridTemplateColumns = `repeat(${W}, ${ts}px)`;
+  map.style.gridAutoRows = `${ts}px`;
+  const seen = seenArr(), r = lit() ? 2 : 1;
+  const fakes = new Set();
+  if (S.sanity < 35) {
+    const cand = S.map.map((t, i) => i).filter(i => seen[i] && !S.map[i].w && !S.map[i].c);
+    for (let k = 0; k < 2 && cand.length; k++) fakes.add(cand[(S.steps * 7 + k * 13) % cand.length]);
+  }
+  let h = "";
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = idx(x, y), t = S.map[i], d = Math.abs(x - S.px) + Math.abs(y - S.py);
+    const cls = ["t", t.w ? "wall" : "floor"];
+    if (seen[i]) cls.push("seen");
+    if (d <= r) cls.push("lit");
+    const step = d === 1 && !t.w && !S.combat && !S.event && !R.over;
+    if (step) cls.push("step");
+    let g = "";
+    if (x === S.px && y === S.py) g = `<span class="g me">N</span>`;
+    else if (seen[i] && t.c) {
+      const c = t.c;
+      g = c.k === "foe" ? `<span class="g foe${c.boss ? " boss" : ""}">${c.boss ? "!!" : "!"}</span>` :
+          c.k === "item" ? `<span class="g item">◆</span>` : c.k === "npc" ? `<span class="g npc">?</span>` :
+          c.k === "stairs" ? `<span class="g stairs">▼</span>` : `<span class="g seal">${HG}</span>`;
+    } else if (fakes.has(i)) g = `<span class="g fake">!</span>`;
+    h += `<div class="${cls.join(" ")}" data-x="${x}" data-y="${y}"${step ? ' role="button" tabindex="0" aria-label="Buraya yürü"' : ""}>${g}</div>`;
+  }
+  map.innerHTML = h;
+}
+function renderCombat() {
+  const el = $("#combat");
+  if (!S.combat) { el.hidden = true; return; }
+  const c = S.combat, f = FOES[c.id];
+  el.hidden = false;
+  const rows = Object.keys(c.parts).map(p => {
+    const gone = c.parts[p] <= 0, pct = c.known ? Math.round(hitChance(p) * 100) + "%" : "?%";
+    return `<button class="part${gone ? " gone" : ""}" data-part="${p}" ${gone ? "disabled" : ""}><span>${PART[p]}</span><span class="pc">${pct}</span><span class="ph"><i style="width:${c.parts[p] / c.max[p] * 100}%"></i></span></button>`;
+  }).join("");
+  el.innerHTML = `<div class="p-eyebrow">${f.boss ? "Bekçi" : "Düşman"}${c.known ? " · zayıf yerlerini hatırlıyorsun" : " · ilk karşılaşma"}</div>
+    <div class="p-title">${f.n}</div><div class="p-desc">${f.d}</div>
+    <div class="fight"><div class="foe-art">${foeSVG(c)}</div><div class="parts">${rows}</div></div>
+    <div class="cacts"><button class="opt" id="cDef">Savun</button><button class="opt" id="cBag">Çanta</button><button class="opt" id="cFlee">Kaç</button></div>`;
+  flashPart = null;
+}
+function renderEvent() {
+  const el = $("#event");
+  if (!S.event || S.combat) { el.hidden = true; return; }
+  const ev = EVENTS[S.event];
+  el.hidden = false;
+  el.innerHTML = `<div class="p-eyebrow">Karşılaşma</div><div class="p-title">${ev.who}</div><div class="p-text">${ev.t()}</div>
+    <div class="opts">${ev.opts().map((o, k) => `<button class="opt" data-k="${k}" ${o.need && !o.need() ? "disabled" : ""}>${o.l}${o.sub ? `<small>${o.sub}</small>` : ""}</button>`).join("")}</div>`;
+}
+
+/* ================= BAG ================= */
+function openBag() {
+  if (R.over) return;
+  $("#bagCount").textContent = `${S.inv.length} / ${INV_MAX}`;
+  $("#bagWeapon").textContent = `Elindeki: ${WEAPONS[S.weapon].n} (hasar ${WEAPONS[S.weapon].dmg.join("–")})${S.limbs.sag ? "" : " · sağ kolun yok, zayıf vuruyorsun"}`;
+  $("#bagList").innerHTML = S.inv.length ? S.inv.map((id, i) => `<div class="bag-row"><div><b>${ITEMS[id].n}</b><small>${ITEMS[id].d}</small></div><button class="opt" data-use="${i}">${ITEMS[id].weapon ? "Kuşan" : "Kullan"}</button><button class="opt" data-drop="${i}">At</button></div>`).join("") : `<p class="hint">Çanta boş. Sadece kum ve korku.</p>`;
+  $("#bag").hidden = false;
+}
+function closeBag() { $("#bag").hidden = true; }
+
+/* ================= INPUT ================= */
+$("#map").addEventListener("click", e => {
+  const t = e.target.closest(".t"); if (!t) return;
+  const dx = +t.dataset.x - S.px, dy = +t.dataset.y - S.py;
+  if (Math.abs(dx) + Math.abs(dy) === 1) move(dx, dy);
+});
+$("#map").addEventListener("keydown", e => { if (e.key === "Enter") e.target.click(); });
+let sw = null;
+$("#stage").addEventListener("pointerdown", e => { if (!S.combat && !S.event) sw = { x: e.clientX, y: e.clientY }; });
+$("#stage").addEventListener("pointerup", e => {
+  if (!sw) return; const dx = e.clientX - sw.x, dy = e.clientY - sw.y; sw = null;
+  if (Math.max(Math.abs(dx), Math.abs(dy)) < 30) return;
+  Math.abs(dx) > Math.abs(dy) ? move(Math.sign(dx), 0) : move(0, Math.sign(dy));
+});
+$("#combat").addEventListener("click", e => {
+  const p = e.target.closest("[data-part]"); if (p) return attack(p.dataset.part);
+  if (e.target.closest("#cDef")) defend();
+  else if (e.target.closest("#cFlee")) flee();
+  else if (e.target.closest("#cBag")) openBag();
+});
+$("#event").addEventListener("click", e => { const o = e.target.closest("[data-k]"); if (o) chooseEvent(+o.dataset.k); });
+$("#bagList").addEventListener("click", e => {
+  const u = e.target.closest("[data-use]"), d = e.target.closest("[data-drop]");
+  if (u) useItem(+u.dataset.use); else if (d) dropItem(+d.dataset.drop);
+});
+$("#btnBagClose").addEventListener("click", closeBag);
+$("#bag").addEventListener("click", e => { if (e.target.id === "bag") closeBag(); });
+$("#btnBag").addEventListener("click", openBag);
+$("#btnRw").addEventListener("click", rewind);
+$("#btnLamp").addEventListener("click", () => {
+  if (busy || R.over) return;
+  if (S.oil <= 0) { toast("Fenerde yağ yok"); return; }
+  S.lantern = !S.lantern; say(S.lantern ? "Fitili yaktın." : "Feneri söndürdün. Yağ dursun, karanlık beklesin.", S.lantern ? "" : "mind");
+  reveal(); render();
+});
+$("#btnSeal").addEventListener("click", toSeal);
+$("#btnNew").addEventListener("click", () => { $("#end").hidden = true; META.lives++; saveMeta(); newGame(); render(); });
+$("#btnStart").addEventListener("click", () => { ac(); $("#intro").hidden = true; META.lives++; saveMeta(); render(); });
+document.addEventListener("keydown", e => {
+  if (!$("#intro").hidden || !$("#end").hidden || !$("#bag").hidden) { if (e.key === "Escape") closeBag(); return; }
+  const k = e.key.toLowerCase();
+  const m = { arrowup: [0, -1], w: [0, -1], arrowdown: [0, 1], s: [0, 1], arrowleft: [-1, 0], a: [-1, 0], arrowright: [1, 0], d: [1, 0] }[k];
+  if (m) { e.preventDefault(); move(m[0], m[1]); }
+  else if (k === "r") rewind(); else if (k === "f") $("#btnLamp").click(); else if (k === "i") openBag();
+});
+window.addEventListener("resize", () => { if (S) renderMap(); });
+
+/* ================= SOUND ================= */
+let AC = null;
+function ac() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} } if (AC && AC.state === "suspended") AC.resume(); return AC; }
+function tone(f, d, type = "sine", v = .1, delay = 0, to = null) {
+  const a = ac(); if (!a) return;
+  const t0 = a.currentTime + delay, o = a.createOscillator(), g = a.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, t0); if (to) o.frequency.exponentialRampToValueAtTime(to, t0 + d);
+  g.gain.setValueAtTime(.0001, t0); g.gain.exponentialRampToValueAtTime(v, t0 + .015); g.gain.exponentialRampToValueAtTime(.0001, t0 + d);
+  o.connect(g).connect(a.destination); o.start(t0); o.stop(t0 + d + .05);
+}
+function noise(d, v, f) {
+  const a = ac(); if (!a) return;
+  const b = a.createBuffer(1, Math.floor(a.sampleRate * d), a.sampleRate), x = b.getChannelData(0);
+  for (let i = 0; i < x.length; i++) x[i] = (Math.random() * 2 - 1) * (1 - i / x.length);
+  const s = a.createBufferSource(), fl = a.createBiquadFilter(), g = a.createGain();
+  fl.type = "lowpass"; fl.frequency.value = f; g.gain.value = v; s.buffer = b; s.connect(fl).connect(g).connect(a.destination); s.start();
+}
+const SFX = {
+  step() { noise(.12, .12, 500); }, pick() { tone(880, .15, "triangle", .05); tone(1320, .2, "triangle", .04, .06); },
+  hit() { noise(.15, .3, 1800); tone(110, .15, "square", .05); }, miss() { noise(.25, .08, 3000); },
+  hurt() { tone(160, .3, "sawtooth", .07, 0, 60); }, scream() { tone(700, .7, "sawtooth", .05, 0, 200); tone(740, .7, "sawtooth", .04, .02, 210); },
+  foe() { tone(55, 1.2, "sawtooth", .06); tone(58, 1.2, "sawtooth", .05, .05); }, seal() { [440, 554, 659].forEach((f, i) => tone(f, .8, "sine", .05, i * .1)); },
+  rewind() { tone(900, .9, "sawtooth", .03, 0, 90); }, win() { tone(220, .6, "triangle", .06); tone(330, .8, "triangle", .05, .15); },
+  death() { tone(110, 1.8, "triangle", .1, 0, 40); }
+};
+
+/* ================= BOOT ================= */
+window.__kemer = () => ({ S, R });   // read-only peek used by automated playtests
+newGame();
+render();
+$("#introCount").textContent = `${META.endings.length}/${END_ORDER.length}`;
+$("#introEnds").innerHTML = endsHtml();
+})();
+</script>
+<!--ARTIFACT-END-->
+</body>
+</html>
